@@ -34,9 +34,17 @@
     </MudStack>
 
     <MudStack Row=@true>
-        <MudFabAsyncPRx Color="Color.Secondary" Parameter=0 ParameterAsyncTransformation=@DoTransformParameterAsync
-                        EndIcon=@(Service.UseIncrementState ? @Icons.Material.Filled.Add : Icons.Material.Filled.Remove)
-                        RxCommand=@Service.AddAsync.Clone() ConfirmExecution=@ConfirmAdd />
+        <MudSwitchRx RxInput=@Service.AddMode Label="Switch to Add mode" />
+        <MudFabAsyncPRx Color="Color.Secondary" Parameter=2 ParameterAsyncTransformation=@DoTransformParameterAsync
+                        EndIcon=@(Service.AddMode.Value ? @Icons.Material.Filled.Add : Icons.Material.Filled.Remove)
+                        RxCommand=@Service.AddRemoveAsync ConfirmExecution=@ConfirmAdd />
+        @if (Service.CommandExceptions.Any())
+        {
+            <MudStack>
+                <MudText Typo="Typo.h5" GutterBottom="true">@Service.CommandExceptions.Aggregate("", (p, n) => p + n.Message + ", ")</MudText>
+                <MudButton Color="Color.Primary" OnClick=@(() => Service.ResetCommandExceptions())>Reset Exceptions</MudButton>
+            </MudStack>
+        }
     </MudStack>
 </MudStack>
 
@@ -63,14 +71,14 @@
 
     private async Task<int?> DoTransformParameterAsync(int? parameter, CancellationToken token)
     {
-        if (Service.Count > 10)
+        if (Service.Count > 20)
         {
             return null;
         }
 
         await Task.Delay(1000, token);
-        parameter -= 2;
+        parameter *= 5;
 
         return parameter;
     }
-}
+        }

@@ -33,13 +33,12 @@ namespace RxBlazorLightSample.Service
     {
         public int Count { get; private set; }
 
-        public bool UseIncrementState { get; private set; } = true;
-
         public ICommand Increment;
         public ICommand<int> Add;
         public ICommandAsync IncrementAsync;
         public ICommandAsync<int?> AddAsync;
-        public ICommand<bool> UseIncrement;
+        public ICommandAsync<int?> AddRemoveAsync;
+        public IInput<bool> AddMode;
 
         public ICommand AddIncrementValue;
         public IInput<int> IncrementValue;
@@ -49,11 +48,13 @@ namespace RxBlazorLightSample.Service
         public IInput<int> RatingValue;
         public IInput<Pizza> PizzaTest;
         public Pizza[] Pizzas { get; } =
-       {
+        {
             new Pizza("Cardinale"), new Pizza("Diavolo"), new Pizza("Margarita"), new Pizza("Spinaci")
         };
 
         private CancellationTokenSource _addCancel = new();
+        private CancellationTokenSource _addRemoveCancel = new();
+
         private bool _canIncrement = false;
 
         public TestService()
@@ -64,7 +65,8 @@ namespace RxBlazorLightSample.Service
             IncrementAsync = CreateAsyncCommand(this, async () => { await Task.Delay(4000); Count++; }, () => Count > 2, true);
             AddAsync = CreateAsyncCommand<int?>(this, DoAddAsync, DoAddAsyncCanExecute, DoAddAsyncCancel, true);
 
-            UseIncrement = CreateCommand<bool>(this, (s) => { UseIncrementState = s; }, (i) => !AddAsync.Executing);
+            AddRemoveAsync = CreateAsyncCommand<int?>(this, DoAddRemoveAsync, DoAddRemoveAsyncCanExecute, DoAddRemoveAsyncCancel, true);
+            AddMode = CreateInput(this, false, () => !AddRemoveAsync.Executing);
 
             IncrementValue = CreateInput(this, 0, () => CanIncrementCheck is not null && CanIncrementCheck.Value);
             CanIncrementCheck = CreateInput(this, false);
@@ -107,12 +109,40 @@ namespace RxBlazorLightSample.Service
 
         private bool DoAddAsyncCanExecute(int? value)
         {
-            return !UseIncrementState && Count > 2;
+            return Count > 2;
         }
 
         private void DoAddAsyncCancel()
         {
             _addCancel.Cancel();
+        }
+
+        private async Task DoAddRemoveAsync(int? offset)
+        {
+            if (offset == null)
+            {
+                throw new ArgumentNullException(nameof(offset));
+            }
+
+            if (!_addRemoveCancel.TryReset())
+            {
+                _addRemoveCancel = new();
+            }
+
+            await Task.Delay(5000, _addRemoveCancel.Token);
+
+            int val = AddMode.Value ? (int)offset : -(int)offset;
+            Count += val;
+        }
+
+        private bool DoAddRemoveAsyncCanExecute(int? value)
+        {
+            return Count > 5;
+        }
+
+        private void DoAddRemoveAsyncCancel()
+        {
+            _addRemoveCancel.Cancel();
         }
 
         public void Dispose()

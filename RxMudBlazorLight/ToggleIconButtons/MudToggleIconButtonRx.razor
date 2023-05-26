@@ -1,0 +1,30 @@
+﻿@inherits MudToggleIconButton
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public Func<Task<bool>>? ConfirmExecution { get; set; }
+
+    [Parameter]
+    public Action? BeforeExecution { get; set; }
+
+    [Parameter]
+    public Action? AfterExecution { get; set; }
+
+    [Parameter]
+    public IInput<bool>? RxInput { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(RxInput);
+
+        Toggled = RxInput.Value;
+        ToggledChanged = EventCallback.Factory.Create<bool>(this, v => RxInput.SetValue(v));
+        Disabled = !RxInput.CanChange();
+
+        base.OnParametersSet();
+    }
+}

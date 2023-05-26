@@ -1,0 +1,56 @@
+﻿@inherits MudButton
+@typeparam T
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public T? Parameter { get; set; }
+
+    [Parameter]
+    public Func<T?, CancellationToken, Task<T?>>? ParameterAsyncTransformation { get; set; }
+
+    [Parameter]
+    public Func<Task<bool>>? ConfirmExecution { get; set; }
+
+    [Parameter]
+    public Action? BeforeExecution { get; set; }
+
+    [Parameter]
+    public Action? AfterExecution { get; set; }
+
+    [Parameter]
+    public string? CancelText { get; set; }
+
+    [Parameter]
+    public ICommandAsync<T>? RxCommand { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+    private ButtonAsyncPRX<T>? _buttonAsyncPRX;
+    private Color _buttonColor;
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(RxCommand);
+
+        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.DEFAULT, Color, ChildContent, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution, null, CancelText);
+        _buttonColor = Color;
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(_buttonAsyncPRX);
+        ArgumentNullException.ThrowIfNull(RxCommand);
+
+        _buttonAsyncPRX.SetParameters(Parameter, ParameterAsyncTransformation);
+
+        Disabled = _buttonAsyncPRX.Disabled;
+        OnClick = (EventCallback<MouseEventArgs>)_buttonAsyncPRX.OnClick;
+        ChildContent = _buttonAsyncPRX.ChildContent;
+        Color = _buttonAsyncPRX.Color;
+
+        base.OnParametersSet();
+    }
+}

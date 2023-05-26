@@ -1,0 +1,45 @@
+﻿@inherits MudButton
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public Func<Task<bool>>? ConfirmExecution { get; set; }
+
+    [Parameter]
+    public Action? BeforeExecution { get; set; }
+
+    [Parameter]
+    public Action? AfterExecution { get; set; }
+
+    [Parameter]
+    public string? CancelText { get; set; }
+
+    [Parameter]
+    public ICommandAsync? RxCommand { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+    private ButtonAsyncRX? _buttonAsyncRX;
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(RxCommand);
+        
+        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.DEFAULT, Color, ChildContent, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution, null, CancelText);
+        
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(_buttonAsyncRX);
+        _buttonAsyncRX.SetParameters();
+
+        Disabled = _buttonAsyncRX.Disabled;
+        OnClick = (EventCallback<MouseEventArgs>)_buttonAsyncRX.OnClick;
+        ChildContent = _buttonAsyncRX.ChildContent;
+        Color = _buttonAsyncRX.Color;
+
+        base.OnParametersSet();
+    }
+}

@@ -1,0 +1,36 @@
+﻿@inherits MudFab
+
+@RenderBase()
+
+@code {
+    RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+
+    [Parameter]
+    public Func<Task<bool>>? ConfirmExecution { get; set; }
+
+    [Parameter]
+    public Action? BeforeExecution { get; set; }
+
+    [Parameter]
+    public Action? AfterExecution { get; set; }
+
+    [Parameter]
+    public ICommand? RxCommand { get; set; }
+
+    private ButtonRX? _buttonRX;
+
+    protected override void OnInitialized()
+    {
+        _buttonRX = ButtonRX.Create(MBButtonType.FAB, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
+        OnClick = _buttonRX.OnClick;
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(RxCommand);
+        Disabled = !RxCommand.CanExecute();
+        base.OnParametersSet();
+    }
+}

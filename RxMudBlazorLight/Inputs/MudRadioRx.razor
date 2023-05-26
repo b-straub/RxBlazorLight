@@ -1,0 +1,41 @@
+﻿@inherits MudRadio<T>
+@typeparam T
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public int Index { get; set; } = -1;
+
+    [Parameter]
+    public T[]? Values { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Values);
+
+        if (Index < 0)
+        {
+            throw new InvalidOperationException("MudRadioRX Index must be >= 0!");
+        }
+
+        Option = Values[Index];
+
+        if (ChildContent is null)
+        {
+            ChildContent = builder =>
+            {
+                builder.AddContent(0, Label is null ? Option.ToString() : Label);
+            };
+        }
+
+        base.OnParametersSet();
+    }
+
+
+}

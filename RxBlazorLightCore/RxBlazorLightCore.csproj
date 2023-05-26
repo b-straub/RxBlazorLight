@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="System.Reactive" Version="5.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.4" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+﻿@inherits MudRating
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public IInput<int>? RxInput { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(RxInput);
+
+        SelectedValue = RxInput.Value;
+        SelectedValueChanged = EventCallback.Factory.Create<int>(this, v => RxInput.SetValue(v));
+        Disabled = !RxInput.CanChange();
+
+        base.OnParametersSet();
+    }
+}

@@ -1,0 +1,24 @@
+﻿@inherits MudAutocomplete<T>
+@typeparam T
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public IInput<T>? RxInput { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(RxInput);
+
+        Value = RxInput.Value;
+        Text = Value.ToString();
+
+        ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInput.SetValue(v));
+        Disabled = !RxInput.CanChange();
+
+        base.OnParametersSet();
+    }
+}

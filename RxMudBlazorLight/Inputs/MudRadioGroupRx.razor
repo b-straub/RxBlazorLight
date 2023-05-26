@@ -1,0 +1,87 @@
+﻿@inherits MudRadioGroup<T>
+@typeparam T
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public IInput<T>? RxInput { get; set; }
+
+    [Parameter]
+    public T[]? Values { get; set; }
+
+    [Parameter]
+    public Func<T, bool> DenseCallback { get; set; } = _ => false;
+
+    [Parameter]
+    public Func<T, Size> SizeCallback { get; set; } = _ => Size.Medium;
+
+    [Parameter]
+    public Func<T, Color> ColorCallback { get; set; } = _ => Color.Default;
+
+    [Parameter]
+    public Func<T, Placement> PlacementCallback { get; set; } = _ => Placement.End;
+
+    [Parameter]
+    public Func<T, string>? ToStringFunc{ get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(RxInput);
+
+        if (Values is null)
+        {
+            if (!RxInput.Value.GetType().IsEnum)
+            {
+                throw new InvalidDataException("Paramter Values must be provided for non enum types!");
+            }
+
+            Values = (T[])Enum.GetValues(typeof(T));
+        }
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(RxInput);
+        ArgumentNullException.ThrowIfNull(Values);
+
+        if (ChildContent is null)
+        {
+            ChildContent = builder =>
+            {
+                for (var i = 0; i < Values.Length; i++)
+                {
+                    builder.OpenComponent(0, typeof(MudRadioRx<T>));
+                    builder.AddAttribute(1, "Index", i);
+                    builder.AddAttribute(2, "Values", Values);
+                    builder.AddAttribute(3, "Dense", DenseCallback(Values[i]));
+                    builder.AddAttribute(4, "Size", SizeCallback(Values[i]));
+                    builder.AddAttribute(5, "Color", ColorCallback(Values[i]));
+                    builder.AddAttribute(6, "Placement", PlacementCallback(Values[i]));
+                    if (ToStringFunc is not null)
+                    {
+                        builder.AddAttribute(7, "Label", ToStringFunc(Values[i]));
+                    }
+                    builder.CloseComponent();
+                }
+            };
+        }
+
+        SelectedOptionChanged = EventCallback.Factory.Create<T>(this, v => RxInput.SetValue(v));
+        Disabled = !RxInput.CanChange();
+
+        base.OnParametersSet();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        ArgumentNullException.ThrowIfNull(RxInput);
+
+        SelectedOption = RxInput.Value;
+        base.OnAfterRender(firstRender);
+    }
+}

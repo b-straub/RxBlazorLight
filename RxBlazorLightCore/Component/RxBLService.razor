@@ -1,0 +1,54 @@
+﻿@typeparam TService where TService : RxBLServiceBase
+@inherits OwningComponentBase<TService>
+
+<CascadingValue Value=@Service>
+    <CascadingValue Value=@SampleMS>
+        @ChildContent
+    </CascadingValue>
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public double SampleMS { get; set; } = 100;
+
+    private IDisposable? _serviceDisposable;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _serviceDisposable = Service.Subscribe(StateHasChanged, SampleMS);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender)
+        {
+            Service.OnInitialized();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            await Service.OnInitializedAsync();
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _serviceDisposable?.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+}

@@ -1,2 +1,3 @@
 # RxMudBlazorLight
-A simple reactive wrapper around MudBlazor components
+
+RxMudBlazorLight is a simple reactive wrapper around MudBlazor components see https://mudblazor.com/

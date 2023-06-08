@@ -7,37 +7,37 @@
 
 <MudStack>
     <MudStack Row=@true>
-        <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommand=@Service.Increment>Increment</MudButtonRx>
-        <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommand=@Service.Add>Add</MudButtonPRx>
+        <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Increment)>Increment</MudButtonRx>
+        <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
 
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" RxCommand=@Service.IncrementAsync CancelText="Cancel Add">
+        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" RxCommandAsyncFactory=@(() => Service.IncrementAsync) CancelText="Cancel Add">
             IncrementAsync
         </MudButtonAsyncRx>
 
-        <MudButtonAsyncPRx Color="Color.Secondary" Variant="Variant.Filled" Parameter=2 RxCommand=@Service.AddAsync.Clone() ConfirmExecution=@ConfirmAdd CancelText="Cancel Add">
+        <MudButtonAsyncPRx Color="Color.Secondary" Variant="Variant.Filled" Parameter=2 RxCommandAsyncFactory=@(() => @Service.AddAsync) ConfirmExecution=@ConfirmAdd CancelText="Cancel Add">
             AddAsync 10
         </MudButtonAsyncPRx>
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudFabRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlusOne" RxCommand=@Service.Increment>Increment</MudFabRx>
-        <MudFabPRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Parameter="5" RxCommand=@Service.Add>Add</MudFabPRx>
-        <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne" RxCommand=@Service.IncrementAsync />
-        <MudFabAsyncPRx Color="Color.Secondary" Parameter=5 EndIcon="@Icons.Material.Filled.Add" CancelText="Cancel" CancelColor=@Color.Error RxCommand=@Service.AddAsync.Clone() ConfirmExecution=@ConfirmAdd />
+        <MudFabRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlusOne" RxCommandFactory=@(() => Service.Increment)>Increment)</MudFabRx>
+        <MudFabPRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add</MudFabPRx>
+        <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne" RxCommandAsyncFactory=@(() => Service.IncrementAsync) />
+        <MudFabAsyncPRx Color="Color.Secondary" Parameter=5 EndIcon="@Icons.Material.Filled.Add" CancelText="Cancel" CancelColor=@Color.Error RxCommandAsyncFactory=@(() => Service.AddAsync) ConfirmExecution=@ConfirmAdd />
     </MudStack>
 
     <MudStack Row=@true>
-        <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" RxCommand=@Service.Increment>Increment</MudIconButtonRx>
-        <MudIconButtonPRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Parameter="5" RxCommand=@Service.Add>Add</MudIconButtonPRx>
-        <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" RxCommand=@Service.IncrementAsync />
-        <MudIconButtonAsyncPRx Color="Color.Secondary" Parameter=10 Icon="@Icons.Material.Filled.Add" RxCommand=@Service.AddAsync.Clone() ConfirmExecution=@ConfirmAdd />
+        <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" RxCommandFactory=@(() => Service.Increment)>Increment</MudIconButtonRx>
+        <MudIconButtonPRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add</MudIconButtonPRx>
+        <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" RxCommandAsyncFactory=@(() => Service.IncrementAsync) />
+        <MudIconButtonAsyncPRx Color="Color.Secondary" Parameter=10 Icon="@Icons.Material.Filled.Add" RxCommandAsyncFactory=@(() => Service.AddAsync) ConfirmExecution=@ConfirmAdd />
     </MudStack>
 
     <MudStack Row=@true>
         <MudSwitchRx RxInput=@Service.AddMode Label="Switch to Add mode" />
-        <MudFabAsyncPRx Color="Color.Secondary" Parameter=2 ParameterAsyncTransformation=@DoTransformParameterAsync
+        <MudFabAsyncPRx Color="Color.Secondary" Parameter=2 PrepareExecutionAsync=@DoPrepareExecutionAsync
                         EndIcon=@(Service.AddMode.Value ? @Icons.Material.Filled.Add : Icons.Material.Filled.Remove)
-                        RxCommand=@Service.AddRemoveAsync ConfirmExecution=@ConfirmAdd />
+                        RxCommandAsyncFactory=@(() => Service.AddRemoveAsync) ConfirmExecution=@ConfirmAdd />
         @if (Service.CommandExceptions.Any())
         {
             <MudStack>
@@ -69,16 +69,18 @@
         return true;
     }
 
-    private async Task<int?> DoTransformParameterAsync(int? parameter, CancellationToken token)
+    private async Task<bool> DoPrepareExecutionAsync(ICommandAsync<int> cmd, CancellationToken token)
     {
-        if (Service.Count > 20)
-        {
-            return null;
-        }
-
         await Task.Delay(1000, token);
-        parameter *= 5;
 
-        return parameter;
-    }
+        var value = Math.Abs(Service.Count) * 5; 
+
+        if (value > 100 && Service.AddMode.Value)
+        {
+            return false;
         }
+
+        cmd.Parameter = value;
+        return true;
+    }
+}

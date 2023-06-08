@@ -5,10 +5,13 @@
 
 @code {
     [Parameter]
+    public Func<ICommandAsync<T>>? RxCommandAsyncFactory { get; set; }
+
+    [Parameter]
     public T? Parameter { get; set; }
 
     [Parameter]
-    public Func<T?, CancellationToken, Task<T?>>? ParameterAsyncTransformation { get; set; }
+    public Func<ICommandAsync<T>, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
@@ -28,18 +31,17 @@
     [Parameter]
     public MBIconVariant? IconVariant { get; set; }
 
-    [Parameter]
-    public ICommandAsync<T>? RxCommand { get; set; }
-
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonAsyncPRX<T>? _buttonAsyncPRX;
     private Color _buttonColor;
+    private ICommandAsync<T>? _rxCommandAsync;
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(RxCommand);
+        ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
+        _rxCommandAsync = RxCommandAsyncFactory();
 
-        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.DEFAULT, Color, null, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution, null, CancelText);
+        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.DEFAULT, Color, null, _rxCommandAsync, ConfirmExecution, BeforeExecution, AfterExecution, null, CancelText);
         _buttonColor = Color;
 
         base.OnInitialized();
@@ -48,10 +50,12 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonAsyncPRX);
-        ArgumentNullException.ThrowIfNull(RxCommand);
+        ArgumentNullException.ThrowIfNull(_rxCommandAsync);
 
-        _buttonAsyncPRX.SetParameters(Parameter, ParameterAsyncTransformation);
-        var parameters = _buttonAsyncPRX.GetFabParamters(StartIcon, EndIcon, Label);
+        _rxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
+        _buttonAsyncPRX.SetParameters(Parameter);
+
+        var parameters = _buttonAsyncPRX.GetFabParameters(StartIcon, EndIcon, Label);
         StartIcon = parameters.StartIcon;
         EndIcon = parameters.EndIcon;
         Label = parameters.Label;

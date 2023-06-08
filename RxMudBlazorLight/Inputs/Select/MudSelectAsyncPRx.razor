@@ -1,0 +1,36 @@
+﻿@inherits MudSelectAsyncBaseRx<T>
+@typeparam T
+@typeparam P
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public Func<IInputGroupAsync<T, P>>? RxInputGroupAsyncFactory { get; set; }
+
+    [Parameter]
+    public P? Parameter { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+    private IInputGroupAsync<T, P>? _rxInputGroupAsync;
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(RxInputGroupAsyncFactory);
+
+        _rxInputGroupAsync = RxInputGroupAsyncFactory();
+        RxInputGroupAsyncBase = _rxInputGroupAsync;
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(_rxInputGroupAsync);
+        ArgumentNullException.ThrowIfNull(Parameter);
+
+        _rxInputGroupAsync.SetParameter(Parameter);
+
+        base.OnParametersSet();
+    }
+}

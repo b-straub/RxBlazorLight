@@ -5,22 +5,27 @@
     <MudStack AlignItems="AlignItems.Center">
         <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.RadioTest.Value} / {Service.RatingValue.Value}")</MudText>
             <MudText Class="mb-4">Current count: @Service.Count</MudText>
-            <MudRadioGroupRx RxInput=@Service.RadioTest ToStringFunc=@LabelCallback DenseCallback =@DenseCallback ColorCallback=@ColorCallback SizeCallback=@(_ => Size.Large) PlacementCallback=@(_ => Placement.Start) />
-            <MudSelectRx RxInput=@Service.RadioTest ToStringFunc=@LabelCallback DisabledCallback=@DisabledCallback HiddenCallback=@HiddenCallback />
-            <MudSelectRx RxInput=@Service.RadioTest Variant="Variant.Outlined">
-                <MudSelectItem Value=@TestEnum.RED>
+
+            <MudRadioGroupPRx RxInputGroupFactory=@Service.GetRadioExtended Parameter=@ColorEnum.BLUE DenseCallback=@DenseCallback ColorCallback=@ColorCallback SizeCallback=@(_ => Size.Large) PlacementCallback=@(_ => Placement.Start) />
+            <MudSelectPRx RxInputGroupFactory=@Service.GetRadioExtended Parameter=@ColorEnum.GREEN />
+
+            <MudSelectRx RxInputGroupFactory=@(() => Service.RadioTest) Variant="Variant.Outlined">
+                <MudSelectItem Value=@Service.RadioTest.GetItems()[0]>
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Solid_red.svg/1024px-Solid_red.svg.png?20150316143248" height="14" class="mr-1" /> Red
                 </MudSelectItem>
-                <MudSelectItem Value=@TestEnum.GREEN>
+                <MudSelectItem Value=@Service.RadioTest.GetItems()[1]>
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Solid_green.svg/1024px-Solid_green.svg.png?20150316143636" height="14" class="mr-1" /> Green
                 </MudSelectItem>
-                <MudSelectItem Value=@TestEnum.BLUE>
+                <MudSelectItem Value=@Service.RadioTest.GetItems()[2]>
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Solid_blue.svg/1024px-Solid_blue.svg.png?20150316143734" height="14" class="mr-1" /> Blue
                 </MudSelectItem>
             </MudSelectRx>
 
-            <MudRadioGroupRx RxInput=@Service.PizzaTest Values=@Service.Pizzas />
-            <MudSelectRx RxInput=@Service.PizzaTest Values=@Service.Pizzas />
+            <MudRadioGroupRx RxInputGroupFactory=@Service.GetPizzaInput />
+            <MudSelectRx RxInputGroupFactory=@Service.GetPizzaInput HiddeDisabled=@true />
+
+            <MudRadioGroupAsyncRx RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync />
+            <MudSelectAsyncRx RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync HideDisabled=@true />
 
             <MudRatingRx RxInput=@Service.RatingValue />
             <MudRatingRx RxInput=@Service.RatingValue />
@@ -30,62 +35,41 @@
                                    ToggledIcon="@Icons.Material.Outlined.CheckCircle" ToggledColor="@Color.Success" ToggledTitle="On" />
             <span>CanIncrementCheck is @(Service.CanIncrementCheck.Value ? "On" : "Off")</span>
             <MudNumericFieldRx RxInput=@Service.IncrementValue Label="" Variant="Variant.Text" Min="0" Max="50" />
-            <MudSliderRx RxInput=@Service.IncrementValue Label="" Variant="Variant.Text" Min="0" Max="50" />
-            <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test" Immediate=@true />
-            <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test clone" Immediate=@true />
-            <MudAutocompleteRx RxInput=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
-            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommand=@Service.AddIncrementValue>Add</MudButtonRx>
-        </MudStack>
+        <MudSliderRx RxInput=@Service.IncrementValue Variant="Variant.Text" Min="0" Max="50" Immediate=@false>IncrementValue</MudSliderRx>
+            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => @Service.AddIncrementValue)>Add Direct</MudButtonRx>
+        <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" Parameter=@Service.IncrementValue.Value RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
+
+        <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test" Immediate=@true />
+        <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test clone" Immediate=@true />
+        <MudAutocompleteRx RxInput=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
+    </MudStack>
 }
 
 @code {
-    private bool DenseCallback(TestEnum v)
+    protected override void OnInitialized()
     {
-        return v switch
+        base.OnInitialized();
+    }
+
+    private bool DenseCallback(TestColor v)
+    {
+        return v.Color switch
         {
-            TestEnum.BLUE => true,
+            ColorEnum.BLUE => true,
             _ => false
         };
     }
 
-    private Color ColorCallback(TestEnum v)
+    private Color ColorCallback(TestColor v)
     {
-        return v switch
+        return v.Color switch
         {
-            TestEnum.RED => Color.Error,
-            TestEnum.GREEN => Color.Success,
+            ColorEnum.RED => Color.Error,
+            ColorEnum.GREEN => Color.Success,
             _ => Color.Default
         };
     }
 
-    private bool DisabledCallback(TestEnum v)
-    {
-        return v switch
-        {
-            TestEnum.RED => Service.CanIncrementCheck.Value,
-            _ => false
-        };
-    }
-
-    private bool HiddenCallback(TestEnum v)
-    {
-        return v switch
-        {
-            TestEnum.BLUE => Service.CanIncrementCheck.Value,
-            _ => false
-        };
-    }
-
-    private string? LabelCallback(TestEnum v)
-    {
-        return v switch
-        {
-            TestEnum.RED => "Red Value",
-            TestEnum.GREEN => "Green Value",
-            TestEnum.BLUE => "Blue Value",
-            _ => null
-        };
-    }
 
     private string[] states =
     {

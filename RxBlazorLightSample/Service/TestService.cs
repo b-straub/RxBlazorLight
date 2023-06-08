@@ -22,7 +22,27 @@ namespace RxBlazorLightSample.Service
         public override string ToString() => Name;
     }
 
-    public enum TestEnum
+    public class TestColor
+    {
+        public ColorEnum Color { get; }
+
+        public TestColor(ColorEnum color)
+        {
+            Color = color;
+        }
+
+        public override bool Equals(object? o)
+        {
+            var other = o as TestColor;
+            return other?.Color == Color;
+        }
+
+        public override int GetHashCode() => Color.GetHashCode();
+
+        public override string ToString() => Color.ToString();
+    }
+
+    public enum ColorEnum
     {
         RED,
         GREEN,
@@ -33,49 +53,47 @@ namespace RxBlazorLightSample.Service
     {
         public int Count { get; private set; }
 
-        public ICommand Increment;
-        public ICommand<int> Add;
-        public ICommandAsync IncrementAsync;
-        public ICommandAsync<int?> AddAsync;
-        public ICommandAsync<int?> AddRemoveAsync;
-        public IInput<bool> AddMode;
+        public ICommand Increment => new IncrementCMD(this);
+        public ICommand<int> Add { get; }
+        public ICommandAsync IncrementAsync { get; }
+        public ICommandAsync<int> AddAsync => new AddAsyncCMD(this);
+        public ICommandAsync<int> AddAsyncForm { get; }
+        public ICommandAsync<int> AddRemoveAsync { get; }
+        public IInput<bool> AddMode { get; }
 
-        public ICommand AddIncrementValue;
-        public IInput<int> IncrementValue;
-        public IInput<bool> CanIncrementCheck;
-        public IInput<string> TextValue;
-        public IInput<TestEnum> RadioTest;
-        public IInput<int> RatingValue;
-        public IInput<Pizza> PizzaTest;
-        public Pizza[] Pizzas { get; } =
-        {
-            new Pizza("Cardinale"), new Pizza("Diavolo"), new Pizza("Margarita"), new Pizza("Spinaci")
-        };
+        public ICommand AddIncrementValue { get; }
+        public IInput<int> IncrementValue { get; }
+        public IInput<bool> CanIncrementCheck { get; }
+        public IInput<string> TextValue { get; }
+        public IInputGroup<TestColor> RadioTest { get; }
 
-        private CancellationTokenSource _addCancel = new();
-        private CancellationTokenSource _addRemoveCancel = new();
+        public IInput<int> RatingValue { get; }
 
         private bool _canIncrement = false;
+
+        private readonly IInputGroupAsync<Pizza> _pizzaIPGAsync;
+        private readonly IInputGroup<Pizza> _pizzaIPG;
+        private readonly IInputGroup<TestColor, ColorEnum> _radioTestExtended;
 
         public TestService()
         {
             Count = 0;
-            Increment = CreateCommand(this, DoIncrement, () => _canIncrement);
-            Add = CreateCommand<int>(this, (a) => { Count += a; }, (i) => Count > 1);
-            IncrementAsync = CreateAsyncCommand(this, async () => { await Task.Delay(4000); Count++; }, () => Count > 2, true);
-            AddAsync = CreateAsyncCommand<int?>(this, DoAddAsync, DoAddAsyncCanExecute, DoAddAsyncCancel, true);
+            Add = new AddCMD(this);
+            IncrementAsync = new IncrementAsyncCMD(this);
+            AddAsyncForm = new AddAsyncCMDForm(this);
+            AddRemoveAsync = new AddRemoveAsyncCMDForm(this);
+            AddMode = new AddModeIP(this, false);
 
-            AddRemoveAsync = CreateAsyncCommand<int?>(this, DoAddRemoveAsync, DoAddRemoveAsyncCanExecute, DoAddRemoveAsyncCancel, true);
-            AddMode = CreateInput(this, false, () => !AddRemoveAsync.Executing);
-
-            IncrementValue = CreateInput(this, 0, () => CanIncrementCheck is not null && CanIncrementCheck.Value);
+            IncrementValue = new IncrementValueIP(this, 0);
             CanIncrementCheck = CreateInput(this, false);
             TextValue = CreateInput(this, "No Text");
-            RadioTest = CreateInput(this, TestEnum.RED);
-            RatingValue = CreateInput(this, 0, () => RadioTest.Value is TestEnum.GREEN);
-            PizzaTest = CreateInput(this, Pizzas[0]);
+            RatingValue = new RatingValueIP(this, 0);
+            RadioTest = new ColorIPG(this);
+            AddIncrementValue = new AddIncrementValueCMD(this);
 
-            AddIncrementValue = CreateCommand(this, () => { Count += IncrementValue.Value; }, () => IncrementValue.Value > 5);
+            _pizzaIPGAsync = new PizzaIPGAsync(this);
+            _pizzaIPG = new PizzaIPG(this, PizzaIPG.Pizzas[2]);
+            _radioTestExtended = new ColorIPGP(this);
         }
 
         public override async Task OnInitializedAsync()
@@ -85,64 +103,19 @@ namespace RxBlazorLightSample.Service
             StateHasChanged();
         }
 
-        private void DoIncrement()
+        public IInputGroup<Pizza> GetPizzaInput()
         {
-            Count++;
+            return _pizzaIPG;
         }
 
-        private async Task DoAddAsync(int? offset)
+        public IInputGroupAsync<Pizza> GetPizzaInputAsync()
         {
-            if (offset == null)
-            {
-                return;
-            }
-
-            if (!_addCancel.TryReset())
-            {
-                _addCancel = new();
-            }
-
-            await Task.Delay(5000, _addCancel.Token);
-
-            Count += (int)offset;
+            return _pizzaIPGAsync;
         }
 
-        private bool DoAddAsyncCanExecute(int? value)
+        public IInputGroup<TestColor, ColorEnum> GetRadioExtended()
         {
-            return Count > 2;
-        }
-
-        private void DoAddAsyncCancel()
-        {
-            _addCancel.Cancel();
-        }
-
-        private async Task DoAddRemoveAsync(int? offset)
-        {
-            if (offset == null)
-            {
-                throw new ArgumentNullException(nameof(offset));
-            }
-
-            if (!_addRemoveCancel.TryReset())
-            {
-                _addRemoveCancel = new();
-            }
-
-            await Task.Delay(5000, _addRemoveCancel.Token);
-
-            int val = AddMode.Value ? (int)offset : -(int)offset;
-            Count += val;
-        }
-
-        private bool DoAddRemoveAsyncCanExecute(int? value)
-        {
-            return Count > 5;
-        }
-
-        private void DoAddRemoveAsyncCancel()
-        {
-            _addRemoveCancel.Cancel();
+            return _radioTestExtended;
         }
 
         public void Dispose()

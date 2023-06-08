@@ -1,0 +1,22 @@
+﻿@inherits MudCheckBox<T>
+@typeparam T
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public IInputAsync<T>? RxInputAsync { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(RxInputAsync);
+
+        Checked = RxInputAsync.Value;
+        CheckedChanged = EventCallback.Factory.Create<T>(this, async v => await RxInputAsync.SetValueAsync(v));
+        Disabled = !RxInputAsync.CanChange();
+
+        base.OnParametersSet();
+    }
+}

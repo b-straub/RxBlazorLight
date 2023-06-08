@@ -4,6 +4,12 @@
 
 @code {
     [Parameter]
+    public Func<ICommandAsync>? RxCommandAsyncFactory { get; set; }
+
+    [Parameter]
+    public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
+
+    [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
 
     [Parameter]
@@ -21,18 +27,18 @@
     [Parameter]
     public MBIconVariant? IconVariant { get; set; }
 
-    [Parameter]
-    public ICommandAsync? RxCommand { get; set; }
-
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonAsyncRX? _buttonAsyncRX;
     private string? _buttonStartIcon;
     private string? _buttonEndIcon;
+    private ICommandAsync? _rxCommandAsync;
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(RxCommand);
-        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.FAB, Color, null, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution, CancelColor, CancelText);
+        ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
+        _rxCommandAsync = RxCommandAsyncFactory();
+
+        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.FAB, Color, null, _rxCommandAsync, ConfirmExecution, BeforeExecution, AfterExecution, CancelColor, CancelText);
         _buttonStartIcon = StartIcon;
         _buttonEndIcon = EndIcon;
 
@@ -42,10 +48,12 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonAsyncRX);
-        ArgumentNullException.ThrowIfNull(RxCommand);
+        ArgumentNullException.ThrowIfNull(_rxCommandAsync);
 
+        _rxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
         _buttonAsyncRX.SetParameters();
-        var parameters = _buttonAsyncRX.GetFabParamters(StartIcon, EndIcon, Label);
+
+        var parameters = _buttonAsyncRX.GetFabParameters(StartIcon, EndIcon, Label);
         StartIcon = parameters.StartIcon;
         EndIcon = parameters.EndIcon;
         Label = parameters.Label;

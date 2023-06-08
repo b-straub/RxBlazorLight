@@ -3,7 +3,11 @@
 @RenderBase()
 
 @code {
-    RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+    [Parameter]
+    public Func<ICommand>? RxCommandFactory { get; set; }
+
+    [Parameter]
+    public Func<ICommand, bool>? PrepareExecution { get; set; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
@@ -14,14 +18,16 @@
     [Parameter]
     public Action? AfterExecution { get; set; }
 
-    [Parameter]
-    public ICommand? RxCommand { get; set; }
-
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonRX? _buttonRX;
+    private ICommand? _rxCommand;
 
     protected override void OnInitialized()
     {
-        _buttonRX = ButtonRX.Create(MBButtonType.FAB, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
+        ArgumentNullException.ThrowIfNull(RxCommandFactory);
+        _rxCommand = RxCommandFactory();
+
+        _buttonRX = ButtonRX.Create(MBButtonType.FAB, _rxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
         OnClick = _buttonRX.OnClick;
 
         base.OnInitialized();
@@ -29,8 +35,10 @@
 
     protected override void OnParametersSet()
     {
-        ArgumentNullException.ThrowIfNull(RxCommand);
-        Disabled = !RxCommand.CanExecute();
+        ArgumentNullException.ThrowIfNull(_rxCommand);
+
+        _rxCommand.PrepareExecution = PrepareExecution;
+        Disabled = !_rxCommand.CanExecute();
         base.OnParametersSet();
     }
 }

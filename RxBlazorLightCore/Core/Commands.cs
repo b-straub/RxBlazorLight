@@ -1,41 +1,29 @@
 ﻿
 namespace RxBlazorLightCore
 {
-    internal class CommandBase
+    public class CommandBase<S>
     {
-        protected IRXService Service { get; }
+        protected S Service { get; }
 
-        protected CommandBase(IRXService service)
+        protected CommandBase(S service)
         {
             Service = service;
         }
     }
 
-    internal class Command : CommandBase, ICommand
+    public abstract class Command<S> : CommandBase<S>, ICommand where S : IRXService
     {
-        private readonly Func<bool>? _canExecute;
-        private readonly Action _execute;
+        public Func<ICommand, bool>? PrepareExecution { get; set; }
 
-        public Command(IRXService service, Action execute, Func<bool>? canExecute) : base(service)
+        protected Command(S service) : base(service)
         {
-            _canExecute = canExecute;
-            _execute = execute;
         }
 
-        public Command(Command other) : base(other.Service)
-        {
-            _canExecute = other._canExecute;
-            _execute = other._execute;
-        }
+        protected abstract void DoExecute();
 
-        public ICommand Clone()
+        public virtual bool CanExecute()
         {
-            return new Command(this);
-        }
-
-        public bool CanExecute()
-        {
-            return _canExecute is null || _canExecute();
+            return true;
         }
 
         public void Execute()
@@ -44,51 +32,48 @@ namespace RxBlazorLightCore
 
             try
             {
-                _execute();
+                bool execute = true;
+
+                if (PrepareExecution is not null)
+                {
+                    execute = PrepareExecution(this);
+                }
+
+                if (execute && CanExecute())
+                {
+                    DoExecute();
+                }
             }
             catch (Exception ex)
             {
-                if (ex.GetType() != typeof(TaskCanceledException))
-                {
-                    error = ex;
-                }
+                error = ex;
             }
 
             Service.StateHasChanged(error);
         }
     }
 
-    internal class Command<T> : CommandBase, ICommand<T>
+    public abstract class Command<S, T> : CommandBase<S>, ICommand<T> where S : IRXService
     {
-        private readonly Func<T?, bool>? _canExecute;
-        private readonly Action<T?> _execute;
-        private T? _parameter;
+        public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
 
-        public Command(IRXService service, Action<T?> execute, Func<T?, bool>? canExecute) : base(service)
+        public T? Parameter { get; set; }
+
+        protected Command(S service) : base(service)
         {
-            _canExecute = canExecute;
-            _execute = execute;
         }
 
-        public Command(Command<T> other) : base(other.Service)
+        protected abstract void DoExecute(T parameter);
+
+        public virtual bool CanExecute(T? parameter)
         {
-            _canExecute = other._canExecute;
-            _execute = other._execute;
+            return true;
         }
 
-        public ICommand<T> Clone()
+        public void Execute(T parameter)
         {
-            return new Command<T>(this);
-        }
-
-        public void SetParameter(T? parameter)
-        {
-            _parameter = parameter;
-        }
-
-        public bool CanExecute()
-        {
-            return _canExecute is null || _canExecute(_parameter);
+            Parameter = parameter;
+            Execute();
         }
 
         public void Execute()
@@ -97,83 +82,79 @@ namespace RxBlazorLightCore
 
             try
             {
-                _execute(_parameter);
+                bool execute = true;
+
+                if (PrepareExecution is not null)
+                {
+                    execute = PrepareExecution(this);
+                }
+
+                if (execute && CanExecute(Parameter) && Parameter is not null)
+                {
+                    DoExecute(Parameter);
+                }
             }
             catch (Exception ex)
             {
-                if (ex.GetType() != typeof(TaskCanceledException))
-                {
-                    error = ex;
-                }
+                error = ex;
             }
 
             Service.StateHasChanged(error);
+            Parameter = default;
         }
     }
 
-    internal class CommandAsyncBase : CommandBase
+    public abstract class CommandAsyncBase<S> : CommandBase<S> where S : IRXService
     {
         public bool Executing { get; protected set; }
-        public bool CanCancel => _cancel is not null;
-        public bool HasProgress { get; protected set; }
-        public CancellationToken CancellationToken => _cancelTokenSource.Token;
+        protected CancellationTokenSource CancellationTokenSource { get; private set; } = new();
 
-        private CancellationTokenSource _cancelTokenSource = new();
-        private readonly Action? _cancel;
-
-        protected CommandAsyncBase(IRXService service, Action? Cancel, bool hasProgress) : base(service)
+        protected CommandAsyncBase(S service) : base(service)
         {
             Executing = false;
-            HasProgress = hasProgress;
-            _cancel = Cancel;
         }
+
+        public virtual bool CanCancel()
+        {
+            return false;
+        }
+
+        public virtual bool HasProgress()
+        {
+            return false;
+        }
+
 
         public void Cancel()
         {
-            _cancelTokenSource.Cancel();
+            CancellationTokenSource.Cancel();
+            Executing = false;
 
-            if (_cancel is not null)
-            {
-                _cancel();
-                Executing = false;
-                Service.StateHasChanged();
-            }
+            Service.StateHasChanged();
         }
 
         protected void ResetCancel()
         {
-            if (!_cancelTokenSource.TryReset())
+            if (!CancellationTokenSource.TryReset())
             {
-                _cancelTokenSource = new();
+                CancellationTokenSource = new();
             }
         }
     }
 
-    internal class CommandAsync : CommandAsyncBase, ICommandAsync, ICommandAsyncBase
+    public abstract class CommandAsync<S> : CommandAsyncBase<S>, ICommandAsync where S : IRXService
     {
-        private readonly Func<bool>? _canExecute;
-        private readonly Func<Task> _execute;
+        public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
 
-        public CommandAsync(IRXService service, Func<Task> execute, Func<bool>? canExecute, Action? cancel, bool hasProgress) : base(service, cancel, hasProgress)
+        protected CommandAsync(S service) : base(service)
         {
-            _canExecute = canExecute;
-            _execute = execute;
         }
 
-        public CommandAsync(CommandAsync other) : base(other.Service, other.Cancel, other.HasProgress)
-        {
-            _canExecute = other._canExecute;
-            _execute = other._execute;
-        }
+        protected abstract Task DoExecute(CancellationToken cancellationToken);
 
-        public ICommandAsync Clone()
+        public virtual bool CanExecute()
         {
-            return new CommandAsync(this);
-        }
-
-        public bool CanExecute()
-        {
-            return _canExecute is null || _canExecute();
+            return true;
         }
 
         public async Task Execute()
@@ -186,7 +167,17 @@ namespace RxBlazorLightCore
 
             try
             {
-                await _execute();
+                bool execute = true;
+
+                if (PrepareExecutionAsync is not null)
+                {
+                    execute = await PrepareExecutionAsync(this, CancellationTokenSource.Token);
+                }
+
+                if (execute && CanExecute())
+                {
+                    await DoExecute(CancellationTokenSource.Token);
+                }
             }
             catch (Exception ex)
             {
@@ -201,43 +192,43 @@ namespace RxBlazorLightCore
         }
     }
 
-    internal class CommandAsync<T> : CommandAsyncBase, ICommandAsync<T>, ICommandAsyncBase
+    public abstract class CommandLongRunningAsync<S> : CommandAsync<S>, ICommandAsync where S : IRXService
     {
-        private readonly Func<T?, bool>? _canExecute;
-        private readonly Func<T?, Task> _execute;
-        private T? _parameter;
-        private Func<T?, Task<T?>>? _transformation;
-
-        public CommandAsync(IRXService service, Func<T?, Task> execute, Func<T?, bool>? canExecute, Action? cancel, bool hasProgress) : base(service, cancel, hasProgress)
+        protected CommandLongRunningAsync(S service) : base(service)
         {
-            _canExecute = canExecute;
-            _execute = execute;
         }
 
-        public CommandAsync(CommandAsync<T> other) : base(other.Service, other.Cancel, other.HasProgress)
+        public override bool CanCancel()
         {
-            _canExecute = other._canExecute;
-            _execute = other._execute;
+            return true;
         }
 
-        public ICommandAsync<T> Clone()
+        public override bool HasProgress()
         {
-            return new CommandAsync<T>(this);
+            return true;
+        }
+    }
+
+    public abstract class CommandAsync<S, T> : CommandAsyncBase<S>, ICommandAsync<T> where S : IRXService
+    {
+        public T? Parameter { get; set; }
+        public Func<ICommandAsync<T>, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
+
+        protected CommandAsync(S service) : base(service)
+        {
         }
 
-        public void SetParameter(T? parameter)
+        protected abstract Task DoExecute(T parameter, CancellationToken cancellationToken);
+
+        public virtual bool CanExecute(T? parameter)
         {
-            _parameter = parameter;
+            return true;
         }
 
-        public void SetParameterAsyncTransformation(Func<T?, Task<T?>>? transformation)
+        public async Task Execute(T parameter)
         {
-            _transformation = transformation;
-        }
-
-        public bool CanExecute()
-        {
-            return _canExecute is null || _canExecute(_parameter);
+            Parameter = parameter;
+            await Execute();
         }
 
         public async Task Execute()
@@ -245,17 +236,22 @@ namespace RxBlazorLightCore
             Exception? error = null;
             ResetCancel();
 
-             Executing = true;
+            Executing = true;
             Service.StateHasChanged();
 
             try
-            {                  
-                if (_transformation is not null)
+            {
+                bool execute = true;
+
+                if (PrepareExecutionAsync is not null)
                 {
-                    _parameter = await _transformation(_parameter);
+                    execute = await PrepareExecutionAsync(this, CancellationTokenSource.Token);
                 }
 
-                await _execute(_parameter);
+                if (execute && CanExecute(Parameter) && Parameter is not null)
+                {
+                    await DoExecute(Parameter, CancellationTokenSource.Token);
+                }
             }
             catch (Exception ex)
             {
@@ -267,6 +263,23 @@ namespace RxBlazorLightCore
 
             Executing = false;
             Service.StateHasChanged(error);
+        }
+    }
+
+    public abstract class CommandLongRunningAsync<S, T> : CommandAsync<S, T>, ICommandAsync<T> where S : IRXService
+    {
+        protected CommandLongRunningAsync(S service) : base(service)
+        {
+        }
+
+        public override bool CanCancel()
+        {
+            return true;
+        }
+
+        public override bool HasProgress()
+        {
+            return true;
         }
     }
 }

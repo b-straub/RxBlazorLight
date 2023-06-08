@@ -1,0 +1,36 @@
+﻿@inherits MudRadioGroupBaseRx<T>
+@typeparam T
+@typeparam P
+
+@RenderBase()
+
+@code {
+    [Parameter]
+    public Func<IInputGroup<T, P>>? RxInputGroupFactory { get; set; }
+
+    [Parameter]
+    public P? Parameter { get; set; }
+
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+    private IInputGroup<T, P>? _rxInputGroup;
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(RxInputGroupFactory);
+
+        _rxInputGroup = RxInputGroupFactory();
+        RxInputGroupBase = _rxInputGroup;
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Parameter);
+        ArgumentNullException.ThrowIfNull(_rxInputGroup);
+
+        _rxInputGroup.SetParameter(Parameter);
+
+        base.OnParametersSet();
+    }
+}

@@ -4,6 +4,12 @@
 
 @code {
     [Parameter]
+    public Func<ICommandAsync>? RxCommandAsyncFactory { get; set; }
+
+    [Parameter]
+    public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
+
+    [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
 
     [Parameter]
@@ -15,17 +21,16 @@
     [Parameter]
     public string? CancelText { get; set; }
 
-    [Parameter]
-    public ICommandAsync? RxCommand { get; set; }
-
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonAsyncRX? _buttonAsyncRX;
+    private ICommandAsync? _rxCommandAsync;
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(RxCommand);
-        
-        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.DEFAULT, Color, ChildContent, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution, null, CancelText);
+        ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
+        _rxCommandAsync = RxCommandAsyncFactory();
+
+        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.DEFAULT, Color, ChildContent, _rxCommandAsync, ConfirmExecution, BeforeExecution, AfterExecution, null, CancelText);
         
         base.OnInitialized();
     }
@@ -33,6 +38,9 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonAsyncRX);
+        ArgumentNullException.ThrowIfNull(_rxCommandAsync);
+
+        _rxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
         _buttonAsyncRX.SetParameters();
 
         Disabled = _buttonAsyncRX.Disabled;

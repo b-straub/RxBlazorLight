@@ -4,10 +4,14 @@
 @RenderBase()
 
 @code {
-    RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
+    [Parameter]
+    public Func<ICommand<T>>? RxCommandFactory { get; set; }
 
     [Parameter]
     public T? Parameter { get; set; }
+
+    [Parameter]
+    public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
@@ -18,16 +22,16 @@
     [Parameter]
     public Action? AfterExecution { get; set; }
 
-    [Parameter]
-    public ICommand<T>? RxCommand { get; set; }
-
+    private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonPRX<T>? _buttonPRX;
+    private ICommand<T>? _rxCommand;
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(RxCommand);
+        ArgumentNullException.ThrowIfNull(RxCommandFactory);
+        _rxCommand = RxCommandFactory();
 
-        _buttonPRX = ButtonPRX<T>.Create(MBButtonType.FAB, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
+        _buttonPRX = ButtonPRX<T>.Create(MBButtonType.FAB, _rxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
 
         base.OnInitialized();
     }
@@ -35,11 +39,12 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonPRX);
-        ArgumentNullException.ThrowIfNull(RxCommand);
+        ArgumentNullException.ThrowIfNull(_rxCommand);
 
+        _rxCommand.PrepareExecution = PrepareExecution;
         _buttonPRX.SetParameters(Parameter);
 
-        Disabled = !RxCommand.CanExecute();
+        Disabled = !_rxCommand.CanExecute(Parameter);
         OnClick = _buttonPRX.OnClick;
 
         base.OnParametersSet();

@@ -44,9 +44,14 @@ namespace RxBlazorLightCore
             _commandExceptions.Clear();
         }
 
-        protected static IInput<T> CreateInput<T>(IRXService service, T value, Func<bool>? canChange = null)
+        protected static IInput<T> CreateInput<S, T>(S service, T value) where S : IRXService
         {
-            return new Input<T>(service, value, canChange);
+            return Input<S, T>.Create(service, value);
+        }
+
+        protected static IInputAsync<T> CreateInputAsync<S, T>(S service, T value) where S : IRXService
+        {
+            return InputAsync<S, T>.Create(service, value);
         }
     }
 }

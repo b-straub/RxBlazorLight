@@ -4,7 +4,14 @@ namespace RxBlazorLightSample.Service
 {
     public sealed partial class TestService
     {
-        public class IncrementCMD : Command<TestService>
+        public class SimpleCMD : Command
+        {
+            protected override void DoExecute()
+            {
+            }
+        }
+
+        public class IncrementCMD : CommandService<TestService>
         {
             public IncrementCMD(TestService testService) : base(testService) 
             { 
@@ -21,7 +28,7 @@ namespace RxBlazorLightSample.Service
             }
         }
 
-        public class AddIncrementValueCMD : Command<TestService>
+        public class AddIncrementValueCMD : CommandService<TestService>
         {
             public AddIncrementValueCMD(TestService testService) : base(testService) { }
 
@@ -36,7 +43,7 @@ namespace RxBlazorLightSample.Service
             }
         }
 
-        public class AddCMD : Command<TestService, int>
+        public class AddCMD : CommandService<TestService, int>
         {
             public AddCMD(TestService testService) : base(testService) { }
 
@@ -51,7 +58,7 @@ namespace RxBlazorLightSample.Service
             }
         }
 
-        public class IncrementAsyncCMD : CommandAsync<TestService>
+        public class IncrementAsyncCMD : CommandServiceAsync<TestService>
         {
             public IncrementAsyncCMD(TestService testService) : base(testService) { }
 
@@ -67,7 +74,7 @@ namespace RxBlazorLightSample.Service
             }
         }
 
-        public class AddAsyncCMD : CommandLongRunningAsync<TestService, int>
+        public class AddAsyncCMD : CommandLongRunningServiceAsync<TestService, int>
         {
             public AddAsyncCMD(TestService testService) : base(testService) { }
 
@@ -83,7 +90,7 @@ namespace RxBlazorLightSample.Service
             }
         }
 
-        public class AddAsyncCMDForm : CommandLongRunningAsync<TestService, int>
+        public class AddAsyncCMDForm : CommandLongRunningServiceAsync<TestService, int>
         {
             public AddAsyncCMDForm(TestService testService) : base(testService) { }
 
@@ -99,7 +106,7 @@ namespace RxBlazorLightSample.Service
             }
         }
 
-        public class AddRemoveAsyncCMDForm : CommandLongRunningAsync<TestService, int>
+        public class AddRemoveAsyncCMDForm : CommandLongRunningServiceAsync<TestService, int>
         {
             public AddRemoveAsyncCMDForm(TestService testService) : base(testService) { }
 

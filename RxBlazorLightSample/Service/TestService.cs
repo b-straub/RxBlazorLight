@@ -1,4 +1,5 @@
 ﻿using RxBlazorLightCore;
+using System;
 
 namespace RxBlazorLightSample.Service
 {
@@ -53,6 +54,7 @@ namespace RxBlazorLightSample.Service
     {
         public int Count { get; private set; }
 
+        public ICommand Simple { get; }
         public ICommand Increment => new IncrementCMD(this);
         public ICommand<int> Add { get; }
         public ICommandAsync IncrementAsync { get; }
@@ -71,13 +73,14 @@ namespace RxBlazorLightSample.Service
 
         private bool _canIncrement = false;
 
-        private readonly IInputGroupAsync<Pizza> _pizzaIPGAsync;
+        private readonly IInputGroupAsync<Pizza?> _pizzaIPGAsync;
         private readonly IInputGroup<Pizza> _pizzaIPG;
         private readonly IInputGroup<TestColor, ColorEnum> _radioTestExtended;
 
         public TestService()
         {
             Count = 0;
+            Simple = new SimpleCMD();
             Add = new AddCMD(this);
             IncrementAsync = new IncrementAsyncCMD(this);
             AddAsyncForm = new AddAsyncCMDForm(this);
@@ -92,7 +95,7 @@ namespace RxBlazorLightSample.Service
             AddIncrementValue = new AddIncrementValueCMD(this);
 
             _pizzaIPGAsync = new PizzaIPGAsync(this);
-            _pizzaIPG = new PizzaIPG(this, PizzaIPG.Pizzas[2]);
+            _pizzaIPG = new PizzaIPG(this, PizzaIPG.Pizzas[0]);
             _radioTestExtended = new ColorIPGP(this);
         }
 
@@ -108,7 +111,7 @@ namespace RxBlazorLightSample.Service
             return _pizzaIPG;
         }
 
-        public IInputGroupAsync<Pizza> GetPizzaInputAsync()
+        public IInputGroupAsync<Pizza?> GetPizzaInputAsync()
         {
             return _pizzaIPGAsync;
         }

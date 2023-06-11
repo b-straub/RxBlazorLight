@@ -20,15 +20,14 @@ namespace RxMudBlazorLight.Inputs.Radio
 
         protected IInputGroup<T>? RxInputGroupBase { get; set; }
 
-        private bool _initialized = false;
-
         protected override void OnParametersSet()
         {
             ArgumentNullException.ThrowIfNull(RxInputGroupBase);
-            SelectedOption = RxInputGroupBase.Value;
 
             if (ChildContent is null)
             {
+                RxInputGroupBase.Initialize();
+
                 var values = RxInputGroupBase.GetItems();
 
                 ChildContent = builder =>
@@ -43,29 +42,17 @@ namespace RxMudBlazorLight.Inputs.Radio
                         builder.AddAttribute(5, "Color", ColorCallback(values[i]));
                         builder.AddAttribute(6, "Placement", PlacementCallback(values[i]));
                         builder.AddAttribute(7, "Disabled", RxInputGroupBase.IsItemDisabled(i));
+                        builder.AddAttribute(8, "InitialSelection", RxInputGroupBase.Value);
                         builder.CloseComponent();
                     }
                 };
             }
 
+            SelectedOption = RxInputGroupBase.Value;
             SelectedOptionChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.SetValue(v));
             Disabled = !RxInputGroupBase.CanChange();
 
             base.OnParametersSet();
-        }
-
-        protected override void OnAfterRender(bool firstRender)
-        {
-            ArgumentNullException.ThrowIfNull(RxInputGroupBase);
-
-            if (!_initialized && firstRender)
-            {
-                _initialized = true;
-                RxInputGroupBase.Initialize();
-                SelectedOption = RxInputGroupBase.Value;
-            }
-
-            base.OnAfterRender(firstRender);
         }
     }
 }

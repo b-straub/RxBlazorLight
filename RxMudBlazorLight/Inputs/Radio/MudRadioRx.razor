@@ -13,6 +13,10 @@
     [Parameter]
     public string? Label { get; set; }
 
+    [Parameter]
+    public T? InitialSelection { get; set; }
+
+
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
     protected override void OnParametersSet()
@@ -32,6 +36,11 @@
             {
                 builder.AddContent(0, Label is null ? Option.ToString() : Label);
             };
+
+            if (Option.Equals(InitialSelection))
+            {
+                Select();
+            }
         }
 
         base.OnParametersSet();

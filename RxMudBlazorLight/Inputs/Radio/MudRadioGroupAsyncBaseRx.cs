@@ -20,16 +20,16 @@ namespace RxMudBlazorLight.Inputs.Radio
 
         protected IInputGroupAsync<T>? RxInputGroupAsyncBase { get; set; }
 
-        private bool _initialized = false;
         private bool _initializedAsync = false;
 
         protected override void OnParametersSet()
         {
             ArgumentNullException.ThrowIfNull(RxInputGroupAsyncBase);
-            SelectedOption = RxInputGroupAsyncBase.Value;
 
             if (ChildContent is null)
             {
+                RxInputGroupAsyncBase.Initialize();
+
                 var values = RxInputGroupAsyncBase.GetItems();
 
                 ChildContent = builder =>
@@ -44,29 +44,17 @@ namespace RxMudBlazorLight.Inputs.Radio
                         builder.AddAttribute(5, "Color", ColorCallback(values[i]));
                         builder.AddAttribute(6, "Placement", PlacementCallback(values[i]));
                         builder.AddAttribute(7, "Disabled", RxInputGroupAsyncBase.IsItemDisabled(i));
+                        builder.AddAttribute(8, "InitialSelection", RxInputGroupAsyncBase.Value);
                         builder.CloseComponent();
                     }
                 };
             }
 
+            SelectedOption = RxInputGroupAsyncBase.Value;
             SelectedOptionChanged = EventCallback.Factory.Create<T>(this, async v => await RxInputGroupAsyncBase.SetValueAsync(v));
             Disabled = !RxInputGroupAsyncBase.CanChange();
 
             base.OnParametersSet();
-        }
-
-        protected override void OnAfterRender(bool firstRender)
-        {
-            ArgumentNullException.ThrowIfNull(RxInputGroupAsyncBase);
-
-            if (!_initialized && firstRender)
-            {
-                _initialized = true;
-                RxInputGroupAsyncBase.Initialize();
-                SelectedOption = RxInputGroupAsyncBase.Value;
-            }
-
-            base.OnAfterRender(firstRender);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)

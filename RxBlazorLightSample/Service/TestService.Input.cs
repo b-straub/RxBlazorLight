@@ -1,5 +1,4 @@
 ﻿using RxBlazorLightCore;
-using System.Runtime.CompilerServices;
 
 namespace RxBlazorLightSample.Service
 {
@@ -66,7 +65,7 @@ namespace RxBlazorLightSample.Service
 
             public override void Initialize()
             {
-                SetValue(_pizzas[3]);
+                SetValue(_pizzas[2]);
             }
 
             public override async Task InitializeAsync()
@@ -124,7 +123,7 @@ namespace RxBlazorLightSample.Service
             }
         }
 
-        public class ColorIPGP : InputGroup<TestService, TestColor, ColorEnum>
+        public class ColorIPGP : InputGroupP<TestService, TestColor, ColorEnum>
         {
             private static readonly TestColor[] _colors =
             {

@@ -1,4 +1,6 @@
 ﻿
+using System.Reactive;
+
 namespace RxBlazorLightCore
 {
     public interface IRXService
@@ -11,7 +13,7 @@ namespace RxBlazorLightCore
         internal void StateHasChanged(Exception? exception = null);
     }
 
-    public interface IInput<T>
+    public interface IInput<T> : IObservable<T>
     {
         public T Value { get; }
         public void SetValue(T value);
@@ -45,7 +47,7 @@ namespace RxBlazorLightCore
         public void SetParameter(P parameter);
     }
 
-    public interface ICommand
+    public interface ICommand : IObservable<Exception?>
     {
         public Func<ICommand, bool>? PrepareExecution { get; set; }
         public bool CanExecute();
@@ -61,7 +63,7 @@ namespace RxBlazorLightCore
         public void Execute(T parameter);
     }
 
-    public interface ICommandAsyncBase
+    public interface ICommandAsyncBase : IObservable<Exception?>
     {
         public bool Executing { get; }
         public bool CanCancel();

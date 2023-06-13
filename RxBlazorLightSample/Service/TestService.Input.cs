@@ -52,6 +52,8 @@ namespace RxBlazorLightSample.Service
                 new Pizza("Cardinale"), new Pizza("Diavolo"), new Pizza("Margarita"), new Pizza("Spinaci")
             };
 
+            private bool _initialized = false;
+
             public PizzaIPGAsync(TestService service) : base(service, null)
             {
 
@@ -63,6 +65,11 @@ namespace RxBlazorLightSample.Service
                 return _pizzas;
             }
 
+            public override bool CanChange()
+            {
+                return _initialized;
+            }
+
             public override void Initialize()
             {
                 SetValue(_pizzas[2]);
@@ -72,6 +79,7 @@ namespace RxBlazorLightSample.Service
             {
                 await Task.Delay(2000);
                 await SetValueAsync(_pizzas[1]);
+                _initialized = true;
             }
         }
 

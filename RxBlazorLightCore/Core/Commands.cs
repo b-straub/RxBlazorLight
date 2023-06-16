@@ -1,7 +1,6 @@
 ﻿
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reflection.Metadata;
 
 namespace RxBlazorLightCore
 {

@@ -55,7 +55,9 @@ namespace RxMudBlazorLightTestBase.Service
         public int Count { get; private set; }
 
         public ICommand Simple { get; }
-        public ICommand Increment => new IncrementCMD(this);
+		public ICommand Exception { get; }
+
+		public ICommand Increment => new IncrementCMD(this);
         public ICommand<int> Add { get; }
         public ICommandAsync IncrementAsync { get; }
         public ICommandAsync<int> AddAsync => new AddAsyncCMD(this);
@@ -81,7 +83,8 @@ namespace RxMudBlazorLightTestBase.Service
         {
             Count = 0;
             Simple = new SimpleCMD();
-            Add = new AddCMD(this);
+            Exception = new ExceptionCMD(this);
+			Add = new AddCMD(this);
             IncrementAsync = new IncrementAsyncCMD(this);
             AddAsyncForm = new AddAsyncCMDForm(this);
             AddRemoveAsync = new AddRemoveAsyncCMDForm(this);

@@ -19,7 +19,7 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        _serviceDisposable = Service.Subscribe(StateHasChanged, SampleMS);
+        _serviceDisposable = Service.Subscribe(InvokeStateChanged, SampleMS);
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -50,5 +50,10 @@
         }
 
         base.Dispose(disposing);
+    }
+
+    private void InvokeStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 }

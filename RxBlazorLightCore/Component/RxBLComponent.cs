@@ -19,7 +19,7 @@ namespace RxBlazorLightCore.Component
             ArgumentNullException.ThrowIfNull(Service);
 
             base.OnInitialized();
-            _serviceDisposable = Service.Subscribe(StateHasChanged, SampleMS);
+            _serviceDisposable = Service.Subscribe(InvokeStateChanged, SampleMS);
         }
 
         public void Dispose()
@@ -34,6 +34,11 @@ namespace RxBlazorLightCore.Component
             {
                 _serviceDisposable?.Dispose();
             }
+        }
+
+        private void InvokeStateChanged()
+        {
+            InvokeAsync(StateHasChanged);
         }
     }
 }

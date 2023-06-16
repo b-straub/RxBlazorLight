@@ -50,7 +50,7 @@ namespace RxBlazorLight.ButtonBase
 
                 _command.Parameter = parameter;
 
-                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () => await Execute());
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute());
                 Disabled = !_command.CanExecute(parameter);
             }
         }

@@ -27,7 +27,7 @@ namespace RxBlazorLight.ButtonBase
             ArgumentNullException.ThrowIfNull(parameter);
 
             _command.Parameter = parameter;
-            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () => await Execute());
+            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute());
         }
 
         private async Task Execute()

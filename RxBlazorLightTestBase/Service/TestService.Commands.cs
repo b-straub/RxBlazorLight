@@ -1,6 +1,6 @@
 ﻿using RxBlazorLightCore;
 
-namespace RxBlazorLightSample.Service
+namespace RxMudBlazorLightTestBase.Service
 {
     public sealed partial class TestService
     {

@@ -1,0 +1,26 @@
+﻿@inherits RxBLComponent<TestService>
+
+@if (Service is not null)
+{
+    <MudStack AlignItems="AlignItems.Center">
+        <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.RadioTest.Value} / {Service.RatingValue.Value}")</MudText>
+            <MudText id="result" Class="mb-4">Current count: @Service.Count</MudText>
+
+            <MudRadioGroupAsyncRx id="radio" RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync />
+            <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Increment)>Increment</MudButtonRx>
+            <MudButtonPRx id="button2"  Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
+    </MudStack>
+}
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    private void Clicked()
+    {
+        Service.Increment.Execute();
+    }
+}

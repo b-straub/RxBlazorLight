@@ -13,7 +13,7 @@
         ArgumentNullException.ThrowIfNull(RxInputAsync);
 
         SelectedValue = RxInputAsync.Value;
-        SelectedValueChanged = EventCallback.Factory.Create<int>(this, async v => await RxInputAsync.SetValueAsync(v));
+        SelectedValueChanged = EventCallback.Factory.Create<int>(this, v => RxInputAsync.SetValueAsync(v));
         Disabled = !RxInputAsync.CanChange();
 
         base.OnParametersSet();

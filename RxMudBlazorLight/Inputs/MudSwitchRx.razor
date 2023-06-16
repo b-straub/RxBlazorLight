@@ -14,7 +14,14 @@
         ArgumentNullException.ThrowIfNull(RxInput);
 
         Checked = RxInput.Value;
-        CheckedChanged = EventCallback.Factory.Create<T>(this, v => RxInput.SetValue(v));
+        CheckedChanged = EventCallback.Factory.Create<T?>(this, v =>
+        {
+            if (v is not null)
+            {
+                RxInput.SetValue(v);
+            }
+        });
+
         Disabled = !RxInput.CanChange();
 
         base.OnParametersSet();

@@ -1,0 +1,35 @@
+@inherits Context.TestContextBase
+
+@code {
+	[Fact]
+	public void CounterStartsAtZero()
+	{
+
+		// Arrange
+		var cut = Render(@<TestPlaygroundComponent />);
+
+		// Assert that content of the paragraph shows counter at zero
+		cut.Find("p").TextContent.MarkupMatches("Current count: 0");
+	}
+
+    [Fact]
+	public void ClickingButtonIncrementsCounter()
+	{
+		// Arrange
+		var cut = Render(@<TestPlaygroundComponent />);
+
+		cut.VerifyEnabled("button1");
+		cut.Click("button1");
+		cut.VerifyTextContent("result", "Current count: 1");
+
+		cut.Click("button1");
+		cut.VerifyTextContent("result", "Current count: 2");
+
+		cut.Click("button2");
+		cut.VerifyTextContent("result", "Current count: 7");
+
+		cut.VerifyEnabled("radio");
+		var diavolo = cut.FindMudRadioButton("radio", "diavolo");
+		cut.VerifyMudChecked(diavolo);
+	}
+}

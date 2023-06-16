@@ -16,7 +16,7 @@
         Value = RxInputAsync.Value;
         Text = Value.ToString();
 
-        ValueChanged = EventCallback.Factory.Create<T>(this, async v => await RxInputAsync.SetValueAsync(v));
+        ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputAsync.SetValueAsync(v));
         Disabled = !RxInputAsync.CanChange();
 
         base.OnParametersSet();

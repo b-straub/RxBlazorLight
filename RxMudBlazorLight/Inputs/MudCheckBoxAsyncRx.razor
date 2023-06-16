@@ -14,7 +14,14 @@
         ArgumentNullException.ThrowIfNull(RxInputAsync);
 
         Checked = RxInputAsync.Value;
-        CheckedChanged = EventCallback.Factory.Create<T>(this, async v => await RxInputAsync.SetValueAsync(v));
+        CheckedChanged = EventCallback.Factory.Create<T?>(this, v =>
+        {
+            if (v is not null)
+            {
+                RxInputAsync.SetValueAsync(v);
+            }
+        });
+
         Disabled = !RxInputAsync.CanChange();
 
         base.OnParametersSet();

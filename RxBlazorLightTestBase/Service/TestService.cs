@@ -1,7 +1,7 @@
 ﻿using RxBlazorLightCore;
 using System;
 
-namespace RxBlazorLightSample.Service
+namespace RxMudBlazorLightTestBase.Service
 {
     public class Pizza
     {

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using RxBlazorLightSample;
 using MudBlazor.Services;
-using RxBlazorLightSample.Service;
+using RxMudBlazorLightTestBase.Service;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

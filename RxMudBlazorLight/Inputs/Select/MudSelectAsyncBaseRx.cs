@@ -21,7 +21,7 @@ namespace RxMudBlazorLight.Inputs.Select
             Value = RxInputGroupAsyncBase.Value;
             Text = Value?.ToString();
 
-            ValueChanged = EventCallback.Factory.Create<T>(this, async v => await RxInputGroupAsyncBase.SetValueAsync(v));
+            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupAsyncBase.SetValueAsync(v));
             Disabled = !RxInputGroupAsyncBase.CanChange();
 
             if (ChildContent is null)

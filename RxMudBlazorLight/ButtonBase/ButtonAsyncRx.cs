@@ -47,7 +47,7 @@ namespace RxBlazorLight.ButtonBase
                 {
                     ChildContent = _command.Executing && _command.HasProgress() ? RenderProgress() : _buttonChildContent;
                 }
-                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () => await Execute(_command.Execute));
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute(_command.Execute));
             }
         }
 

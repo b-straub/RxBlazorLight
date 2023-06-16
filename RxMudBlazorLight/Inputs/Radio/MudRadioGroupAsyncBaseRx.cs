@@ -51,7 +51,7 @@ namespace RxMudBlazorLight.Inputs.Radio
             }
 
             SelectedOption = RxInputGroupAsyncBase.Value;
-            SelectedOptionChanged = EventCallback.Factory.Create<T>(this, async v => await RxInputGroupAsyncBase.SetValueAsync(v));
+            SelectedOptionChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupAsyncBase.SetValueAsync(v));
             Disabled = !RxInputGroupAsyncBase.CanChange();
 
             base.OnParametersSet();

@@ -12,7 +12,7 @@ namespace RxBlazorLight.ButtonBase
             base(type, confirmExecution, beforeExecution, afterExecution)
         {
             ArgumentNullException.ThrowIfNull(command);
-            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () => await Execute(command.Execute));
+            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute(command.Execute));
         }
 
         public static ButtonRX Create(MBButtonType type, ICommand? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution)

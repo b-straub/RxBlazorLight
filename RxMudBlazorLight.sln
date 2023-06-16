@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RxBlazorLightSample", "RxBl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RxMudBlazorLight", "RxMudBlazorLight\RxMudBlazorLight.csproj", "{0441C22D-02FC-4B54-BE53-D3F32EF779CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RxMudBlazorLightTests", "RxMudBlazorLightTests\RxMudBlazorLightTests.csproj", "{F15C97D9-B35A-41DC-B32E-751357106EC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RxMudBlazorLightTestBase", "RxBlazorLightTestBase\RxMudBlazorLightTestBase.csproj", "{D6C6EEC8-6D43-487F-BB9B-C329D732B538}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F15C97D9-B35A-41DC-B32E-751357106EC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F15C97D9-B35A-41DC-B32E-751357106EC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F15C97D9-B35A-41DC-B32E-751357106EC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F15C97D9-B35A-41DC-B32E-751357106EC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6C6EEC8-6D43-487F-BB9B-C329D732B538}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6C6EEC8-6D43-487F-BB9B-C329D732B538}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6C6EEC8-6D43-487F-BB9B-C329D732B538}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6C6EEC8-6D43-487F-BB9B-C329D732B538}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,7 +6,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="System.Reactive" Version="5.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.4" />
+		<PackageReference Include="System.Reactive" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.7" />
 	</ItemGroup>
 </Project>

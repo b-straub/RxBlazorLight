@@ -1,8 +1,18 @@
-﻿
-using System.Reactive;
+﻿using System.Reactive;
 
 namespace RxBlazorLightCore
 {
+    public enum StateChange
+    {
+        INTERNAL,
+        CMD_EXECUTING,
+        CMD_EXECUTED,
+        CMD_NOT_EXECUTED,
+        CMD_CANCELED,
+        EXCEPTION,
+        INPUT
+    }
+
     public interface IRXService
     {
         public void OnInitialized();
@@ -10,7 +20,7 @@ namespace RxBlazorLightCore
         public IEnumerable<Exception> CommandExceptions { get; }
         public void ResetCommandExceptions();
         public IDisposable Subscribe(Action stateHasChanged, double sampleMS);
-        internal void StateHasChanged(Exception? exception = null);
+        internal void StateHasChanged(StateChange reason, Exception? exception);
     }
 
     public interface IInput<T> : IObservable<T>
@@ -47,28 +57,34 @@ namespace RxBlazorLightCore
         public void SetParameter(P parameter);
     }
 
-    public interface ICommand : IObservable<Exception?>
+    public interface ICommand : IObservable<StateChange>
     {
+        public Exception? LastException { get; }
         public Func<ICommand, bool>? PrepareExecution { get; set; }
         public bool CanExecute();
         public void Execute();
+        public IObservable<Unit> Executed { get; }
     }
 
-    public interface ICommand<T>
+    public interface ICommand<T> : IObservable<StateChange>
     {
-        public T? Parameter { get; set; }
+        public T? Parameter { get; }
         public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
+        public void SetParameter(T? parameter);
         public bool CanExecute(T? parameter);
         public void Execute();
         public void Execute(T parameter);
+        public IObservable<Unit> Executed { get; }
     }
 
-    public interface ICommandAsyncBase : IObservable<Exception?>
+    public interface ICommandAsyncBase : IObservable<StateChange>
     {
+        public Exception? LastException { get; }
         public bool Executing { get; }
         public bool CanCancel();
         public bool HasProgress();
         public void Cancel();
+        public IObservable<Unit> Executed { get; }
     }
 
     public interface ICommandAsync : ICommandAsyncBase
@@ -80,8 +96,10 @@ namespace RxBlazorLightCore
 
     public interface ICommandAsync<T> : ICommandAsyncBase
     {
-        public T? Parameter { get; set; }
+        public T? Parameter { get; }
         public Func<ICommandAsync<T>, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
+        public void SetParameter(T? parameter);
+
         public Task Execute();
         public bool CanExecute(T? parameter);
         public Task Execute(T parameter);

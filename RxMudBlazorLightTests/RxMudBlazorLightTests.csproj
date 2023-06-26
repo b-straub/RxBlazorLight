@@ -32,7 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\RxBlazorLightTestBase\RxMudBlazorLightTestBase.csproj" />
+	  <ProjectReference Include="..\RxMudBlazorLightTestBase\RxMudBlazorLightTestBase.csproj" />
 	</ItemGroup>
 
 

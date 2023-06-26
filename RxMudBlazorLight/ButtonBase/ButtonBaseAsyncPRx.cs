@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using RxBlazorLightCore;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 
 namespace RxBlazorLight.ButtonBase
 {
@@ -48,7 +49,7 @@ namespace RxBlazorLight.ButtonBase
                     ChildContent = _command.Executing && _command.HasProgress() ? RenderProgress() : _buttonChildContent;
                 }
 
-                _command.Parameter = parameter;
+                _command.SetParameter(parameter);
 
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute());
                 Disabled = !_command.CanExecute(parameter);

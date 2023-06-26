@@ -10,7 +10,7 @@ namespace RxMudBlazorLightTestBase.Service
             {
             }
 
-            protected override void OnValueChanged(int oldValue, int newValue)
+            protected override void OnValueChanging(int oldValue, int newValue)
             {
                 Service.Count = newValue;
             }
@@ -41,7 +41,7 @@ namespace RxMudBlazorLightTestBase.Service
 
             public override bool CanChange()
             {
-                return Service.RadioTest.Value?.Color is ColorEnum.GREEN;
+                return Service.GetRadio().Value?.Color is ColorEnum.GREEN;
             }
         }
 
@@ -99,35 +99,6 @@ namespace RxMudBlazorLightTestBase.Service
             {
 
                 return Pizzas;
-            }
-        }
-
-        public class ColorIPG : InputGroup<TestService, TestColor>
-        {
-            private static readonly TestColor[] _colors =
-            {
-                new TestColor(ColorEnum.RED), new TestColor(ColorEnum.GREEN), new TestColor(ColorEnum.BLUE)
-            };
-
-            public ColorIPG(TestService service) : base(service, _colors[0])
-            {
-
-            }
-
-            public override TestColor[] GetItems()
-            {
-
-                return _colors;
-            }
-
-            public override void Initialize()
-            {
-                SetValue(_colors[2]);
-            }
-
-            public override bool IsItemDisabled(int index)
-            {
-                return index == 1 && Service.CanIncrementCheck.Value;
             }
         }
 

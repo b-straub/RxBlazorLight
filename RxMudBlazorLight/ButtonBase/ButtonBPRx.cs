@@ -26,7 +26,7 @@ namespace RxBlazorLight.ButtonBase
         {
             ArgumentNullException.ThrowIfNull(parameter);
 
-            _command.Parameter = parameter;
+            _command.SetParameter(parameter);
             OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute());
         }
 

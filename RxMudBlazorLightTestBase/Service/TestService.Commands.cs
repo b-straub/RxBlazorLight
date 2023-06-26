@@ -11,7 +11,37 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-		public class ExceptionCMD : CommandService<TestService>
+        public class EqualsTestCmd : Command<int>
+        {
+            private int? _value;
+            protected override void DoExecute(int parameter)
+            {
+                _value = parameter;
+            }
+
+            public override bool CanExecute(int parameter)
+            {
+                return !parameter.Equals(_value);
+            }
+        }
+
+        public class EqualsTestAsyncCmd : CommandAsync<int>
+        {
+            private int? _value;
+
+            protected override Task DoExecute(int parameter, CancellationToken cancellationToken)
+            {
+                _value = parameter;
+                return Task.CompletedTask;
+            }
+
+            public override bool CanExecute(int parameter)
+            {
+                return !parameter.Equals(_value);
+            }
+        }
+
+        public class ExceptionCMD : CommandService<TestService>
 		{
             public ExceptionCMD(TestService testService) : base(testService)
             {

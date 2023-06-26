@@ -1,30 +1,37 @@
 ﻿
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
-    public class CommandBase : IObservable<Exception?>
+    public class CommandBase : IObservable<StateChange>
     {
-        private readonly Subject<Exception?> _changedSubject;
-        private readonly IObservable<Exception?> _changedObservable;
+        public Exception? LastException { get; protected set; }
+        public IObservable<Unit> Executed{ get; }
+
+        private readonly Subject<StateChange> _changedSubject;
+        private readonly IObservable<StateChange> _changedObservable;
 
         protected CommandBase()
         {
             _changedSubject = new();
             _changedObservable = _changedSubject.Publish().RefCount();
+
+            Executed = _changedObservable
+                .Where(sc => sc is StateChange.CMD_EXECUTED)
+                .Select(_ => Unit.Default);
         }
 
-        protected void Changed(Exception? exception = null)
+        protected void Changed(StateChange reason)
         {
-            _changedSubject.OnNext(exception);
+            _changedSubject.OnNext(reason);
         }
 
-        public IDisposable Subscribe(IObserver<Exception?> observer)
+        public IDisposable Subscribe(IObserver<StateChange> observer)
         {
             return _changedObservable.Subscribe(observer);
         }
-
     }
 
     public abstract class Command : CommandBase, ICommand
@@ -40,7 +47,8 @@ namespace RxBlazorLightCore
 
         public void Execute()
         {
-            Exception? error = null;
+            bool executed = false;
+            LastException = null;
 
             try
             {
@@ -54,21 +62,28 @@ namespace RxBlazorLightCore
                 if (execute && CanExecute())
                 {
                     DoExecute();
+                    executed = true;
                 }
             }
             catch (Exception ex)
             {
-                error = ex;
+                LastException = ex;
             }
 
-            Changed(error);
+            Changed(LastException is not null ? StateChange.EXCEPTION : 
+                executed ? StateChange.CMD_EXECUTED : StateChange.CMD_NOT_EXECUTED);
         }
     }
 
     public abstract class Command<T> : CommandBase, ICommand<T>
     {
         public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
-        public T? Parameter { get; set; }
+        public T? Parameter { get; private set; }
+
+        public virtual void SetParameter(T? parameter)
+        {
+            Parameter = parameter;
+        }
 
         protected abstract void DoExecute(T parameter);
 
@@ -77,15 +92,16 @@ namespace RxBlazorLightCore
             return true;
         }
 
-        public void Execute(T parameter)
+        public virtual void Execute(T parameter)
         {
             Parameter = parameter;
             Execute();
         }
 
-        public void Execute()
+        public virtual void Execute()
         {
-            Exception? error = null;
+            bool executed = false;
+            LastException = null;
 
             try
             {
@@ -99,18 +115,23 @@ namespace RxBlazorLightCore
                 if (execute && CanExecute(Parameter) && Parameter is not null)
                 {
                     DoExecute(Parameter);
+                    executed = true;
                 }
             }
             catch (Exception ex)
             {
-                error = ex;
+                LastException = ex;
             }
 
-            Parameter = default;
-            Changed(error);
+            if (executed)
+            {
+                Parameter = default;
+            }
+
+            Changed(LastException is not null ? StateChange.EXCEPTION :
+                executed ? StateChange.CMD_EXECUTED : StateChange.CMD_NOT_EXECUTED);
         }
     }
-
 
     public abstract class CommandService<S> : Command, IDisposable where S : IRXService
     {
@@ -121,9 +142,8 @@ namespace RxBlazorLightCore
         protected CommandService(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(Service.StateHasChanged);
+            _serviceDisposable = this.Subscribe(r => Service.StateHasChanged(r, LastException));
         }
-
 
         protected virtual void Dispose(bool disposing)
         {
@@ -133,7 +153,6 @@ namespace RxBlazorLightCore
                 _serviceDisposable = null;
             }
         }
-
 
         public void Dispose()
         {
@@ -151,9 +170,8 @@ namespace RxBlazorLightCore
         protected CommandService(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(Service.StateHasChanged);
+            _serviceDisposable = this.Subscribe(r => Service.StateHasChanged(r, LastException));
         }
-
 
         protected virtual void Dispose(bool disposing)
         {
@@ -163,7 +181,6 @@ namespace RxBlazorLightCore
                 _serviceDisposable = null;
             }
         }
-
 
         public void Dispose()
         {
@@ -204,11 +221,12 @@ namespace RxBlazorLightCore
 
         public async Task Execute()
         {
-            Exception? error = null;
             ResetCancel();
 
+            var executed = false;
+            LastException = null;
             Executing = true;
-            Changed();
+            Changed(StateChange.CMD_EXECUTING);
 
             try
             {
@@ -222,18 +240,20 @@ namespace RxBlazorLightCore
                 if (execute && CanExecute())
                 {
                     await DoExecute(CancellationTokenSource.Token);
+                    executed = true;
                 }
             }
             catch (Exception ex)
             {
                 if (ex.GetType() != typeof(TaskCanceledException))
                 {
-                    error = ex;
+                    LastException = ex;
                 }
             }
 
             Executing = false;
-            Changed(error);
+            Changed(LastException is not null ? StateChange.EXCEPTION :
+                executed ? StateChange.CMD_EXECUTED : StateChange.CMD_NOT_EXECUTED);
         }
 
         public void Cancel()
@@ -241,7 +261,7 @@ namespace RxBlazorLightCore
             CancellationTokenSource.Cancel();
             Executing = false;
 
-            Changed();
+            Changed(StateChange.CMD_CANCELED);
         }
 
         protected void ResetCancel()
@@ -255,7 +275,12 @@ namespace RxBlazorLightCore
 
     public abstract class CommandAsync<T> : CommandBase, ICommandAsync<T>
     {
-        public T? Parameter { get; set; }
+        public T? Parameter { get; private set; }
+
+        public virtual void SetParameter(T? parameter)
+        {
+            Parameter = parameter;
+        }
 
         public Func<ICommandAsync<T>, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
 
@@ -284,19 +309,20 @@ namespace RxBlazorLightCore
             return true;
         }
 
-        public async Task Execute(T parameter)
+        public virtual async Task Execute(T parameter)
         {
             Parameter = parameter;
             await Execute();
         }
 
-        public async Task Execute()
+        public virtual async Task Execute()
         {
-            Exception? error = null;
             ResetCancel();
 
+            var executed = false;
+            LastException = null;
             Executing = true;
-            Changed();
+            Changed(StateChange.CMD_EXECUTING);
 
             try
             {
@@ -310,18 +336,25 @@ namespace RxBlazorLightCore
                 if (execute && CanExecute(Parameter) && Parameter is not null)
                 {
                     await DoExecute(Parameter, CancellationTokenSource.Token);
+                    executed = true;
                 }
             }
             catch (Exception ex)
             {
                 if (ex.GetType() != typeof(TaskCanceledException))
                 {
-                    error = ex;
+                    LastException = ex;
                 }
             }
 
+            if (executed)
+            {
+                Parameter = default;
+            }
+
             Executing = false;
-            Changed(error);
+            Changed(LastException is not null ? StateChange.EXCEPTION :
+                executed ? StateChange.CMD_EXECUTED : StateChange.CMD_NOT_EXECUTED);
         }
 
         public void Cancel()
@@ -329,7 +362,7 @@ namespace RxBlazorLightCore
             CancellationTokenSource.Cancel();
             Executing = false;
 
-            Changed();
+            Changed(StateChange.CMD_CANCELED);
         }
 
         protected void ResetCancel()
@@ -376,9 +409,8 @@ namespace RxBlazorLightCore
         protected CommandServiceAsync(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(Service.StateHasChanged);
+            _serviceDisposable = this.Subscribe(r => Service.StateHasChanged(r, LastException));
         }
-
 
         protected virtual void Dispose(bool disposing)
         {
@@ -388,7 +420,6 @@ namespace RxBlazorLightCore
                 _serviceDisposable = null;
             }
         }
-
 
         public void Dispose()
         {
@@ -406,9 +437,8 @@ namespace RxBlazorLightCore
         protected CommandServiceAsync(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(Service.StateHasChanged);
+            _serviceDisposable = this.Subscribe(r => Service.StateHasChanged(r, LastException));
         }
-
 
         protected virtual void Dispose(bool disposing)
         {

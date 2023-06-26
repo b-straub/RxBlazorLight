@@ -57,7 +57,10 @@ namespace RxMudBlazorLightTestBase.Service
         public ICommand Simple { get; }
 		public ICommand Exception { get; }
 
-		public ICommand Increment => new IncrementCMD(this);
+        public ICommand<int> EqualsTest { get; }
+        public ICommandAsync<int> EqualsTestAsync { get; }
+
+        public ICommand Increment => new IncrementCMD(this);
         public ICommand<int> Add { get; }
         public ICommandAsync IncrementAsync { get; }
         public ICommandAsync<int> AddAsync => new AddAsyncCMD(this);
@@ -69,7 +72,6 @@ namespace RxMudBlazorLightTestBase.Service
         public IInput<int> IncrementValue { get; }
         public IInput<bool> CanIncrementCheck { get; }
         public IInput<string> TextValue { get; }
-        public IInputGroup<TestColor> RadioTest { get; }
 
         public IInput<int> RatingValue { get; }
 
@@ -83,6 +85,9 @@ namespace RxMudBlazorLightTestBase.Service
         {
             Count = 0;
             Simple = new SimpleCMD();
+            EqualsTest = new EqualsTestCmd();
+            EqualsTestAsync = new EqualsTestAsyncCmd();
+
             Exception = new ExceptionCMD(this);
 			Add = new AddCMD(this);
             IncrementAsync = new IncrementAsyncCMD(this);
@@ -94,7 +99,6 @@ namespace RxMudBlazorLightTestBase.Service
             CanIncrementCheck = CreateInput(this, false);
             TextValue = CreateInput(this, "No Text");
             RatingValue = new RatingValueIP(this, 0);
-            RadioTest = new ColorIPG(this);
             AddIncrementValue = new AddIncrementValueCMD(this);
 
             _pizzaIPGAsync = new PizzaIPGAsync(this);
@@ -119,7 +123,7 @@ namespace RxMudBlazorLightTestBase.Service
             return _pizzaIPGAsync;
         }
 
-        public IInputGroup<TestColor, ColorEnum> GetRadioExtended()
+        public IInputGroup<TestColor, ColorEnum> GetRadio()
         {
             return _radioTestExtended;
         }

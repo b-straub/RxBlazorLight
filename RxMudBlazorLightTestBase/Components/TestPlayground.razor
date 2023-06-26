@@ -1,0 +1,65 @@
+﻿@inherits RxBLComponent<TestService>
+
+@if (Service is not null)
+{
+    <MudStack AlignItems="AlignItems.Center">
+        <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
+        <MudText id="result" Class="mb-4">Current count: @Service.Count</MudText>
+
+        <MudRadioGroupAsyncRx id="radio" RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync />
+        <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Increment)>Increment</MudButtonRx>
+        <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
+        <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals executions {_equalsExecutions}")</MudText>
+            <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" Parameter=@GetEqualsParameter() RxCommandFactory=@(() => Service.EqualsTest)>EqualsTest</MudButtonPRx>
+        <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
+        <MudButtonAsyncPRx Color="Color.Error" Variant="Variant.Filled" Parameter="1" RxCommandAsyncFactory=@(() => Service.EqualsTestAsync)>EqualsTest</MudButtonAsyncPRx>
+    </MudStack>
+}
+
+@code {
+    private long _equalsExecutions = 0;
+    private long _equalsAsyncExecutions = 0;
+
+    private CompositeDisposable _disposeBag = new();
+
+    protected override void OnInitialized()
+    {
+        _disposeBag.Add(Service.EqualsTest.Subscribe(s =>
+       {
+           if (s is StateChange.CMD_EXECUTED)
+           {
+               _equalsExecutions++;
+           }
+           StateHasChanged();
+       }));
+
+        _disposeBag.Add(Service.EqualsTestAsync.Subscribe(s =>
+        {
+            if (s is StateChange.CMD_EXECUTED)
+            {
+                _equalsAsyncExecutions++;
+            }
+            StateHasChanged();
+        }));
+
+        base.OnInitialized();
+    }
+
+    private int GetEqualsParameter()
+    {
+        return _equalsExecutions == 0 ? 1 : 2;
+    }
+
+    private void Clicked()
+    {
+        Service.Increment.Execute();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _disposeBag.Dispose();
+        }
+    }
+}

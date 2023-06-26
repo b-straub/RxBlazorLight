@@ -18,16 +18,18 @@ namespace RxBlazorLightCore
             _changedObservable = _changedSubject.Publish().RefCount();
         }
 
-        protected virtual void OnValueChanged(T oldValue, T newValue)
+        protected virtual void OnValueChanging(T oldValue, T newValue)
         {
         }
 
         public void SetValue(T value)
         {
-            var oldValue = Value;
-            Value = value;
-            OnValueChanged(oldValue, Value);
-            Changed(Value);
+            if (CanChange())
+            {
+                OnValueChanging(Value, value);
+                Value = value;
+                Changed(Value);
+            }
         }
 
         public virtual bool CanChange()
@@ -56,7 +58,7 @@ namespace RxBlazorLightCore
         protected InputBase(S service, T value) : base(value)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(_ => Service.StateHasChanged());
+            _serviceDisposable = this.Subscribe(_ => Service.StateHasChanged(StateChange.INPUT, null));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -100,17 +102,19 @@ namespace RxBlazorLightCore
         {
         }
 
-        protected virtual async Task OnValueChangedAsync(T oldValue, T newValue)
+        protected virtual async Task OnValueChangingAsync(T oldValue, T newValue)
         {
             await Task.CompletedTask;
         }
 
         public async Task SetValueAsync(T value)
         {
-            var oldValue = Value;
-            Value = value;
-            await OnValueChangedAsync(oldValue, Value);
-            Changed(Value);
+            if (CanChange())
+            {
+                await OnValueChangingAsync(value, Value);
+                Value = value;
+                Changed(Value);
+            }
         }
     }
 

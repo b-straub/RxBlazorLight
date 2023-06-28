@@ -1,5 +1,4 @@
 ﻿using RxBlazorLightCore;
-using System;
 
 namespace RxMudBlazorLightTestBase.Service
 {

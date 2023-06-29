@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RxMudBlazorLightTestBase", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RxMudBlazorLightSample", "RxMudBlazorLightSample\RxMudBlazorLightSample.csproj", "{ED0AFCB2-A7DC-48F8-9E99-A66493925FD8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MudBlazor", "MudBlazor", "{C85312B7-35B0-4DF6-86C7-6554E54BC5AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0441C22D-02FC-4B54-BE53-D3F32EF779CE} = {C85312B7-35B0-4DF6-86C7-6554E54BC5AF}
+		{F15C97D9-B35A-41DC-B32E-751357106EC2} = {C85312B7-35B0-4DF6-86C7-6554E54BC5AF}
+		{600C1493-DE8C-47A9-99CC-19EE49ECAB6F} = {C85312B7-35B0-4DF6-86C7-6554E54BC5AF}
+		{ED0AFCB2-A7DC-48F8-9E99-A66493925FD8} = {C85312B7-35B0-4DF6-86C7-6554E54BC5AF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9FD4EE13-76CA-43D3-8432-A0DFEDDB84F9}

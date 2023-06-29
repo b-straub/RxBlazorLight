@@ -1,7 +1,9 @@
-# RxMudBlazorLight
+# RxBlazorLight
 
-RxMudBlazorLight is a simple reactive wrapper around MudBlazor components see https://mudblazor.com/
+RxBlazorLight is a simple reactive wrapper around Blazor components.
 
-Build the *RxBlazorLightSample* and check the reactive components.
+For now only MudBlazor components, see https://mudblazor.com/, are supported.
+
+Build the *RxMudBlazorLightSample* and check the reactive components.
 
 

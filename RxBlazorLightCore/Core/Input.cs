@@ -22,9 +22,19 @@ namespace RxBlazorLightCore
         {
         }
 
+        public void SetInitialValue(T value)
+        {
+            SetValueIntern(value, true);
+        }
+
         public void SetValue(T value)
         {
-            if (CanChange())
+            SetValueIntern(value, false);
+        }
+
+        private void SetValueIntern(T value, bool force)
+        {
+            if (force || CanChange())
             {
                 OnValueChanging(Value, value);
                 Value = value;
@@ -107,9 +117,19 @@ namespace RxBlazorLightCore
             await Task.CompletedTask;
         }
 
+        public async Task SetInitialValueAsync(T value)
+        {
+            await SetValueAsyncIntern(value, true);
+        }
+
         public async Task SetValueAsync(T value)
         {
-            if (CanChange())
+            await SetValueAsyncIntern(value, false);
+        }
+
+        private async Task SetValueAsyncIntern(T value, bool force)
+        {
+            if (force || CanChange())
             {
                 await OnValueChangingAsync(value, Value);
                 Value = value;
@@ -129,17 +149,29 @@ namespace RxBlazorLightCore
             return new InputAsync<S, T>(service, value);
         }
 
-        protected virtual async Task OnValueChangedAsync(T oldValue, T newValue)
+        protected virtual async Task OnValueChangingAsync(T oldValue, T newValue)
         {
             await Task.CompletedTask;
         }
 
+        public async Task SetInitialValueAsync(T value)
+        {
+            await SetValueAsyncIntern(value, true);
+        }
+
         public async Task SetValueAsync(T value)
         {
-            var oldValue = Value;
-            Value = value;
-            await OnValueChangedAsync(oldValue, Value);
-            Changed(Value);
+            await SetValueAsyncIntern(value, false);
+        }
+
+        private async Task SetValueAsyncIntern(T value, bool force)
+        {
+            if (force || CanChange())
+            {
+                await OnValueChangingAsync(value, Value);
+                Value = value;
+                Changed(Value);
+            }
         }
     }
 

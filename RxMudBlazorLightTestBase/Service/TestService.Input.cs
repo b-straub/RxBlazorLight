@@ -72,13 +72,13 @@ namespace RxMudBlazorLightTestBase.Service
 
             public override void Initialize()
             {
-                SetValue(_pizzas[2]);
+                SetInitialValue(_pizzas[3]);
             }
 
             public override async Task InitializeAsync()
             {
                 await Task.Delay(2000);
-                await SetValueAsync(_pizzas[1]);
+                await SetInitialValueAsync(_pizzas[1]);
                 _initialized = true;
             }
         }
@@ -109,6 +109,8 @@ namespace RxMudBlazorLightTestBase.Service
                 new TestColor(ColorEnum.RED), new TestColor(ColorEnum.GREEN), new TestColor(ColorEnum.BLUE)
             };
 
+            private bool _initialized = false;
+
             public ColorIPGP(TestService service) : base(service, _colors[0])
             {
             }
@@ -120,7 +122,11 @@ namespace RxMudBlazorLightTestBase.Service
 
             public override void Initialize()
             {
-                SetValue(new TestColor(Parameter));
+                if (!_initialized)
+                {
+                    _initialized = true;
+                    SetInitialValue(new TestColor(Parameter));
+                }
             }
 
             public override bool IsItemDisabled(int index)

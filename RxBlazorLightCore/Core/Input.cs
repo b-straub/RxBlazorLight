@@ -131,7 +131,7 @@ namespace RxBlazorLightCore
         {
             if (force || CanChange())
             {
-                await OnValueChangingAsync(value, Value);
+                await OnValueChangingAsync(Value, value);
                 Value = value;
                 Changed(Value);
             }
@@ -168,7 +168,7 @@ namespace RxBlazorLightCore
         {
             if (force || CanChange())
             {
-                await OnValueChangingAsync(value, Value);
+                await OnValueChangingAsync(Value, value);
                 Value = value;
                 Changed(Value);
             }

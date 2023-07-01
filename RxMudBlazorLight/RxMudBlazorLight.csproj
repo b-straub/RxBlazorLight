@@ -20,7 +20,7 @@
 		<PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>..\Nuget</PackageOutputPath>
-		<PackageVersion>0.3.9</PackageVersion>
+		<PackageVersion>0.4.0</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

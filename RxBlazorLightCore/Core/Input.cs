@@ -32,14 +32,11 @@ namespace RxBlazorLightCore
             SetValueIntern(value, false);
         }
 
-        private void SetValueIntern(T value, bool init)
+        private void SetValueIntern(T value, bool force)
         {
-            if (init || CanChange())
+            if (force || CanChange())
             {
-                if (!init)
-                {
-                    OnValueChanging(Value, value);
-                }
+                OnValueChanging(Value, value);
                 Value = value;
                 Changed(Value);
             }
@@ -130,14 +127,11 @@ namespace RxBlazorLightCore
             await SetValueAsyncIntern(value, false);
         }
 
-        private async Task SetValueAsyncIntern(T value, bool init)
+        private async Task SetValueAsyncIntern(T value, bool force)
         {
-            if (init || CanChange())
+            if (force || CanChange())
             {
-                if (!init)
-                {
-                    await OnValueChangingAsync(Value, value);
-                }
+                await OnValueChangingAsync(Value, value);
                 Value = value;
                 Changed(Value);
             }
@@ -170,14 +164,11 @@ namespace RxBlazorLightCore
             await SetValueAsyncIntern(value, false);
         }
 
-        private async Task SetValueAsyncIntern(T value, bool init)
+        private async Task SetValueAsyncIntern(T value, bool force)
         {
-            if (init || CanChange())
+            if (force || CanChange())
             {
-                if (!init)
-                {
-                    await OnValueChangingAsync(Value, value);
-                }
+                await OnValueChangingAsync(Value, value);
                 Value = value;
                 Changed(Value);
             }

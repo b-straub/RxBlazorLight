@@ -99,7 +99,6 @@ namespace RxBlazorLightCore
         public T? Parameter { get; }
         public Func<ICommandAsync<T>, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
         public void SetParameter(T? parameter);
-
         public Task Execute();
         public bool CanExecute(T? parameter);
         public Task Execute(T parameter);

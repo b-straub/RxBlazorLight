@@ -48,8 +48,8 @@ namespace RxMudBlazorLight.Inputs.Radio
                 };
             }
 
-            SelectedOption = RxInputGroupBase.Value;
-            SelectedOptionChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.SetValue(v));
+            Value = RxInputGroupBase.Value;
+            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.SetValue(v));
             Disabled = !RxInputGroupBase.CanChange();
 
             base.OnParametersSet();

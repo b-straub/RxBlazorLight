@@ -13,8 +13,8 @@
     {
         ArgumentNullException.ThrowIfNull(RxInput);
 
-        Checked = RxInput.Value;
-        CheckedChanged = EventCallback.Factory.Create<T?>(this, v =>
+        Value = RxInput.Value;
+        ValueChanged = EventCallback.Factory.Create<T?>(this, v =>
         {
             if (v is not null)
             {

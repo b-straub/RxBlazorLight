@@ -14,7 +14,7 @@
         ArgumentNullException.ThrowIfNull(RxInput);
 
         Value = RxInput.Value;
-        Text = Value.ToString();
+        Text = Value?.ToString();
 
         ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInput.SetValue(v));
         Disabled = !RxInput.CanChange();

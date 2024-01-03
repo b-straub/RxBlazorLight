@@ -19,7 +19,7 @@
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         ArgumentNullException.ThrowIfNull(Values);
 
@@ -28,21 +28,22 @@
             throw new InvalidOperationException("MudRadioRX Index must be >= 0!");
         }
 
-        Option = Values[Index];
+        Value = Values[Index];
+        ArgumentNullException.ThrowIfNull(Value);
 
         if (ChildContent is null)
         {
             ChildContent = builder =>
             {
-                builder.AddContent(0, Label is null ? Option.ToString() : Label);
+                builder.AddContent(0, Label is null ? Value.ToString() : Label);
             };
 
-            if (Option.Equals(InitialSelection))
+            if (Value.Equals(InitialSelection))
             {
-                Select();
+                await SelectAsync();
             }
         }
 
-        base.OnParametersSet();
+        await base.OnParametersSetAsync();
     }
 }

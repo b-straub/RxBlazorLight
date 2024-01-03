@@ -13,8 +13,8 @@
     {
         ArgumentNullException.ThrowIfNull(RxInputAsync);
 
-        Checked = RxInputAsync.Value;
-        CheckedChanged = EventCallback.Factory.Create<T?>(this, v =>
+        Value = RxInputAsync.Value;
+        ValueChanged = EventCallback.Factory.Create<T?>(this, v =>
         {
             if (v is not null)
             {

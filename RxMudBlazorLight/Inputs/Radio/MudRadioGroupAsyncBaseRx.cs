@@ -50,8 +50,8 @@ namespace RxMudBlazorLight.Inputs.Radio
                 };
             }
 
-            SelectedOption = RxInputGroupAsyncBase.Value;
-            SelectedOptionChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupAsyncBase.SetValueAsync(v));
+            Value = RxInputGroupAsyncBase.Value;
+            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupAsyncBase.SetValueAsync(v));
             Disabled = !RxInputGroupAsyncBase.CanChange();
 
             base.OnParametersSet();
@@ -65,7 +65,7 @@ namespace RxMudBlazorLight.Inputs.Radio
             {
                 _initializedAsync = true;
                 await RxInputGroupAsyncBase.InitializeAsync();
-                SelectedOption = RxInputGroupAsyncBase.Value;
+                Value = RxInputGroupAsyncBase.Value;
             }
 
             await base.OnAfterRenderAsync(firstRender);

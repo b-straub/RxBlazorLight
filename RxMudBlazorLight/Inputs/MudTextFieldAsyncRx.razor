@@ -14,6 +14,8 @@
         ArgumentNullException.ThrowIfNull(RxInputAsync);
 
         Value = RxInputAsync.Value;
+        ArgumentNullException.ThrowIfNull(Value);
+
         Text = Value.ToString();
 
         ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputAsync.SetValueAsync(v));

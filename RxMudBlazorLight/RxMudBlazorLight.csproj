@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
@@ -20,7 +20,7 @@
 		<PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>..\Nuget</PackageOutputPath>
-		<PackageVersion>0.4.0</PackageVersion>
+		<PackageVersion>0.5.0</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,8 +32,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.7" />
-		<PackageReference Include="MudBlazor" Version="6.4.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+		<PackageReference Include="MudBlazor" Version="6.12.0" />
 		<PackageReference Include="Teronis.MSBuild.Packaging.ProjectBuildInPackage" Version="1.0.0">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

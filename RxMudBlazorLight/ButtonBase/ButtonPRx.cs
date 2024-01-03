@@ -2,22 +2,24 @@
 using Microsoft.AspNetCore.Components.Web;
 using RxBlazorLightCore;
 
-namespace RxBlazorLight.ButtonBase
+namespace RxMudBlazorLight.ButtonBase
 {
     public class ButtonPRX<T> : ButtonBaseRX
     {
         public EventCallback<MouseEventArgs> OnClick { get; private set; }
 
         private readonly ICommand<T> _command;
+        private readonly Func<T?, Task<bool>>? _confirmExecution;
 
-        private ButtonPRX(MBButtonType type, ICommand<T>? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution) :
-            base(type, confirmExecution, beforeExecution, afterExecution)
+        private ButtonPRX(MBButtonType type, ICommand<T>? command, Func<T?, Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution) :
+            base(type, beforeExecution, afterExecution)
         {
             ArgumentNullException.ThrowIfNull(command);
             _command = command;
+            _confirmExecution = confirmExecution;
         }
 
-        public static ButtonPRX<T> Create(MBButtonType type, ICommand<T>? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution)
+        public static ButtonPRX<T> Create(MBButtonType type, ICommand<T>? command, Func<T?, Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution)
         {
             return new ButtonPRX<T>(type, command, confirmExecution, beforeExecution, afterExecution);
         }
@@ -41,7 +43,7 @@ namespace RxBlazorLight.ButtonBase
 
             if (_confirmExecution is not null)
             {
-                canExecute = await _confirmExecution();
+                canExecute = await _confirmExecution(_command.Parameter);
             }
 
             if (canExecute)

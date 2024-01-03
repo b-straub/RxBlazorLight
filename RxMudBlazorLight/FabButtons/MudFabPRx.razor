@@ -14,7 +14,7 @@
     public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
 
     [Parameter]
-    public Func<Task<bool>>? ConfirmExecution { get; set; }
+    public Func<T?, Task<bool>>? ConfirmExecution { get; set; }
 
     [Parameter]
     public Action? BeforeExecution { get; set; }

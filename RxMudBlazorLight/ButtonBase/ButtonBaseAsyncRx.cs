@@ -2,7 +2,7 @@
 using MudBlazor;
 using RxBlazorLightCore;
 
-namespace RxBlazorLight.ButtonBase
+namespace RxMudBlazorLight.ButtonBase
 {
     public enum MBIconVariant
     {
@@ -35,8 +35,8 @@ namespace RxBlazorLight.ButtonBase
         private string? _buttonLabel;
         private string? _buttonIcon;
 
-        protected ButtonBaseAsyncRX(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution, string? cancelText) :
-           base(type, confirmExecution, beforeExecution, afterExecution)
+        protected ButtonBaseAsyncRX(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, Action? beforeExecution, Action? afterExecution, string? cancelText) :
+           base(type, beforeExecution, afterExecution)
         {
             _buttonColor = buttonColor;
             Color = _buttonColor;

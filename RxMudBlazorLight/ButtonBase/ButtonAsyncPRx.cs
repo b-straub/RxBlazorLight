@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using RxBlazorLightCore;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata;
 
-namespace RxBlazorLight.ButtonBase
+namespace RxMudBlazorLight.ButtonBase
 {
     public class ButtonAsyncPRX<T> : ButtonBaseAsyncRX
     {
@@ -14,8 +13,8 @@ namespace RxBlazorLight.ButtonBase
         private readonly ICommandAsync<T> _command;
         private readonly Color _cancelColor;
 
-        private ButtonAsyncPRX(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, ICommandAsync<T>? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution, Color? cancelColor, string? cancelText) :
-            base(type, buttonColor, buttonChildContent, confirmExecution, beforeExecution, afterExecution, cancelText)
+        private ButtonAsyncPRX(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, ICommandAsync<T>? command, Action? beforeExecution, Action? afterExecution, Color? cancelColor, string? cancelText) :
+            base(type, buttonColor, buttonChildContent, beforeExecution, afterExecution, cancelText)
         {
             ArgumentNullException.ThrowIfNull(command);
 
@@ -23,9 +22,9 @@ namespace RxBlazorLight.ButtonBase
             _cancelColor = cancelColor ?? Color.Warning;
         }
 
-        public static ButtonAsyncPRX<T> Create(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, ICommandAsync<T>? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution, Color? cancelColor, string? cancelText)
+        public static ButtonAsyncPRX<T> Create(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, ICommandAsync<T>? command, Action? beforeExecution, Action? afterExecution, Color? cancelColor, string? cancelText)
         {
-            return new ButtonAsyncPRX<T>(type, buttonColor, buttonChildContent, command, confirmExecution, beforeExecution, afterExecution, cancelColor, cancelText);
+            return new ButtonAsyncPRX<T>(type, buttonColor, buttonChildContent, command, beforeExecution, afterExecution, cancelColor, cancelText);
         }
 
         [MemberNotNull(nameof(OnClick))]
@@ -73,17 +72,7 @@ namespace RxBlazorLight.ButtonBase
                 _beforeExecution();
             }
 
-            bool canExecute = true;
-
-            if (_confirmExecution is not null)
-            {
-                canExecute = await _confirmExecution();
-            }
-
-            if (canExecute)
-            {
-                await _command.Execute();
-            }
+            await _command.Execute();
 
             if (_afterExecution is not null)
             {

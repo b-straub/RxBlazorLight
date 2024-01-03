@@ -2,17 +2,19 @@
 using Microsoft.AspNetCore.Components.Web;
 using RxBlazorLightCore;
 
-namespace RxBlazorLight.ButtonBase
+namespace RxMudBlazorLight.ButtonBase
 {
     public class ButtonRX : ButtonBaseRX
     {
         public EventCallback<MouseEventArgs> OnClick { get; }
+        private readonly Func<Task<bool>>? _confirmExecution;
 
         private ButtonRX(MBButtonType type, ICommand? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution) :
-            base(type, confirmExecution, beforeExecution, afterExecution)
+            base(type, beforeExecution, afterExecution)
         {
             ArgumentNullException.ThrowIfNull(command);
             OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute(command.Execute));
+            _confirmExecution = confirmExecution;
         }
 
         public static ButtonRX Create(MBButtonType type, ICommand? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution)

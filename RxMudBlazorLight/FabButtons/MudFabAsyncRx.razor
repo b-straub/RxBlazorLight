@@ -10,9 +10,6 @@
     public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
 
     [Parameter]
-    public Func<Task<bool>>? ConfirmExecution { get; set; }
-
-    [Parameter]
     public Action? BeforeExecution { get; set; }
 
     [Parameter]
@@ -38,7 +35,7 @@
         ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
         _rxCommandAsync = RxCommandAsyncFactory();
 
-        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.FAB, Color, null, _rxCommandAsync, ConfirmExecution, BeforeExecution, AfterExecution, CancelColor, CancelText);
+        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.FAB, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, CancelColor, CancelText);
         _buttonStartIcon = StartIcon;
         _buttonEndIcon = EndIcon;
 

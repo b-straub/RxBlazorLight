@@ -1,0 +1,77 @@
+﻿<MudElement>
+    <MudDialog>
+        <DialogContent>
+            @Message
+        </DialogContent>
+        <DialogActions>
+            <MudButton Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
+            <MudButtonAsyncRx @ref=_buttonRef Variant ="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
+                    RxCommandAsyncFactory=@(() => RxCommandAsync) PrepareExecutionAsync=@(PrepareExecutionAsync!) ConfirmExecution=@(ConfirmExecution!)
+                              BeforeExecution=@BeforeExecutionDo AfterExecution=@AfterExecutionDo CancelText=@CancelText>
+                @ConfirmButton
+            </MudButtonAsyncRx>
+            </DialogActions>
+        </MudDialog>
+    </MudElement>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public required string Message { get; init; }
+
+    [Parameter]
+    public string ConfirmButton { get; set; } = "Delete";
+
+    [Parameter]
+    public bool SuccessOnConfirm { get; set; } = false;
+
+    [Parameter]
+    public required ICommandAsync RxCommandAsync { get; init; }
+
+    [Parameter]
+    public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
+
+    [Parameter]
+    public Func<Task<bool>>? ConfirmExecution { get; set; }
+
+    [Parameter]
+    public Action? BeforeExecution { get; set; }
+
+    [Parameter]
+    public Action? AfterExecution { get; set; }
+
+    [Parameter]
+    public string? CancelText { get; set; }
+
+    private void Cancel() => MudDialog?.Cancel();
+    private MudButtonAsyncRx? _buttonRef;
+    private IDisposable? _buttonDisposable;
+
+    private void BeforeExecutionDo()
+    {
+        if (_buttonRef?.RxCommandAsync is not null && _buttonDisposable is null)
+        {
+            _buttonDisposable = _buttonRef.RxCommandAsync.Subscribe(_ => InvokeAsync(StateHasChanged));
+        }
+
+        if (BeforeExecution is not null)
+        {
+            BeforeExecution();
+        }
+    }
+
+    private void AfterExecutionDo()
+    {
+        if (AfterExecution is not null)
+        {
+            AfterExecution();
+        }
+
+        _buttonDisposable?.Dispose();
+        _buttonDisposable = null;
+
+        MudDialog?.Close(DialogResult.Ok(true));
+    }
+}

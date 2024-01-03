@@ -2,14 +2,9 @@
 
 namespace RxMudBlazorLightTestBase.Service
 {
-    public class Pizza
+    public class Pizza(string name)
     {
-        public Pizza(string name)
-        {
-            Name = name;
-        }
-
-        public readonly string Name;
+        public readonly string Name = name;
 
         public override bool Equals(object? o)
         {
@@ -22,14 +17,9 @@ namespace RxMudBlazorLightTestBase.Service
         public override string ToString() => Name;
     }
 
-    public class TestColor
+    public class TestColor(ColorEnum color)
     {
-        public ColorEnum Color { get; }
-
-        public TestColor(ColorEnum color)
-        {
-            Color = color;
-        }
+        public ColorEnum Color { get; } = color;
 
         public override bool Equals(object? o)
         {

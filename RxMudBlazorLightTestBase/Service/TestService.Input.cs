@@ -4,12 +4,8 @@ namespace RxMudBlazorLightTestBase.Service
 {
     public sealed partial class TestService
     {
-        public class IncrementValueIP : Input<TestService, int>
+        public class IncrementValueIP(TestService service, int value) : Input<TestService, int>(service, value)
         {
-            public IncrementValueIP(TestService service, int value) : base(service, value)
-            {
-            }
-
             protected override void OnValueChanging(int oldValue, int newValue)
             {
                 Service.Count = newValue;
@@ -21,43 +17,30 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddModeIP : Input<TestService, bool>
+        public class AddModeIP(TestService service, bool value) : Input<TestService, bool>(service, value)
         {
-            public AddModeIP(TestService service, bool value) : base(service, value)
-            {
-            }
-
             public override bool CanChange()
             {
                 return !Service.AddRemoveAsync.Executing;
             }
         }
 
-        public class RatingValueIP : Input<TestService, int>
+        public class RatingValueIP(TestService service, int value) : Input<TestService, int>(service, value)
         {
-            public RatingValueIP(TestService service, int value) : base(service, value)
-            {
-            }
-
             public override bool CanChange()
             {
                 return Service.GetRadio().Value?.Color is ColorEnum.GREEN;
             }
         }
 
-        public class PizzaIPGAsync : InputGroupAsync<TestService, Pizza?>
+        public class PizzaIPGAsync(TestService service) : InputGroupAsync<TestService, Pizza?>(service, null)
         {
             private static readonly Pizza[] _pizzas =
-            {
-                new Pizza("Cardinale"), new Pizza("Diavolo"), new Pizza("Margarita"), new Pizza("Spinaci")
-            };
+            [
+                new("Cardinale"), new("Diavolo"), new("Margarita"), new("Spinaci")
+            ];
 
             private bool _initialized = false;
-
-            public PizzaIPGAsync(TestService service) : base(service, null)
-            {
-
-            }
 
             public override Pizza[] GetItems()
             {
@@ -83,17 +66,12 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class PizzaIPG : InputGroup<TestService, Pizza>
+        public class PizzaIPG(TestService service, Pizza value) : InputGroup<TestService, Pizza>(service, value)
         {
             public static readonly Pizza[] Pizzas =
-            {
-                new Pizza("Cardinale"), new Pizza("Diavolo"), new Pizza("Margarita"), new Pizza("Spinaci")
-            };
-
-            public PizzaIPG(TestService service, Pizza value) : base(service, value)
-            {
-
-            }
+            [
+                new("Cardinale"), new("Diavolo"), new("Margarita"), new("Spinaci")
+            ];
 
             public override Pizza[] GetItems()
             {
@@ -102,18 +80,14 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class ColorIPGP : InputGroupP<TestService, TestColor, ColorEnum>
+        public class ColorIPGP(TestService service) : InputGroupP<TestService, TestColor, ColorEnum>(service, _colors[0])
         {
             private static readonly TestColor[] _colors =
-            {
-                new TestColor(ColorEnum.RED), new TestColor(ColorEnum.GREEN), new TestColor(ColorEnum.BLUE)
-            };
+            [
+                new(ColorEnum.RED), new(ColorEnum.GREEN), new(ColorEnum.BLUE)
+            ];
 
             private bool _initialized = false;
-
-            public ColorIPGP(TestService service) : base(service, _colors[0])
-            {
-            }
 
             public override TestColor[] GetItems()
             {

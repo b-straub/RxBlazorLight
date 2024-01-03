@@ -41,24 +41,16 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class ExceptionCMD : CommandService<TestService>
+        public class ExceptionCMD(TestService testService) : CommandService<TestService>(testService)
 		{
-            public ExceptionCMD(TestService testService) : base(testService)
-            {
-            }
-
             protected override void DoExecute()
 			{
                 throw new InvalidOperationException("Command test exception!");
 			}
 		}
 
-		public class IncrementCMD : CommandService<TestService>
+		public class IncrementCMD(TestService testService) : CommandService<TestService>(testService)
         {
-            public IncrementCMD(TestService testService) : base(testService) 
-            { 
-            }
-
             protected override void DoExecute()
             {
                 Service.Count++;
@@ -70,10 +62,8 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddIncrementValueCMD : CommandService<TestService>
+        public class AddIncrementValueCMD(TestService testService) : CommandService<TestService>(testService)
         {
-            public AddIncrementValueCMD(TestService testService) : base(testService) { }
-
             protected override void DoExecute()
             {
                 Service.Count += Service.IncrementValue.Value;
@@ -85,10 +75,8 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddCMD : CommandService<TestService, int>
+        public class AddCMD(TestService testService) : CommandService<TestService, int>(testService)
         {
-            public AddCMD(TestService testService) : base(testService) { }
-
             protected override void DoExecute(int parameter)
             {
                 Service.Count += parameter;
@@ -100,10 +88,8 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class IncrementAsyncCMD : CommandServiceAsync<TestService>
+        public class IncrementAsyncCMD(TestService testService) : CommandServiceAsync<TestService>(testService)
         {
-            public IncrementAsyncCMD(TestService testService) : base(testService) { }
-
             protected override async Task DoExecute(CancellationToken _)
             {
                 await Task.Delay(500, CancellationToken.None);
@@ -116,10 +102,8 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddAsyncCMD : CommandLongRunningServiceAsync<TestService, int>
+        public class AddAsyncCMD(TestService testService) : CommandLongRunningServiceAsync<TestService, int>(testService)
         {
-            public AddAsyncCMD(TestService testService) : base(testService) { }
-
             protected override async Task DoExecute(int parameter, CancellationToken ct)
             {
                 await Task.Delay(4000, ct);
@@ -132,10 +116,8 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddAsyncCMDForm : CommandLongRunningServiceAsync<TestService, int>
+        public class AddAsyncCMDForm(TestService testService) : CommandLongRunningServiceAsync<TestService, int>(testService)
         {
-            public AddAsyncCMDForm(TestService testService) : base(testService) { }
-
             protected override async Task DoExecute(int parameter, CancellationToken ct)
             {
                 await Task.Delay(100, ct);
@@ -148,10 +130,8 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddRemoveAsyncCMDForm : CommandLongRunningServiceAsync<TestService, int>
+        public class AddRemoveAsyncCMDForm(TestService testService) : CommandLongRunningServiceAsync<TestService, int>(testService)
         {
-            public AddRemoveAsyncCMDForm(TestService testService) : base(testService) { }
-
             protected override async Task DoExecute(int parameter, CancellationToken ct)
             {
                 await Task.Delay(5000, ct);

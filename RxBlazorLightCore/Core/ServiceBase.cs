@@ -15,7 +15,7 @@ namespace RxBlazorLightCore
         public RxBLServiceBase()
         {
             _changedObservable = _changedSubject.Publish().RefCount();
-            _commandExceptions = new List<Exception>();
+            _commandExceptions = [];
         }
 
         public void StateHasChanged(StateChange reason = StateChange.INTERNAL, Exception? exception = null)

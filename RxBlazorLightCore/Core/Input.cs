@@ -71,7 +71,7 @@ namespace RxBlazorLightCore
         protected InputBase(S service, T value) : base(value)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(_ => Service.StateHasChanged(StateChange.INPUT, null));
+            _serviceDisposable = this.Subscribe(_ => Service.StateHasChanged(ServiceState.INPUT, null));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -90,11 +90,8 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class Input<T> : InputBase<T>, IInput<T>
+    public class Input<T>(T value) : InputBase<T>(value), IInput<T>
     {
-        public Input(T value) : base(value)
-        {
-        }
     }
 
     public class Input<S, T> : InputBase<S, T>, IInput<T> where S : IRXService
@@ -109,12 +106,8 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class InputAsync<T> : InputBase<T>, IInputAsync<T>
+    public class InputAsync<T>(T value) : InputBase<T>(value), IInputAsync<T>
     {
-        public InputAsync(T value) : base(value)
-        {
-        }
-
         protected virtual async Task OnValueChangingAsync(T oldValue, T newValue)
         {
             await Task.CompletedTask;

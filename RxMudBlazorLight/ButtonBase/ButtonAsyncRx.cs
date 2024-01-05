@@ -9,6 +9,7 @@ namespace RxMudBlazorLight.ButtonBase
     public class ButtonAsyncRX : ButtonBaseAsyncRX
     {
         public EventCallback<MouseEventArgs>? OnClick { get; private set; }
+        public EventCallback<TouchEventArgs> OnTouch { get; private set; }
 
         private readonly ICommandAsync _command;
         private readonly Color _cancelColor;
@@ -27,6 +28,8 @@ namespace RxMudBlazorLight.ButtonBase
         }
 
         [MemberNotNull(nameof(OnClick))]
+        [MemberNotNull(nameof(OnTouch))]
+
         public void SetParameters()
         {
             Disabled = !_command.CanExecute() && !(_command.Executing && _command.CanCancel());
@@ -39,6 +42,7 @@ namespace RxMudBlazorLight.ButtonBase
                     ChildContent = RenderCancel();
                 }
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => _command.Cancel());
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => _command.Cancel());
             }
             else
             {
@@ -48,6 +52,7 @@ namespace RxMudBlazorLight.ButtonBase
                     ChildContent = _command.Executing && _command.HasProgress() ? RenderProgress() : _buttonChildContent;
                 }
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute(_command.Execute));
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => Execute(_command.Execute));
             }
         }
 

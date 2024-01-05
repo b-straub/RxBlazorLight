@@ -3,8 +3,8 @@
 @RenderBase()
 
 @code {
-    [Parameter]
-    public Func<ICommandAsync>? RxCommandAsyncFactory { get; set; }
+    [Parameter, EditorRequired]
+    public required Func<ICommandAsync>? RxCommandAsyncFactory { get; init; }
 
     [Parameter]
     public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
@@ -14,6 +14,9 @@
 
     [Parameter]
     public Action? AfterExecution { get; set; }
+
+    [Parameter]
+    public Color? CancelColor { get; set; }
 
     [Parameter]
     public string? CancelText { get; set; }
@@ -28,7 +31,7 @@
         ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
         RxCommandAsync = RxCommandAsyncFactory();
 
-        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.DEFAULT, Color, ChildContent, RxCommandAsync, BeforeExecution, AfterExecution, null, CancelText);
+        _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.DEFAULT, Color, ChildContent, RxCommandAsync, BeforeExecution, AfterExecution, CancelColor, CancelText);
         
         base.OnInitialized();
     }

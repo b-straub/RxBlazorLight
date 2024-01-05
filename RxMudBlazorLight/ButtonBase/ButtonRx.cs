@@ -7,6 +7,8 @@ namespace RxMudBlazorLight.ButtonBase
     public class ButtonRX : ButtonBaseRX
     {
         public EventCallback<MouseEventArgs> OnClick { get; }
+        public EventCallback<TouchEventArgs> OnTouch { get; }
+
         private readonly Func<Task<bool>>? _confirmExecution;
 
         private ButtonRX(MBButtonType type, ICommand? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution) :
@@ -14,6 +16,7 @@ namespace RxMudBlazorLight.ButtonBase
         {
             ArgumentNullException.ThrowIfNull(command);
             OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute(command.Execute));
+            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => Execute(command.Execute));
             _confirmExecution = confirmExecution;
         }
 

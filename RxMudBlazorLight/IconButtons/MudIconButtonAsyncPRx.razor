@@ -1,7 +1,9 @@
 ﻿@inherits MudIconButton
 @typeparam T
 
-@RenderBase()
+<MudBadge Visible=@(GetProgressIcon() != string.Empty) Icon=@GetProgressIcon() Color=@Color Overlap="true" Bordered="true">
+    @RenderBase()
+</MudBadge>
 
 @code {
     [Parameter, EditorRequired]
@@ -31,8 +33,7 @@
     {
         ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
         _rxCommandAsync = RxCommandAsyncFactory();
-
-        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.DEFAULT, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, null, null);
+        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.ICON, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, null, null);
         _buttonColor = Color;
 
         base.OnInitialized();
@@ -58,5 +59,15 @@
         Color = _buttonAsyncPRX.Color;
 
         base.OnParametersSet();
+    }
+
+    private string GetProgressIcon()
+    {
+        if (_rxCommandAsync is not null && _rxCommandAsync.HasProgress() && _rxCommandAsync.Executing)
+        {
+            return IconVariant.GetProgressIcon();
+        }
+
+        return string.Empty;
     }
 }

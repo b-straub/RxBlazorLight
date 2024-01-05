@@ -18,15 +18,15 @@ namespace RxBlazorLightCore
             _commandExceptions = [];
         }
 
-        public void StateHasChanged(StateChange reason = StateChange.INTERNAL, Exception? exception = null)
+        public void StateHasChanged(ServiceState reason = ServiceState.SERVICE, Exception? exception = null)
         {
-            if (exception is null && reason is StateChange.EXCEPTION ||
-                exception is not null && reason is not StateChange.EXCEPTION)
+            if (exception is null && reason is ServiceState.COMMAND_EXCEPTION ||
+                exception is not null && reason is not ServiceState.COMMAND_EXCEPTION)
             {
                 throw new ArgumentException(reason.ToString());
             }
 
-            if (reason is StateChange.EXCEPTION && exception is not null)
+            if (reason is ServiceState.COMMAND_EXCEPTION && exception is not null)
             {
                 _commandExceptions.Add(exception);
             }

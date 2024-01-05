@@ -4,10 +4,11 @@
             @Message
         </DialogContent>
         <DialogActions>
-            <MudButton Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
+            <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
             <MudButtonAsyncRx @ref=_buttonRef Variant ="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                    RxCommandAsyncFactory=@(() => RxCommandAsync) PrepareExecutionAsync=@(PrepareExecutionAsync!) ConfirmExecution=@(ConfirmExecution!)
-                              BeforeExecution=@BeforeExecutionDo AfterExecution=@AfterExecutionDo CancelText=@CancelText>
+                    RxCommandAsyncFactory=@(() => RxCommandAsync) PrepareExecutionAsync=@(PrepareExecutionAsync!)
+                              BeforeExecution=@BeforeExecutionDo AfterExecution=@AfterExecutionDo
+                              CancelColor=@CancelColor CancelText=@CancelText>
                 @ConfirmButton
             </MudButtonAsyncRx>
             </DialogActions>
@@ -18,7 +19,7 @@
     [CascadingParameter]
     MudDialogInstance? MudDialog { get; set; }
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public required string Message { get; init; }
 
     [Parameter]
@@ -27,14 +28,11 @@
     [Parameter]
     public bool SuccessOnConfirm { get; set; } = false;
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public required ICommandAsync RxCommandAsync { get; init; }
 
     [Parameter]
     public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
-
-    [Parameter]
-    public Func<Task<bool>>? ConfirmExecution { get; set; }
 
     [Parameter]
     public Action? BeforeExecution { get; set; }
@@ -43,17 +41,49 @@
     public Action? AfterExecution { get; set; }
 
     [Parameter]
+    public Color? CancelColor { get; set; }
+
+    [Parameter]
     public string? CancelText { get; set; }
 
-    private void Cancel() => MudDialog?.Cancel();
     private MudButtonAsyncRx? _buttonRef;
     private IDisposable? _buttonDisposable;
+    private bool _canceled = false;
+
+    private bool CanNotCancel()
+    {
+        if (_buttonRef?.RxCommandAsync is null)
+        {
+            return false;
+        }
+
+        return _buttonRef.RxCommandAsync.Running;
+    }
+
+    private void Cancel()
+    {
+        ArgumentNullException.ThrowIfNull(_buttonRef?.RxCommandAsync);
+
+        if (!_buttonRef.RxCommandAsync.Running)
+        {
+            MudDialog?.Cancel();
+        }
+    }
 
     private void BeforeExecutionDo()
     {
+        _canceled = false;
+
         if (_buttonRef?.RxCommandAsync is not null && _buttonDisposable is null)
         {
-            _buttonDisposable = _buttonRef.RxCommandAsync.Subscribe(_ => InvokeAsync(StateHasChanged));
+            _buttonDisposable = _buttonRef.RxCommandAsync.Subscribe(state =>
+           {
+               InvokeAsync(StateHasChanged);
+               if (state is ServiceState.COMMAND && _buttonRef.RxCommandAsync.Canceled)
+               {
+                   _canceled = true;
+               }
+           });
         }
 
         if (BeforeExecution is not null)
@@ -69,9 +99,12 @@
             AfterExecution();
         }
 
-        _buttonDisposable?.Dispose();
-        _buttonDisposable = null;
+        if (!_canceled)
+        {
+            _buttonDisposable?.Dispose();
+            _buttonDisposable = null;
 
-        MudDialog?.Close(DialogResult.Ok(true));
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
     }
 }

@@ -136,13 +136,18 @@ namespace RxMudBlazorLightTestBase.Service
             {
                 await Task.Delay(5000, ct);
 
-                int val = Service.AddMode.Value ? (int)parameter : -(int)parameter;
+                int val = Service.AddMode.Value ? parameter : -parameter;
                 Service.Count += val;
             }
 
             public override bool CanExecute(int parameter)
             {
                 return !Service.AddMode.Value || Service.Count < 30;
+            }
+
+            public override bool PrepareModal()
+            {
+                return false;
             }
         }
     }

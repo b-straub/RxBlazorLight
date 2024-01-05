@@ -1,20 +1,16 @@
-﻿@inherits MudButton
-@typeparam T
+﻿@inherits MudMenuItem
 
 @RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required Func<ICommand<T>> RxCommandFactory { get; init; }
+    public required Func<ICommand> RxCommandFactory { get; init; }
 
     [Parameter]
-    public T? Parameter { get; set; }
+    public Func<ICommand, bool>? PrepareExecution { get; set; }
 
     [Parameter]
-    public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
-
-    [Parameter]
-    public Func<T?, Task<bool>>? ConfirmExecution { get; set; }
+    public Func<Task<bool>>? ConfirmExecution { get; set; }
 
     [Parameter]
     public Action? BeforeExecution { get; set; }
@@ -23,30 +19,26 @@
     public Action? AfterExecution { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonPRX<T>? _buttonPRX;
-    private ICommand<T>? _rxCommand;
+    private ButtonRX? _buttonRX;
+    private ICommand? _rxCommand;
 
     protected override void OnInitialized()
     {
         ArgumentNullException.ThrowIfNull(RxCommandFactory);
         _rxCommand = RxCommandFactory();
 
-        _buttonPRX = ButtonPRX<T>.Create(MBButtonType.DEFAULT, _rxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
-
+        _buttonRX = ButtonRX.Create(MBButtonType.DEFAULT, _rxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
+        OnClick = _buttonRX.OnClick;
+        OnTouch = _buttonRX.OnTouch;
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
-        ArgumentNullException.ThrowIfNull(_buttonPRX);
         ArgumentNullException.ThrowIfNull(_rxCommand);
 
         _rxCommand.PrepareExecution = PrepareExecution;
-        _buttonPRX.SetParameters(Parameter);
-
-        Disabled = !_rxCommand.CanExecute(Parameter);
-        OnClick = _buttonPRX.OnClick;
-
+        Disabled = !_rxCommand.CanExecute();
         base.OnParametersSet();
     }
 }

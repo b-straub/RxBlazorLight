@@ -1,34 +1,31 @@
 ﻿
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
-    public class CommandBase : IObservable<StateChange>
+    public class CommandBase : IObservable<ServiceState>
     {
-        public Exception? LastException { get; protected set; }
-        public IObservable<Unit> Executed{ get; }
+        public CommandState State { get; private set; } = CommandState.NONE;
 
-        private readonly Subject<StateChange> _changedSubject;
-        private readonly IObservable<StateChange> _changedObservable;
+        public Exception? LastException { get; protected set; }
+
+        private readonly Subject<ServiceState> _changedSubject;
+        private readonly IObservable<ServiceState> _changedObservable;
 
         protected CommandBase()
         {
             _changedSubject = new();
             _changedObservable = _changedSubject.Publish().RefCount();
-
-            Executed = _changedObservable
-                .Where(sc => sc is StateChange.CMD_EXECUTED)
-                .Select(_ => Unit.Default);
         }
 
-        protected void Changed(StateChange reason)
+        protected void Changed(CommandState state)
         {
-            _changedSubject.OnNext(reason);
+            State = state;
+            _changedSubject.OnNext(state is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND);
         }
 
-        public IDisposable Subscribe(IObserver<StateChange> observer)
+        public IDisposable Subscribe(IObserver<ServiceState> observer)
         {
             return _changedObservable.Subscribe(observer);
         }
@@ -70,8 +67,8 @@ namespace RxBlazorLightCore
                 LastException = ex;
             }
 
-            Changed(LastException is not null ? StateChange.EXCEPTION : 
-                executed ? StateChange.CMD_EXECUTED : StateChange.CMD_NOT_EXECUTED);
+            Changed(LastException is not null ? CommandState.EXCEPTION : 
+                executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
     }
 
@@ -128,8 +125,8 @@ namespace RxBlazorLightCore
                 Parameter = default;
             }
 
-            Changed(LastException is not null ? StateChange.EXCEPTION :
-                executed ? StateChange.CMD_EXECUTED : StateChange.CMD_NOT_EXECUTED);
+            Changed(LastException is not null ? CommandState.EXCEPTION :
+                executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
     }
 
@@ -193,13 +190,13 @@ namespace RxBlazorLightCore
     public abstract class CommandAsync : CommandBase, ICommandAsync
     {
         public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
-        public bool Executing { get; protected set; }
+        public bool Running { get; protected set; }
 
         protected CancellationTokenSource CancellationTokenSource { get; private set; } = new();
 
         protected CommandAsync()
         {
-            Executing = false;
+            Running = false;
         }
 
         protected abstract Task DoExecute(CancellationToken cancellationToken);
@@ -214,6 +211,11 @@ namespace RxBlazorLightCore
             return false;
         }
 
+        public virtual bool PrepareModal()
+        {
+            return true;
+        }
+        
         public virtual bool CanExecute()
         {
             return true;
@@ -225,8 +227,9 @@ namespace RxBlazorLightCore
 
             var executed = false;
             LastException = null;
-            Executing = true;
-            Changed(StateChange.CMD_EXECUTING);
+            Running = true;
+
+            Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARE : CommandState.EXECUTING);
 
             try
             {
@@ -239,6 +242,10 @@ namespace RxBlazorLightCore
 
                 if (execute && CanExecute())
                 {
+                    if (PrepareModal())
+                    {
+                        Changed(CommandState.EXECUTING);
+                    }
                     await DoExecute(CancellationTokenSource.Token);
                     executed = true;
                 }
@@ -251,17 +258,17 @@ namespace RxBlazorLightCore
                 }
             }
 
-            Executing = false;
-            Changed(LastException is not null ? StateChange.EXCEPTION :
-                executed ? StateChange.CMD_EXECUTED : StateChange.CMD_NOT_EXECUTED);
+            Running = false;
+            Changed(LastException is not null ? CommandState.EXCEPTION :
+                executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
 
         public void Cancel()
         {
             CancellationTokenSource.Cancel();
-            Executing = false;
+            Running = false;
 
-            Changed(StateChange.CMD_CANCELED);
+            Changed(CommandState.CANCELED);
         }
 
         protected void ResetCancel()
@@ -284,12 +291,12 @@ namespace RxBlazorLightCore
 
         public Func<ICommandAsync<T>, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
 
-        public bool Executing { get; protected set; }
+        public bool Running { get; protected set; }
         protected CancellationTokenSource CancellationTokenSource { get; private set; } = new();
 
         protected CommandAsync()
         {
-            Executing = false;
+            Running = false;
         }
 
         public virtual bool CanCancel()
@@ -300,6 +307,11 @@ namespace RxBlazorLightCore
         public virtual bool HasProgress()
         {
             return false;
+        }
+
+        public virtual bool PrepareModal()
+        {
+            return true;
         }
 
         protected abstract Task DoExecute(T parameter, CancellationToken cancellationToken);
@@ -321,8 +333,9 @@ namespace RxBlazorLightCore
 
             var executed = false;
             LastException = null;
-            Executing = true;
-            Changed(StateChange.CMD_EXECUTING);
+            Running = true;
+
+            Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARE : CommandState.EXECUTING);
 
             try
             {
@@ -335,6 +348,10 @@ namespace RxBlazorLightCore
 
                 if (execute && CanExecute(Parameter) && Parameter is not null)
                 {
+                    if (PrepareModal())
+                    {
+                        Changed(CommandState.EXECUTING);
+                    }
                     await DoExecute(Parameter, CancellationTokenSource.Token);
                     executed = true;
                 }
@@ -352,17 +369,17 @@ namespace RxBlazorLightCore
                 Parameter = default;
             }
 
-            Executing = false;
-            Changed(LastException is not null ? StateChange.EXCEPTION :
-                executed ? StateChange.CMD_EXECUTED : StateChange.CMD_NOT_EXECUTED);
+            Running = false;
+            Changed(LastException is not null ? CommandState.EXCEPTION :
+                executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
 
         public void Cancel()
         {
             CancellationTokenSource.Cancel();
-            Executing = false;
+            Running = false;
 
-            Changed(StateChange.CMD_CANCELED);
+            Changed(CommandState.CANCELED);
         }
 
         protected void ResetCancel()

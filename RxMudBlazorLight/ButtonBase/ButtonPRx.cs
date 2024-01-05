@@ -7,6 +7,7 @@ namespace RxMudBlazorLight.ButtonBase
     public class ButtonPRX<T> : ButtonBaseRX
     {
         public EventCallback<MouseEventArgs> OnClick { get; private set; }
+        public EventCallback<TouchEventArgs> OnTouch { get; private set; }
 
         private readonly ICommand<T> _command;
         private readonly Func<T?, Task<bool>>? _confirmExecution;
@@ -30,6 +31,7 @@ namespace RxMudBlazorLight.ButtonBase
 
             _command.SetParameter(parameter);
             OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute());
+            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => Execute());
         }
 
         private async Task Execute()

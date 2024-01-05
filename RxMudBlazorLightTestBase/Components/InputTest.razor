@@ -62,9 +62,12 @@
                 "https://upload.wikimedia.org/wikipedia/commons/4/4b/Flag_of_Sweden_fixed.svg";
         }));
 
-        _disposeBag.Add(Service.Simple.Executed.Subscribe(_ =>
+        _disposeBag.Add(Service.Simple.Subscribe(state =>
         {
-            _simpleExecutions++;
+            if (state is ServiceState.COMMAND && Service.Simple.Executed)
+            {
+                _simpleExecutions++;
+            }      
             StateHasChanged();
         }));
 

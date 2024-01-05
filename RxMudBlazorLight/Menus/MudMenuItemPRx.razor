@@ -1,4 +1,4 @@
-﻿@inherits MudButton
+﻿@inherits MudMenuItem
 @typeparam T
 
 @RenderBase()
@@ -46,7 +46,7 @@
 
         Disabled = !_rxCommand.CanExecute(Parameter);
         OnClick = _buttonPRX.OnClick;
-
+        OnTouch = _buttonPRX.OnTouch;
         base.OnParametersSet();
     }
 }

@@ -6,6 +6,7 @@ namespace RxMudBlazorLight.ButtonBase
         DEFAULT,
         FAB,
         ICON,
+        MENU,
         TOGGLEICON
     }
 

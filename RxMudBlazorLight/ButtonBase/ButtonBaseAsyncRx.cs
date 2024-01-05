@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RxBlazorLightCore;
+using RxMudBlazorLight.Extensions;
 
 namespace RxMudBlazorLight.ButtonBase
 {
@@ -45,7 +46,7 @@ namespace RxMudBlazorLight.ButtonBase
             ChildContent = _buttonChildContent;
             _cancelText = cancelText;
 
-            if (type is MBButtonType.DEFAULT)
+            if (type is MBButtonType.DEFAULT || type is MBButtonType.MENU)
             {
                 _cancelText = cancelText ?? "Cancel";
             }
@@ -152,15 +153,7 @@ namespace RxMudBlazorLight.ButtonBase
             {
                 if (command.CanCancel() && _cancelText is null)
                 {
-                    var cancelIcon = iconVariant switch
-                    {
-                        MBIconVariant.Filled => Icons.Material.Filled.Cancel,
-                        MBIconVariant.Outlined => Icons.Material.Outlined.Cancel,
-                        MBIconVariant.Sharp => Icons.Material.Sharp.Cancel,
-                        MBIconVariant.Rounded => Icons.Material.Rounded.Cancel,
-                        MBIconVariant.TwoTone => Icons.Material.TwoTone.Cancel,
-                        _ => Icons.Material.Filled.Cancel
-                    };
+                    var cancelIcon = iconVariant.GetCancelIcon();
 
                     if (_iconForState is IconForState.Start)
                     {
@@ -173,17 +166,9 @@ namespace RxMudBlazorLight.ButtonBase
                     }
                 }
 
-                if (command.HasProgress() || (command.CanCancel() && _cancelText is not null))
+                if (command.HasProgress() && (!command.CanCancel() || _cancelText is not null))
                 {
-                    var progressIcon = iconVariant switch
-                    {
-                        MBIconVariant.Filled => Icons.Material.Filled.Refresh,
-                        MBIconVariant.Outlined => Icons.Material.Outlined.Refresh,
-                        MBIconVariant.Sharp => Icons.Material.Sharp.Refresh,
-                        MBIconVariant.Rounded => Icons.Material.Rounded.Refresh,
-                        MBIconVariant.TwoTone => Icons.Material.TwoTone.Refresh,
-                        _ => Icons.Material.Filled.Refresh
-                    };
+                    var progressIcon = iconVariant.GetProgressIcon();
 
                     if (_iconForState is IconForState.Start)
                     {
@@ -222,27 +207,11 @@ namespace RxMudBlazorLight.ButtonBase
             {
                 if (command.CanCancel())
                 {
-                    icon = iconVariant switch
-                    {
-                        MBIconVariant.Filled => Icons.Material.Filled.Cancel,
-                        MBIconVariant.Outlined => Icons.Material.Outlined.Cancel,
-                        MBIconVariant.Sharp => Icons.Material.Sharp.Cancel,
-                        MBIconVariant.Rounded => Icons.Material.Rounded.Cancel,
-                        MBIconVariant.TwoTone => Icons.Material.TwoTone.Cancel,
-                        _ => Icons.Material.Filled.Cancel
-                    };
+                    icon = iconVariant.GetCancelIcon();
                 }
                 else if (command.HasProgress())
                 {
-                    icon = iconVariant switch
-                    {
-                        MBIconVariant.Filled => Icons.Material.Filled.Refresh,
-                        MBIconVariant.Outlined => Icons.Material.Outlined.Refresh,
-                        MBIconVariant.Sharp => Icons.Material.Sharp.Refresh,
-                        MBIconVariant.Rounded => Icons.Material.Rounded.Refresh,
-                        MBIconVariant.TwoTone => Icons.Material.TwoTone.Refresh,
-                        _ => Icons.Material.Filled.Refresh
-                    };
+                    icon = iconVariant.GetProgressIcon();
                 }
             }
 

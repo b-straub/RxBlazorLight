@@ -1,6 +1,8 @@
 ﻿@inherits MudFab
 
-@RenderBase()
+<MudBadge Visible=@(GetProgressIcon() != string.Empty) Icon=@GetProgressIcon() Color=@Color Overlap="true" Bordered="true">
+    @RenderBase()
+</MudBadge>
 
 @code {
     [Parameter, EditorRequired]
@@ -50,7 +52,7 @@
         _rxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
         _buttonAsyncRX.SetParameters();
 
-        var parameters = _buttonAsyncRX.GetFabParameters(StartIcon, EndIcon, Label);
+        var parameters = _buttonAsyncRX.GetFabParameters(StartIcon, EndIcon, Label, IconVariant);
         StartIcon = parameters.StartIcon;
         EndIcon = parameters.EndIcon;
         Label = parameters.Label;
@@ -60,5 +62,15 @@
         Color = _buttonAsyncRX.Color;
 
         base.OnParametersSet();
+    }
+
+    private string GetProgressIcon()
+    {
+        if (_rxCommandAsync is not null && CancelText is null && _rxCommandAsync.HasProgress() && _rxCommandAsync.Executing)
+        {
+            return IconVariant.GetProgressIcon();
+        }
+
+        return string.Empty;
     }
 }

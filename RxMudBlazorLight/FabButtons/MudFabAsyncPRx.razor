@@ -1,7 +1,9 @@
 ﻿@inherits MudFab
 @typeparam T
 
-@RenderBase()
+<MudBadge Visible=@(GetProgressIcon() != string.Empty) Icon=@GetProgressIcon() Color=@Color Overlap="true" Bordered="true">
+    @RenderBase()
+</MudBadge>
 
 @code {
     [Parameter, EditorRequired]
@@ -38,7 +40,7 @@
         ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
         _rxCommandAsync = RxCommandAsyncFactory();
 
-        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.DEFAULT, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, null, CancelText);
+        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.FAB, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, null, CancelText);
         _buttonColor = Color;
 
         base.OnInitialized();
@@ -52,7 +54,7 @@
         _rxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
         _buttonAsyncPRX.SetParameters(Parameter);
 
-        var parameters = _buttonAsyncPRX.GetFabParameters(StartIcon, EndIcon, Label);
+        var parameters = _buttonAsyncPRX.GetFabParameters(StartIcon, EndIcon, Label, IconVariant);
         StartIcon = parameters.StartIcon;
         EndIcon = parameters.EndIcon;
         Label = parameters.Label;
@@ -62,5 +64,15 @@
         Color = _buttonAsyncPRX.Color;
 
         base.OnParametersSet();
+    }
+
+    private string GetProgressIcon()
+    {
+        if (_rxCommandAsync is not null && CancelText is null && _rxCommandAsync.HasProgress() && _rxCommandAsync.Executing)
+        {
+            return IconVariant.GetProgressIcon();
+        }
+
+        return string.Empty;
     }
 }

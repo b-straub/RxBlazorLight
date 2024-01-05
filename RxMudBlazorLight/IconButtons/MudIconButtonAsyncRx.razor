@@ -3,8 +3,8 @@
 @RenderBase()
 
 @code {
-    [Parameter]
-    public Func<ICommandAsync>? RxCommandAsyncFactory { get; set; }
+    [Parameter, EditorRequired]
+    public required Func<ICommandAsync>? RxCommandAsyncFactory { get; init; }
 
     [Parameter]
     public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }

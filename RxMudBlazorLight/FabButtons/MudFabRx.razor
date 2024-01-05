@@ -3,8 +3,8 @@
 @RenderBase()
 
 @code {
-    [Parameter]
-    public Func<ICommand>? RxCommandFactory { get; set; }
+    [Parameter, EditorRequired]
+    public required Func<ICommand> RxCommandFactory { get; init; }
 
     [Parameter]
     public Func<ICommand, bool>? PrepareExecution { get; set; }

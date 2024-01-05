@@ -4,8 +4,8 @@
 @RenderBase()
 
 @code {
-    [Parameter]
-    public Func<ICommandAsync<T>>? RxCommandAsyncFactory { get; set; }
+    [Parameter, EditorRequired]
+    public required Func<ICommandAsync<T>> RxCommandAsyncFactory { get; init; }
 
     [Parameter]
     public T? Parameter { get; set; }

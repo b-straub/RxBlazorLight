@@ -68,7 +68,7 @@
 
     private string GetProgressIcon()
     {
-        if (_rxCommandAsync is not null && CancelText is null && _rxCommandAsync.HasProgress() && _rxCommandAsync.Executing)
+        if (_rxCommandAsync is not null && CancelText is null && _rxCommandAsync.HasProgress() && _rxCommandAsync.Executing())
         {
             return IconVariant.GetProgressIcon();
         }

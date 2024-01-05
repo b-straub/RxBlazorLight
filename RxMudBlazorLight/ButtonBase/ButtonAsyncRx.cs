@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using RxBlazorLightCore;
+using RxMudBlazorLight.Extensions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RxMudBlazorLight.ButtonBase
@@ -32,9 +33,9 @@ namespace RxMudBlazorLight.ButtonBase
 
         public void SetParameters()
         {
-            Disabled = !_command.CanExecute() && !(_command.Executing && _command.CanCancel());
+            Disabled = !_command.CanExecute() && !(_command.Executing() && _command.CanCancel());
 
-            if (_command.Executing && _command.CanCancel())
+            if (_command.Executing() && _command.CanCancel())
             {
                 Color = _cancelColor;
                 if (_type is not MBButtonType.FAB)
@@ -49,7 +50,7 @@ namespace RxMudBlazorLight.ButtonBase
                 Color = _buttonColor;
                 if (_type is not MBButtonType.FAB)
                 {
-                    ChildContent = _command.Executing && _command.HasProgress() ? RenderProgress() : _buttonChildContent;
+                    ChildContent = _command.Executing() && _command.HasProgress() ? RenderProgress() : _buttonChildContent;
                 }
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute(_command.Execute));
                 OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => Execute(_command.Execute));

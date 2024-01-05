@@ -56,7 +56,7 @@ namespace RxBlazorLightCore
     public enum CommandState
     {
         NONE,
-        PREPARE,
+        PREPARING,
         EXECUTING,
         EXECUTED,
         NOT_EXECUTED,
@@ -64,12 +64,9 @@ namespace RxBlazorLightCore
         EXCEPTION
     }
 
-    public interface ICommandBase : IObservable<ServiceState>
+    public interface ICommandBase : IObservable<CommandState>
     {
         public CommandState State { get; }
-        public bool Executing => State == CommandState.EXECUTING;
-        public bool Executed => State == CommandState.EXECUTED;
-        public bool Canceled => State == CommandState.CANCELED;
         public Exception? LastException { get; }
     }
 

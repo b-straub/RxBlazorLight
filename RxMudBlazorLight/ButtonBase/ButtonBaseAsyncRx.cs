@@ -133,7 +133,7 @@ namespace RxMudBlazorLight.ButtonBase
                 _buttonLabel = label;
             }
 
-            if (!command.Executing)
+            if (!command.Executing())
             {
                 if (_iconForState is IconForState.Start)
                 {
@@ -189,7 +189,7 @@ namespace RxMudBlazorLight.ButtonBase
 
         protected string GetIconButtonParametersBase(ICommandAsyncBase command, string icon, MBIconVariant? iconVariant = null)
         {
-            if (!command.Executing)
+            if (!command.Executing())
             {
                 if (_iconForState is IconForState.None)
                 {

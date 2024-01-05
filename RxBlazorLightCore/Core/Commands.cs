@@ -4,14 +4,14 @@ using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
-    public class CommandBase : IObservable<ServiceState>
+    public class CommandBase : IObservable<CommandState>
     {
         public CommandState State { get; private set; } = CommandState.NONE;
 
         public Exception? LastException { get; protected set; }
 
-        private readonly Subject<ServiceState> _changedSubject;
-        private readonly IObservable<ServiceState> _changedObservable;
+        private readonly Subject<CommandState> _changedSubject;
+        private readonly IObservable<CommandState> _changedObservable;
 
         protected CommandBase()
         {
@@ -22,10 +22,10 @@ namespace RxBlazorLightCore
         protected void Changed(CommandState state)
         {
             State = state;
-            _changedSubject.OnNext(state is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND);
+            _changedSubject.OnNext(state);
         }
 
-        public IDisposable Subscribe(IObserver<ServiceState> observer)
+        public IDisposable Subscribe(IObserver<CommandState> observer)
         {
             return _changedObservable.Subscribe(observer);
         }
@@ -139,7 +139,7 @@ namespace RxBlazorLightCore
         protected CommandService(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(r => Service.StateHasChanged(r, LastException));
+            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND, LastException));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -167,7 +167,7 @@ namespace RxBlazorLightCore
         protected CommandService(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(r => Service.StateHasChanged(r, LastException));
+            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND, LastException));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -229,7 +229,7 @@ namespace RxBlazorLightCore
             LastException = null;
             Running = true;
 
-            Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARE : CommandState.EXECUTING);
+            Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
             {
@@ -335,7 +335,7 @@ namespace RxBlazorLightCore
             LastException = null;
             Running = true;
 
-            Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARE : CommandState.EXECUTING);
+            Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
             {
@@ -426,7 +426,7 @@ namespace RxBlazorLightCore
         protected CommandServiceAsync(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(r => Service.StateHasChanged(r, LastException));
+            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND, LastException));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -454,7 +454,7 @@ namespace RxBlazorLightCore
         protected CommandServiceAsync(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(r => Service.StateHasChanged(r, LastException));
+            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND, LastException));
         }
 
         protected virtual void Dispose(bool disposing)

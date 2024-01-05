@@ -24,18 +24,18 @@
 
     protected override void OnInitialized()
     {
-        _disposeBag.Add(Service.EqualsTest.Subscribe(s =>
+        _disposeBag.Add(Service.EqualsTest.Subscribe(cs =>
        {
-           if (s is ServiceState.COMMAND && Service.EqualsTest.Executed)
+           if (cs is CommandState.EXECUTED)
            {
                _equalsExecutions++;
            }
            StateHasChanged();
        }));
 
-        _disposeBag.Add(Service.EqualsTestAsync.Subscribe(s =>
+        _disposeBag.Add(Service.EqualsTestAsync.Subscribe(cs =>
         {
-            if (s is ServiceState.COMMAND && Service.EqualsTestAsync.Executed)
+            if (cs is CommandState.EXECUTED)
             {
                 _equalsAsyncExecutions++;
             }

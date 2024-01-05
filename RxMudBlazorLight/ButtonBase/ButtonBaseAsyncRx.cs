@@ -5,15 +5,6 @@ using RxMudBlazorLight.Extensions;
 
 namespace RxMudBlazorLight.ButtonBase
 {
-    public enum MBIconVariant
-    {
-        Filled,
-        Outlined,
-        Rounded,
-        Sharp,
-        TwoTone
-    }
-
     public partial class ButtonBaseAsyncRX : ButtonBaseRX
     {
         public bool Disabled { get; protected set; } = true;

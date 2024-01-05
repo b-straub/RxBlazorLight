@@ -15,11 +15,11 @@
     [Parameter]
     public Action? AfterExecution { get; set; }
 
-    [Parameter]
-    public Color? CancelColor { get; set; }
+    [Parameter, EditorRequired]
+    public required string CancelText { get; set; }
 
     [Parameter]
-    public string? CancelText { get; set; }
+    public Color? CancelColor { get; set; }
 
     public ICommandAsync? RxCommandAsync { get; private set; }
 

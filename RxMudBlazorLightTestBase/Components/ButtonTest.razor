@@ -2,60 +2,62 @@
 
 <PageTitle>Counter</PageTitle>
 
-<MudStack>   
+<MudStack>
     <MudText Typo="Typo.h3" GutterBottom="true">Counter</MudText>
     <MudText Class="mb-4">Current count: @Service.Count</MudText>
 
-    <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Increment) ConfirmExecution=@ConfirmIncrement>Increment</MudButtonRx>
-        <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add 5</MudButtonPRx>
+        <MudStack Row=@true AlignItems=@AlignItems.Center>
+            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Increment) ConfirmExecution=@ConfirmIncrement>Increment</MudButtonRx>
+            <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add 5</MudButtonPRx>
 
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" RxCommandAsyncFactory=@(() => Service.IncrementAsync) CancelText="Cancel Add">
-            IncrementAsync
-        </MudButtonAsyncRx>
+            <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" RxCommandAsyncFactory=@(() => Service.IncrementAsync) CancelText="Cancel Add">
+                IncrementAsync
+            </MudButtonAsyncRx>
 
-        <MudButtonAsyncPRx Color="Color.Secondary" Variant="Variant.Filled" Parameter=2 RxCommandAsyncFactory=@(() => @Service.AddAsync) PrepareExecutionAsync=@DoPrepareAddAsync CancelColor=Color.Error CancelText="Cancel Add">
-            AddAsync 2
-        </MudButtonAsyncPRx>
-    </MudStack>
+            <MudButtonAsyncPRx Color="Color.Secondary" Variant="Variant.Filled" Parameter=2 RxCommandAsyncFactory=@(() => @Service.AddAsync) PrepareExecutionAsync=@DoPrepareAddAsync CancelColor=Color.Error CancelText="Cancel Add">
+                AddAsync 2
+            </MudButtonAsyncPRx>
+        </MudStack>
 
-    <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudMenu Label="Counter Menu">
-            <MudMenuItemRx RxCommandFactory=@(() => Service.Increment) ConfirmExecution=@ConfirmIncrement>Increment</MudMenuItemRx>
-            <MudMenuItemPRx Parameter="5" RxCommandFactory=@(() => Service.Add)>Add 5</MudMenuItemPRx>
-            <MudMenuItem OnClick=@(() => CmdDialogClick()) OnTouch=@(() => CmdDialogClick())>IncrementAsync</MudMenuItem>
-            <MudMenuItem OnClick=@(() => CmdDialogClick(2)) OnTouch=@(() => CmdDialogClick(2))>AddAsync 2</MudMenuItem>
-        </MudMenu>
-    </MudStack>
+        <MudStack Row=@true AlignItems=@AlignItems.Center>
+            <MudMenu Label="Counter Menu">
+                <MudMenuItemRx RxCommandFactory=@(() => Service.Increment) ConfirmExecution=@ConfirmIncrement>Increment</MudMenuItemRx>
+                <MudMenuItemPRx Parameter="5" RxCommandFactory=@(() => Service.Add)>Add 5</MudMenuItemPRx>
+                <MudMenuItem OnClick=@(() => CmdDialogClick()) OnTouch=@(() => CmdDialogClick())>IncrementAsync</MudMenuItem>
+                <MudMenuItem OnClick=@(() => CmdDialogClick(2)) OnTouch=@(() => CmdDialogClick(2))>AddAsync 2</MudMenuItem>
+            </MudMenu>
+        </MudStack>
 
-    <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudFabRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlusOne" RxCommandFactory=@(() => Service.Increment) Label="Increment" />
-        <MudFabPRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Parameter="5" RxCommandFactory=@(() => Service.Add) Label="Add 2" />
-        <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne" RxCommandAsyncFactory=@(() => Service.IncrementAsync) Label="IncrementAsync" />
-        <MudFabAsyncPRx Color="Color.Secondary" Parameter=5 EndIcon="@Icons.Material.Filled.Add" CancelText="Cancel Add" CancelColor=@Color.Error RxCommandAsyncFactory=@(() => Service.AddAsync) PrepareExecutionAsync=@DoPrepareAddAsync Label="AddAsync 5" />
-    </MudStack>
+        <MudStack Row=@true AlignItems=@AlignItems.Center>
+            <MudFabRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlusOne" RxCommandFactory=@(() => Service.Increment) Label="Increment" />
+            <MudFabPRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Parameter="5" RxCommandFactory=@(() => Service.Add) Label="Add 2" />
+            <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne" RxCommandAsyncFactory=@(() => Service.IncrementAsync) Label="IncrementAsync" />
+            <MudFabAsyncPRx Color="Color.Secondary" Parameter=2 EndIcon="@Icons.Material.Filled.Add" CancelText="Cancel Add" CancelColor=@Color.Error RxCommandAsyncFactory=@(() => Service.AddAsync) PrepareExecutionAsync=@DoPrepareAddAsync Label="AddAsync 2" />
+            <MudFabAsyncPRx Color="Color.Secondary" Parameter=5 EndIcon="@Icons.Material.Filled.Add" RxCommandAsyncFactory=@(() => Service.AddAsync) PrepareExecutionAsync=@DoPrepareAddAsync Label="AddAsync 5" />
+        </MudStack>
 
-    <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" RxCommandFactory=@(() => Service.Increment) />
-        <MudIconButtonPRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Parameter="5" RxCommandFactory=@(() => Service.Add) />
-        <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" RxCommandAsyncFactory=@(() => Service.IncrementAsync) />
-        <MudIconButtonAsyncPRx Color="Color.Secondary" Parameter=10 Variant=@Variant.Filled Icon="@Icons.Material.Filled.Add" RxCommandAsyncFactory=@(() => Service.AddAsync) PrepareExecutionAsync=@DoPrepareAddAsync />
-    </MudStack>
+        <MudStack Row=@true AlignItems=@AlignItems.Center>
+            <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" RxCommandFactory=@(() => Service.Increment) />
+            <MudIconButtonPRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Parameter="5" RxCommandFactory=@(() => Service.Add) />
+            <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" RxCommandAsyncFactory=@(() => Service.IncrementAsync) />
+            <MudIconButtonAsyncPRx Color="Color.Secondary" Parameter=10 Variant=@Variant.Filled Icon="@Icons.Material.Filled.Add" RxCommandAsyncFactory=@(() => Service.AddAsync) PrepareExecutionAsync=@DoPrepareAddAsync />
+            <MudIconButtonAsyncPRx Color="Color.Secondary" Parameter=10 Icon="@Icons.Material.Filled.Add" RxCommandAsyncFactory=@(() => Service.AddAsync) PrepareExecutionAsync=@DoPrepareAddAsync />
+        </MudStack>
 
-    <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudSwitchRx RxInput=@Service.AddMode Label="Switch to Add mode" />
-        <MudFabAsyncPRx Color="Color.Secondary" Parameter=2 PrepareExecutionAsync=@DoPrepareAddRemoveAsync
-                        EndIcon=@(Service.AddMode.Value ? @Icons.Material.Filled.Add : Icons.Material.Filled.Remove)
-                        RxCommandAsyncFactory=@(() => Service.AddRemoveAsync) />
-    </MudStack>
+        <MudStack Row=@true AlignItems=@AlignItems.Center>
+            <MudSwitchRx RxInput=@Service.AddMode Label="Switch to Add mode" />
+            <MudFabAsyncPRx Color="Color.Secondary" Parameter=2 PrepareExecutionAsync=@DoPrepareAddRemoveAsync
+                            EndIcon=@(Service.AddMode.Value ? @Icons.Material.Filled.Add : Icons.Material.Filled.Remove)
+                            RxCommandAsyncFactory=@(() => Service.AddRemoveAsync) />
+        </MudStack>
 
-    <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => CmdDialogClick())>Increment AsyncDialog</MudButton>
-        <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick=@(() => CmdDialogClick(10))>Add AsyncDialog 10</MudButton>
-    </MudStack>
+        <MudStack Row=@true AlignItems=@AlignItems.Center>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => CmdDialogClick())>Increment AsyncDialog</MudButton>
+            <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick=@(() => CmdDialogClick(10))>Add AsyncDialog 10</MudButton>
+        </MudStack>
 
-    <MudGrid>
-        @if (Service.CommandExceptions.Any())
+        <MudGrid>
+            @if (Service.CommandExceptions.Any())
         {
             <MudItem xs="12">
                 <MudText Typo="Typo.h5" GutterBottom="true">@GetExceptions()</MudText>
@@ -70,10 +72,10 @@
 
 @code {
     [Inject]
-    private IDialogService? DialogService { get; set; }
+    public required IDialogService DialogService { get; init; }
 
     [Inject]
-    private ISnackbar? Snackbar { get; set; }
+    public required ISnackbar Snackbar { get; init; }
 
     private async Task<bool> ConfirmIncrement()
     {
@@ -124,45 +126,18 @@
 
     private async Task<bool> CmdDialogClick(int? parameter = null)
     {
-        ArgumentNullException.ThrowIfNull(DialogService);
-
-        var parametersIncrement = new DialogParameters
-            {
-                ["Message"] = "Increment counter.",
-                ["ConfirmButton"] = "Increment",
-                ["SuccessOnConfirm"] = false,
-                ["RxCommandAsync"] = Service.IncrementAsync
-            };
-
-        var parametersAdd = new DialogParameters
-            {
-                ["Message"] = $"Add {parameter} to counter?",
-                ["CancelText"] = "Cancel adding!",
-                ["ConfirmButton"] = $"Add {parameter}",
-                ["SuccessOnConfirm"] = true,
-                ["Parameter"] = parameter,
-                ["RxCommandAsync"] = Service.AddAsync
-            };
-
-        var dialog = parameter is null ?
-            DialogService.Show<DialogAsyncRx>("Increment", parametersIncrement) :
-            DialogService.Show<DialogAsyncPRx<int>>("Add", parametersAdd);
-
-
-        var res = await dialog.Result;
-
-        if (res.Canceled)
+        if (parameter is null)
         {
-            return false;
+            return await DialogAsyncRx.Show(DialogService, Service.IncrementAsync,
+                "Increment", "Increment counter.", "Increment", "Cancel");
         }
 
-        return true;
+        return await DialogAsyncPRx<int>.Show(DialogService, Service.AddAsync, (int)(parameter!),
+            $"Add {parameter}", $"Add {parameter} to counter?", $"Add {parameter}", "Cancel", true, "Cancel adding!");
     }
 
     private async Task<bool> DoPrepareAddRemoveAsync(ICommandAsync<int> cmd, CancellationToken token)
     {
-        ArgumentNullException.ThrowIfNull(Snackbar);
-
         var config = (SnackbarOptions options) =>
         {
             options.VisibleStateDuration = int.MaxValue;
@@ -176,7 +151,7 @@
 
         try
         {
-            await Task.Delay(2000, token);    
+            await Task.Delay(2000, token);
         }
         finally
         {

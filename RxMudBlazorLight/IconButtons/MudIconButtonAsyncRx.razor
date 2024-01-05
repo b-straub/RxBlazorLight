@@ -29,7 +29,7 @@
         ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
         _rxCommandAsync = RxCommandAsyncFactory();
         _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.ICON, Color, ChildContent, _rxCommandAsync, BeforeExecution, AfterExecution, null, null);
-        
+
         base.OnInitialized();
     }
 

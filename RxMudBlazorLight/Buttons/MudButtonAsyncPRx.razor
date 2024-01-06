@@ -19,8 +19,8 @@
     [Parameter]
     public Action? AfterExecution { get; set; }
 
-    [Parameter, EditorRequired]
-    public required string CancelText { get; set; }
+    [Parameter]
+    public string? CancelText { get; set; }
 
     [Parameter]
     public Color? CancelColor { get; set; }
@@ -36,7 +36,7 @@
         ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
         RxCommandAsync = RxCommandAsyncFactory();
 
-        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.DEFAULT, Color, ChildContent, RxCommandAsync, BeforeExecution, AfterExecution, CancelColor, CancelText);
+        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.DEFAULT, Color, ChildContent, RxCommandAsync, BeforeExecution, AfterExecution, CancelText, CancelColor);
         _buttonColor = Color;
 
         base.OnInitialized();

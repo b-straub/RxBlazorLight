@@ -13,19 +13,17 @@ namespace RxMudBlazorLight.ButtonBase
         public EventCallback<TouchEventArgs> OnTouch { get; private set; }
 
         private readonly ICommandAsync _command;
-        private readonly Color _cancelColor;
 
-        private ButtonAsyncRX(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, ICommandAsync? command, Action? beforeExecution, Action? afterExecution, Color? cancelColor, string? cancelText) :
-            base(type, buttonColor, buttonChildContent, beforeExecution, afterExecution, cancelText)
+        private ButtonAsyncRX(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, ICommandAsync command, Action? beforeExecution, Action? afterExecution, string? cancelText, Color? cancelColor) :
+            base(type, buttonColor, buttonChildContent, beforeExecution, afterExecution, cancelText, cancelColor, command.CanCancel())
         {
-            ArgumentNullException.ThrowIfNull(command);
             _command = command;
-            _cancelColor = cancelColor ?? Color.Warning;
         }
 
-        public static ButtonAsyncRX Create(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, ICommandAsync? command, Action? beforeExecution, Action? afterExecution, Color? cancelColor, string? cancelText)
+        public static ButtonAsyncRX Create(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, ICommandAsync? command, Action? beforeExecution, Action? afterExecution, string? cancelText, Color? cancelColor)
         {
-            return new ButtonAsyncRX(type, buttonColor, buttonChildContent, command, beforeExecution, afterExecution, cancelColor, cancelText);
+            ArgumentNullException.ThrowIfNull(command);
+            return new ButtonAsyncRX(type, buttonColor, buttonChildContent, command, beforeExecution, afterExecution, cancelText, cancelColor);
         }
 
         [MemberNotNull(nameof(OnClick))]

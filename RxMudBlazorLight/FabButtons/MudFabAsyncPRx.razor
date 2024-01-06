@@ -40,7 +40,7 @@
         ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
         _rxCommandAsync = RxCommandAsyncFactory();
 
-        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.FAB, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, null, CancelText);
+        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.FAB, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, CancelText, null);
         _buttonColor = Color;
 
         base.OnInitialized();

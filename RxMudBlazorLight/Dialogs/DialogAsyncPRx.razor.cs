@@ -49,7 +49,7 @@ namespace RxMudBlazorLight.Dialogs
 
         public static async Task<bool> Show(IDialogService DialogService,
             ICommandAsync<T> RxCommandAsync, int parameter, string title,
-            string message, string confirmButton, string cancelButton, bool successOnConfirm = false,
+            string message, string confirmButton, string cancelButton, bool successOnConfirm,
             string? cancelText = null, Color? cancelColor = null)
         {
             var parameters = new DialogParameters

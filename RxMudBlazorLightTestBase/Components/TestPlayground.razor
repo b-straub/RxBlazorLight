@@ -12,7 +12,7 @@
         <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals executions {_equalsExecutions}")</MudText>
             <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" Parameter=@GetEqualsParameter() RxCommandFactory=@(() => Service.EqualsTest)>EqualsTest</MudButtonPRx>
         <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
-        <MudButtonAsyncPRx Color="Color.Error" CancelText="Cancel Test" Variant="Variant.Filled" Parameter="1" RxCommandAsyncFactory=@(() => Service.EqualsTestAsync)>EqualsTest</MudButtonAsyncPRx>
+        <MudButtonAsyncPRx Color="Color.Error" Variant="Variant.Filled" Parameter="1" RxCommandAsyncFactory=@(() => Service.EqualsTestAsync)>EqualsTest</MudButtonAsyncPRx>
     </MudStack>
 }
 

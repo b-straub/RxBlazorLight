@@ -14,7 +14,8 @@ namespace RxMudBlazorLight.ButtonBase
         protected readonly Color _buttonColor;
         protected readonly RenderFragment? _buttonChildContent;
 
-        private readonly string? _cancelText;
+        protected readonly Color _cancelColor;
+        protected readonly string? _cancelText;
 
         private enum IconForState
         {
@@ -27,7 +28,7 @@ namespace RxMudBlazorLight.ButtonBase
         private string? _buttonLabel;
         private string? _buttonIcon;
 
-        protected ButtonBaseAsyncRX(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, Action? beforeExecution, Action? afterExecution, string? cancelText) :
+        protected ButtonBaseAsyncRX(MBButtonType type, Color buttonColor, RenderFragment? buttonChildContent, Action? beforeExecution, Action? afterExecution, string? cancelText, Color? cancelColor, bool canCancel) :
            base(type, beforeExecution, afterExecution)
         {
             _buttonColor = buttonColor;
@@ -35,12 +36,10 @@ namespace RxMudBlazorLight.ButtonBase
 
             _buttonChildContent = buttonChildContent;
             ChildContent = _buttonChildContent;
-            _cancelText = cancelText;
+            VerifyCancelArguments(cancelText, cancelColor, canCancel);
 
-            if (type is MBButtonType.DEFAULT || type is MBButtonType.MENU)
-            {
-                _cancelText = cancelText ?? "Cancel";
-            }
+            _cancelText = cancelText;
+            _cancelColor = cancelColor ?? Color.Warning;
         }
 
         public RenderFragment RenderCancel() => builder =>
@@ -207,6 +206,26 @@ namespace RxMudBlazorLight.ButtonBase
             }
 
             return icon;
+        }
+
+        private void VerifyCancelArguments(string? cancelText, Color? cancelColor, bool canCancel)
+        {
+            if (_type is MBButtonType.DEFAULT || _type is MBButtonType.MENU)
+            {
+                if (canCancel && cancelText is null)
+                {
+                    throw new InvalidOperationException("Command can be cancelled, but no CancelText is provided!");
+                }
+                if (!canCancel && cancelText is not null)
+                {
+                    throw new InvalidOperationException("Command can not be cancelled, but CancelText is provided!");
+                }
+            }
+
+            if (!canCancel && cancelColor is not null)
+            {
+                throw new InvalidOperationException("Command can not be cancelled, but CancelColor is provided!");
+            }
         }
     }
 }

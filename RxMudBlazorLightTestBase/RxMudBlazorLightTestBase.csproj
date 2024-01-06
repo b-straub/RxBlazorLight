@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RxBlazorLightCore\RxBlazorLightCore.csproj" />
     <ProjectReference Include="..\RxMudBlazorLight\RxMudBlazorLight.csproj" />
   </ItemGroup>
 

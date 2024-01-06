@@ -20,7 +20,7 @@
 		<PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>..\Nuget</PackageOutputPath>
-		<PackageVersion>0.5.6</PackageVersion>
+		<PackageVersion>0.6.0</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -37,7 +37,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\RxBlazorLightCore\RxBlazorLightCore.csproj" />
+		<ProjectReference Include="..\RxBlazorLightCore\RxBlazorLightCore.csproj" PrivateAssets="All" Pack="false" />
 	</ItemGroup>
 
 	<PropertyGroup>

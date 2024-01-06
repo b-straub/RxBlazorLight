@@ -9,25 +9,32 @@ namespace RxBlazorLightCore
         public CommandState State { get; private set; } = CommandState.NONE;
 
         public Exception? LastException { get; protected set; }
+        public bool Running { get; protected set; }
 
         private readonly Subject<CommandState> _changedSubject;
         private readonly IObservable<CommandState> _changedObservable;
 
         protected CommandBase()
         {
+            Running = false;
             _changedSubject = new();
             _changedObservable = _changedSubject.Publish().RefCount();
+        }
+
+        public virtual bool PrepareModal()
+        {
+            return true;
+        }
+
+        public IDisposable Subscribe(IObserver<CommandState> observer)
+        {
+            return _changedObservable.Subscribe(observer);
         }
 
         protected void Changed(CommandState state)
         {
             State = state;
             _changedSubject.OnNext(state);
-        }
-
-        public IDisposable Subscribe(IObserver<CommandState> observer)
-        {
-            return _changedObservable.Subscribe(observer);
         }
     }
 
@@ -44,8 +51,10 @@ namespace RxBlazorLightCore
 
         public void Execute()
         {
-            bool executed = false;
+            var executed = false;
             LastException = null;
+            Running = true;
+            Changed(PrepareModal() && PrepareExecution is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
             {
@@ -58,6 +67,10 @@ namespace RxBlazorLightCore
 
                 if (execute && CanExecute())
                 {
+                    if (PrepareModal())
+                    {
+                        Changed(CommandState.EXECUTING);
+                    }
                     DoExecute();
                     executed = true;
                 }
@@ -67,6 +80,7 @@ namespace RxBlazorLightCore
                 LastException = ex;
             }
 
+            Running = false;
             Changed(LastException is not null ? CommandState.EXCEPTION : 
                 executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
@@ -97,8 +111,10 @@ namespace RxBlazorLightCore
 
         public virtual void Execute()
         {
-            bool executed = false;
+            var executed = false;
             LastException = null;
+            Running = true;
+            Changed(PrepareModal() && PrepareExecution is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
             {
@@ -111,6 +127,10 @@ namespace RxBlazorLightCore
 
                 if (execute && CanExecute(Parameter) && Parameter is not null)
                 {
+                    if (PrepareModal())
+                    {
+                        Changed(CommandState.EXECUTING);
+                    }
                     DoExecute(Parameter);
                     executed = true;
                 }
@@ -125,6 +145,7 @@ namespace RxBlazorLightCore
                 Parameter = default;
             }
 
+            Running = false;
             Changed(LastException is not null ? CommandState.EXCEPTION :
                 executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
@@ -190,14 +211,8 @@ namespace RxBlazorLightCore
     public abstract class CommandAsync : CommandBase, ICommandAsync
     {
         public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
-        public bool Running { get; protected set; }
 
         protected CancellationTokenSource CancellationTokenSource { get; private set; } = new();
-
-        protected CommandAsync()
-        {
-            Running = false;
-        }
 
         protected abstract Task DoExecute(CancellationToken cancellationToken);
 
@@ -211,11 +226,6 @@ namespace RxBlazorLightCore
             return false;
         }
 
-        public virtual bool PrepareModal()
-        {
-            return true;
-        }
-        
         public virtual bool CanExecute()
         {
             return true;
@@ -228,7 +238,6 @@ namespace RxBlazorLightCore
             var executed = false;
             LastException = null;
             Running = true;
-
             Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
@@ -291,13 +300,7 @@ namespace RxBlazorLightCore
 
         public Func<ICommandAsync<T>, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
 
-        public bool Running { get; protected set; }
         protected CancellationTokenSource CancellationTokenSource { get; private set; } = new();
-
-        protected CommandAsync()
-        {
-            Running = false;
-        }
 
         public virtual bool CanCancel()
         {
@@ -307,11 +310,6 @@ namespace RxBlazorLightCore
         public virtual bool HasProgress()
         {
             return false;
-        }
-
-        public virtual bool PrepareModal()
-        {
-            return true;
         }
 
         protected abstract Task DoExecute(T parameter, CancellationToken cancellationToken);
@@ -334,7 +332,6 @@ namespace RxBlazorLightCore
             var executed = false;
             LastException = null;
             Running = true;
-
             Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try

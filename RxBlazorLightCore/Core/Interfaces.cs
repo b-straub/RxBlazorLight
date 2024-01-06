@@ -68,6 +68,8 @@ namespace RxBlazorLightCore
     {
         public CommandState State { get; }
         public Exception? LastException { get; }
+        public bool Running { get; }
+        public bool PrepareModal();
     }
 
     public interface ICommand : ICommandBase
@@ -89,10 +91,8 @@ namespace RxBlazorLightCore
 
     public interface ICommandAsyncBase : ICommandBase
     {
-        public bool Running { get; }
         public bool CanCancel();
         public bool HasProgress();
-        public bool PrepareModal();
         public void Cancel();
     }
 

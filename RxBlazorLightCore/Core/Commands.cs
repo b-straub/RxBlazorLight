@@ -9,14 +9,12 @@ namespace RxBlazorLightCore
         public CommandState State { get; private set; } = CommandState.NONE;
 
         public Exception? LastException { get; protected set; }
-        public bool Running { get; protected set; }
 
         private readonly Subject<CommandState> _changedSubject;
         private readonly IObservable<CommandState> _changedObservable;
 
         protected CommandBase()
         {
-            Running = false;
             _changedSubject = new();
             _changedObservable = _changedSubject.Publish().RefCount();
         }
@@ -53,7 +51,6 @@ namespace RxBlazorLightCore
         {
             var executed = false;
             LastException = null;
-            Running = true;
             Changed(PrepareModal() && PrepareExecution is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
@@ -80,7 +77,6 @@ namespace RxBlazorLightCore
                 LastException = ex;
             }
 
-            Running = false;
             Changed(LastException is not null ? CommandState.EXCEPTION : 
                 executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
@@ -113,7 +109,6 @@ namespace RxBlazorLightCore
         {
             var executed = false;
             LastException = null;
-            Running = true;
             Changed(PrepareModal() && PrepareExecution is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
@@ -145,7 +140,6 @@ namespace RxBlazorLightCore
                 Parameter = default;
             }
 
-            Running = false;
             Changed(LastException is not null ? CommandState.EXCEPTION :
                 executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
@@ -237,7 +231,6 @@ namespace RxBlazorLightCore
 
             var executed = false;
             LastException = null;
-            Running = true;
             Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
@@ -267,7 +260,6 @@ namespace RxBlazorLightCore
                 }
             }
 
-            Running = false;
             Changed(LastException is not null ? CommandState.EXCEPTION :
                 executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
@@ -275,8 +267,6 @@ namespace RxBlazorLightCore
         public void Cancel()
         {
             CancellationTokenSource.Cancel();
-            Running = false;
-
             Changed(CommandState.CANCELED);
         }
 
@@ -331,7 +321,6 @@ namespace RxBlazorLightCore
 
             var executed = false;
             LastException = null;
-            Running = true;
             Changed(PrepareModal() && PrepareExecutionAsync is not null ? CommandState.PREPARING : CommandState.EXECUTING);
 
             try
@@ -366,7 +355,6 @@ namespace RxBlazorLightCore
                 Parameter = default;
             }
 
-            Running = false;
             Changed(LastException is not null ? CommandState.EXCEPTION :
                 executed ? CommandState.EXECUTED : CommandState.NOT_EXECUTED);
         }
@@ -374,8 +362,6 @@ namespace RxBlazorLightCore
         public void Cancel()
         {
             CancellationTokenSource.Cancel();
-            Running = false;
-
             Changed(CommandState.CANCELED);
         }
 

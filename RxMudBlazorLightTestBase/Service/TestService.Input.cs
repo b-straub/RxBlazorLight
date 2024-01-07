@@ -21,7 +21,7 @@ namespace RxMudBlazorLightTestBase.Service
         {
             public override bool CanChange()
             {
-                return !Service.AddRemoveAsync.Running;
+                return !Service.AddRemoveAsync.Running();
             }
         }
 

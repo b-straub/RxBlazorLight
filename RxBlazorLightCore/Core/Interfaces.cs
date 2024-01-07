@@ -68,7 +68,6 @@ namespace RxBlazorLightCore
     {
         public CommandState State { get; }
         public Exception? LastException { get; }
-        public bool Running { get; }
         public bool PrepareModal();
     }
 

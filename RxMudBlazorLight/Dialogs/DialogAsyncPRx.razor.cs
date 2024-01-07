@@ -83,14 +83,14 @@ namespace RxMudBlazorLight.Dialogs
                 return false;
             }
 
-            return _buttonRef.RxCommandAsync.Running;
+            return _buttonRef.RxCommandAsync.Running();
         }
 
         private void Cancel()
         {
             ArgumentNullException.ThrowIfNull(_buttonRef?.RxCommandAsync);
 
-            if (!_buttonRef.RxCommandAsync.Running)
+            if (!_buttonRef.RxCommandAsync.Running())
             {
                 MudDialog?.Cancel();
             }

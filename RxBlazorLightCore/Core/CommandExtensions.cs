@@ -65,5 +65,15 @@ namespace RxBlazorLightCore
         {
             return commandBase.Where(cs => cs is CommandState.EXCEPTION).Select(_ => Unit.Default);
         }
+
+        public static bool Running(this ICommandBase commandBase)
+        {
+            return commandBase.State is CommandState.PREPARING || commandBase.State is CommandState.EXECUTING;
+        }
+
+        public static IObservable<Unit> RunningObservable(this ICommandBase commandBase)
+        {
+            return commandBase.Where(cs => cs is CommandState.PREPARING || cs is CommandState.EXECUTING).Select(_ => Unit.Default);
+        }
     }
 }

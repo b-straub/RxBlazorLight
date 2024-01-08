@@ -13,9 +13,6 @@ namespace RxBlazorLightCore
     {
         public void OnInitialized();
         public Task OnInitializedAsync();
-        public void OnDisposed();
-        public ValueTask OnDisposedAsync();
-
         public IEnumerable<Exception> CommandExceptions { get; }
         public void ResetCommandExceptions();
         public IDisposable Subscribe(Action stateHasChanged, double sampleMS);

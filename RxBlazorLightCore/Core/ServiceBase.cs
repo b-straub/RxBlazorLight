@@ -4,7 +4,7 @@ using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
-    public partial class RxBLServiceBase : IRXService
+    public class RxBLServiceBase : IRXService
     {
         public IEnumerable<Exception> CommandExceptions => _commandExceptions;
 
@@ -44,10 +44,6 @@ namespace RxBlazorLightCore
         public virtual void OnInitialized() { }
 
         public virtual Task OnInitializedAsync() { return Task.CompletedTask; }
-
-        public virtual void OnDisposed() { }
-
-        public virtual ValueTask OnDisposedAsync() { return ValueTask.CompletedTask; }
 
         public void ResetCommandExceptions()
         {

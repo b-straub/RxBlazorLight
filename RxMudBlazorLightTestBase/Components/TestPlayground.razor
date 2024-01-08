@@ -1,21 +1,18 @@
 ﻿@inherits RxBLComponent<TestService>
 
-@if (Service is not null)
-{
-    <MudStack AlignItems="AlignItems.Center">
-        <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
-        <MudText Class="mb-4">Current seconds in component: @Service.ComponentTimer</MudText>
-        <MudText id="result" Class="mb-4">Current count: @Service.Count</MudText>
+<MudStack AlignItems="AlignItems.Center">
+    <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
+    <TimerComponent />
+    <MudText id="result" Class="mb-4">Current count: @Service.Count</MudText>
 
-        <MudRadioGroupAsyncRx id="radio" RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync />
-        <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Increment)>Increment</MudButtonRx>
-        <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
-        <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals executions {_equalsExecutions}")</MudText>
-            <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" Parameter=@GetEqualsParameter() RxCommandFactory=@(() => Service.EqualsTest)>EqualsTest</MudButtonPRx>
-        <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
-        <MudButtonAsyncPRx Color="Color.Error" Variant="Variant.Filled" Parameter="1" RxCommandAsyncFactory=@(() => Service.EqualsTestAsync)>EqualsTest</MudButtonAsyncPRx>
-    </MudStack>
-}
+    <MudRadioGroupAsyncRx id="radio" RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync />
+    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Increment)>Increment</MudButtonRx>
+    <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
+    <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals executions {_equalsExecutions}")</MudText>
+        <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" Parameter=@GetEqualsParameter() RxCommandFactory=@(() => Service.EqualsTest)>EqualsTest</MudButtonPRx>
+    <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
+    <MudButtonAsyncPRx Color="Color.Error" Variant="Variant.Filled" Parameter="1" RxCommandAsyncFactory=@(() => Service.EqualsTestAsync)>EqualsTest</MudButtonAsyncPRx>
+</MudStack>
 
 @code {
     private long _equalsExecutions = 0;

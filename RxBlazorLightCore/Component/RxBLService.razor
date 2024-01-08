@@ -1,10 +1,11 @@
 ﻿@typeparam TService where TService : RxBLServiceBase
 @inherits OwningComponentBase<TService>
-@implements IAsyncDisposable
 
 <CascadingValue Value=@Service>
     <CascadingValue Value=@SampleMS>
-        @ChildContent
+        <CascadingValue Value=@ServiceInitialized>
+            @ChildContent
+        </CascadingValue>
     </CascadingValue>
 </CascadingValue>
 
@@ -15,7 +16,11 @@
     [Parameter]
     public double SampleMS { get; set; } = 100;
 
+    public bool ServiceInitialized => _initialized && _initializedAsync;
+
     private IDisposable? _serviceDisposable;
+    private bool _initialized = false;
+    private bool _initializedAsync = false;
 
     protected override void OnInitialized()
     {
@@ -30,6 +35,7 @@
         if (firstRender)
         {
             Service.OnInitialized();
+            _initialized = true;
         }
     }
 
@@ -40,24 +46,9 @@
         if (firstRender)
         {
             await Service.OnInitializedAsync();
+            _initializedAsync = true;
+            Service.StateHasChanged(ServiceState.SERVICE);
         }
-    }
-
-    // currently not called see https://github.com/dotnet/aspnetcore/issues/25873
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeAsyncCore().ConfigureAwait(false);
-
-        Dispose(false);
-        GC.SuppressFinalize(this);
-        // Call explicitly see https://github.com/dotnet/aspnetcore/issues/25873
-        (this as IDisposable).Dispose();
     }
 
     protected override void Dispose(bool disposing)
@@ -65,15 +56,9 @@
         if (disposing)
         {
             _serviceDisposable?.Dispose();
-            Service.OnDisposed();
         }
 
         base.Dispose(disposing);
-    }
-
-    protected virtual async Task DisposeAsyncCore()
-    {
-        await Service.OnDisposedAsync();
     }
 
     private void InvokeStateChanged()

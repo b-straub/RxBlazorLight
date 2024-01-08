@@ -4,6 +4,7 @@
 {
     <MudStack AlignItems="AlignItems.Center">
         <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
+        <MudText Class="mb-4">Current seconds in component: @Service.ComponentTimer</MudText>
         <MudText Class="mb-4">Current count: @Service.Count</MudText>
 
          <MudImage @bind-Src=@_imageSrc Height="50" />

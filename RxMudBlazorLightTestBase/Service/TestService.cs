@@ -1,4 +1,5 @@
 ﻿using RxBlazorLightCore;
+using System.Reactive.Linq;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -42,6 +43,7 @@ namespace RxMudBlazorLightTestBase.Service
     public sealed partial class TestService : RxBLServiceBase
     {
         public int Count { get; private set; }
+        public long ComponentTimer { get; private set; }
 
         public ICommand Simple { get; }
 		public ICommand Exception { get; }
@@ -70,9 +72,12 @@ namespace RxMudBlazorLightTestBase.Service
         private readonly IInputGroup<Pizza> _pizzaIPG;
         private readonly IInputGroup<TestColor, ColorEnum> _radioTestExtended;
 
+        private IDisposable? _componentTimerDisposable;
+
         public TestService()
         {
             Count = 0;
+            ComponentTimer = 0;
             Simple = new SimpleCMD();
             EqualsTest = new EqualsTestCmd();
             EqualsTestAsync = new EqualsTestAsyncCmd();
@@ -95,8 +100,18 @@ namespace RxMudBlazorLightTestBase.Service
             _radioTestExtended = new ColorIPGP(this);
         }
 
-        public override async Task OnInitializedAsync()
+        public override void OnInitialized()
         {
+            _componentTimerDisposable = Observable.Interval(TimeSpan.FromSeconds(1))
+               .StartWith(0)
+               .Subscribe(s =>
+               {
+                   ComponentTimer = s;
+                   StateHasChanged();
+               });
+        }
+        public override async Task OnInitializedAsync()
+        {    
             await Task.Delay(1000);
             _canIncrement = true;
             StateHasChanged();
@@ -105,6 +120,8 @@ namespace RxMudBlazorLightTestBase.Service
         public override void OnDisposed()
         {
             Count = 10;
+            _componentTimerDisposable?.Dispose();
+            ComponentTimer = 0;
         }
 
         public IInputGroup<Pizza> GetPizzaInput()

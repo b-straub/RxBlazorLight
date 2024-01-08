@@ -8,8 +8,8 @@
 		// Arrange
 		var cut = Render(@<TestPlaygroundComponent />);
 
-		// Assert that content of the paragraph shows counter at zero
-		cut.Find("p").TextContent.MarkupMatches("Current count: 0");
+		// Verify counter at zero
+		cut.VerifyTextContent("result", "Current count: 0");
 	}
 
     [Fact]

@@ -1,5 +1,6 @@
 ﻿@typeparam TService where TService : RxBLServiceBase
 @inherits OwningComponentBase<TService>
+@implements IAsyncDisposable
 
 <CascadingValue Value=@Service>
     <CascadingValue Value=@SampleMS>
@@ -42,14 +43,37 @@
         }
     }
 
+    // currently not called see https://github.com/dotnet/aspnetcore/issues/25873
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsyncCore().ConfigureAwait(false);
+
+        Dispose(false);
+        GC.SuppressFinalize(this);
+        // Call explicitly see https://github.com/dotnet/aspnetcore/issues/25873
+        (this as IDisposable).Dispose();
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
             _serviceDisposable?.Dispose();
+            Service.OnDisposed();
         }
 
         base.Dispose(disposing);
+    }
+
+    protected virtual async Task DisposeAsyncCore()
+    {
+        await Service.OnDisposedAsync();
     }
 
     private void InvokeStateChanged()

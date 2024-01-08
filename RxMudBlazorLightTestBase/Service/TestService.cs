@@ -39,7 +39,7 @@ namespace RxMudBlazorLightTestBase.Service
         BLUE
     }
 
-    public sealed partial class TestService : RxBLServiceBase, IDisposable
+    public sealed partial class TestService : RxBLServiceBase
     {
         public int Count { get; private set; }
 
@@ -102,6 +102,11 @@ namespace RxMudBlazorLightTestBase.Service
             StateHasChanged();
         }
 
+        public override void OnDisposed()
+        {
+            Count = 10;
+        }
+
         public IInputGroup<Pizza> GetPizzaInput()
         {
             return _pizzaIPG;
@@ -115,11 +120,6 @@ namespace RxMudBlazorLightTestBase.Service
         public IInputGroup<TestColor, ColorEnum> GetRadio()
         {
             return _radioTestExtended;
-        }
-
-        public void Dispose()
-        {
-
         }
     }
 }

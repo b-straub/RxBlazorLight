@@ -45,6 +45,10 @@ namespace RxBlazorLightCore
 
         public virtual Task OnInitializedAsync() { return Task.CompletedTask; }
 
+        public virtual void OnDisposed() { }
+
+        public virtual ValueTask OnDisposedAsync() { return ValueTask.CompletedTask; }
+
         public void ResetCommandExceptions()
         {
             _commandExceptions.Clear();

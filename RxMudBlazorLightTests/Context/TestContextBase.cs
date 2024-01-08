@@ -9,7 +9,8 @@ namespace RxMudBlazorLightTests.Context
         public TestContextBase() 
         {
             Services.AddMudServices();
-            Services.AddScoped<TestService>();
+            Services.AddSingleton<TestService>();
+            Services.AddScoped<TimerService>();
             JSInterop.Mode = JSRuntimeMode.Loose;
         }
     }

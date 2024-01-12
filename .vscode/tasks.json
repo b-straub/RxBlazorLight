@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/RxBlazorLightSample/RxBlazorLightSample.csproj",
+                "${workspaceFolder}/RxMudBlazorLightSample/RxMudBlazorLightSample.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/RxBlazorLightSample/RxBlazorLightSample.csproj"
+                "${workspaceFolder}/RxMudBlazorLightSample/RxMudBlazorLightSample.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

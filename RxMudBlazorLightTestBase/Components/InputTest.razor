@@ -1,53 +1,56 @@
-﻿@inherits RxBLComponent<TestService>
+﻿@implements IDisposable
 
 <MudStack AlignItems="AlignItems.Center">
     <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
     <TimerComponent />
     <MudText Class="mb-4">Current count: @Service.Count</MudText>
 
-    <MudImage @bind-Src=@_imageSrc Height="50" />
+        <MudImage @bind-Src=@_imageSrc Height="50" />
 
-    <MudRadioGroupPRx RxInputGroupFactory=@Service.GetRadio Parameter=@ColorEnum.BLUE DenseCallback=@DenseCallback ColorCallback=@ColorCallback SizeCallback=@(_ => Size.Large) PlacementCallback=@(_ => Placement.Start) />
-    <MudSelectPRx RxInputGroupFactory=@Service.GetRadio Parameter=@ColorEnum.GREEN />
+        <MudRadioGroupPRx RxInputGroupFactory=@Service.GetRadio Parameter=@ColorEnum.BLUE DenseCallback=@DenseCallback ColorCallback=@ColorCallback SizeCallback=@(_ => Size.Large) PlacementCallback=@(_ => Placement.Start) />
+        <MudSelectPRx RxInputGroupFactory=@Service.GetRadio Parameter=@ColorEnum.GREEN />
 
-    <MudSelectRx RxInputGroupFactory=@(() => Service.GetRadio()) Variant="Variant.Outlined">
-        <MudSelectItem Value=@Service.GetRadio().GetItems()[0]>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Solid_red.svg/1024px-Solid_red.svg.png?20150316143248" height="14" class="mr-1" /> Red
-        </MudSelectItem>
-        <MudSelectItem Value=@Service.GetRadio().GetItems()[1]>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Solid_green.svg/1024px-Solid_green.svg.png?20150316143636" height="14" class="mr-1" /> Green
-        </MudSelectItem>
-        <MudSelectItem Value=@Service.GetRadio().GetItems()[2]>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Solid_blue.svg/1024px-Solid_blue.svg.png?20150316143734" height="14" class="mr-1" /> Blue
-        </MudSelectItem>
-    </MudSelectRx>
+        <MudSelectRx RxInputGroupFactory=@(() => Service.GetRadio()) Variant="Variant.Outlined">
+            <MudSelectItem Value=@Service.GetRadio().GetItems()[0]>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Solid_red.svg/1024px-Solid_red.svg.png?20150316143248" height="14" class="mr-1" /> Red
+            </MudSelectItem>
+            <MudSelectItem Value=@Service.GetRadio().GetItems()[1]>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Solid_green.svg/1024px-Solid_green.svg.png?20150316143636" height="14" class="mr-1" /> Green
+            </MudSelectItem>
+            <MudSelectItem Value=@Service.GetRadio().GetItems()[2]>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Solid_blue.svg/1024px-Solid_blue.svg.png?20150316143734" height="14" class="mr-1" /> Blue
+            </MudSelectItem>
+        </MudSelectRx>
 
-    <MudRadioGroupRx RxInputGroupFactory=@Service.GetPizzaInput />
-    <MudSelectRx RxInputGroupFactory=@Service.GetPizzaInput HideDisabled=@true />
+        <MudRadioGroupRx RxInputGroupFactory=@Service.GetPizzaInput />
+        <MudSelectRx RxInputGroupFactory=@Service.GetPizzaInput HideDisabled=@true />
 
-    <MudRadioGroupAsyncRx RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync />
-    <MudSelectAsyncRx RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync HideDisabled=@true />
+        <MudRadioGroupAsyncRx RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync />
+        <MudSelectAsyncRx RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync HideDisabled=@true />
 
-    <MudRatingRx RxInput=@Service.RatingValue />
-    <MudRatingRx RxInput=@Service.RatingValue />
-    <MudSwitchRx RxInput=@Service.CanIncrementCheck Label="Allow Increment" />
-    <MudCheckBoxRx RxInput=@Service.CanIncrementCheck Label="Allow Increment" />
-    <MudToggleIconButtonRx RxInput=@Service.CanIncrementCheck Icon="@Icons.Material.Outlined.Circle" Color="@Color.Error" Title="Off"
-                            ToggledIcon="@Icons.Material.Outlined.CheckCircle" ToggledColor="@Color.Success" ToggledTitle="On" />
-    <span>CanIncrementCheck is @(Service.CanIncrementCheck.Value ? "On" : "Off")</span>
-    <MudNumericFieldRx RxInput=@Service.IncrementValue Label="" Variant="Variant.Text" Min="0" Max="50" />
-    <MudSliderRx RxInput=@Service.IncrementValue Variant="Variant.Text" Min="0" Max="50" Immediate=@false>IncrementValue</MudSliderRx>
-    <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.AddIncrementValue)>Add Direct</MudButtonRx>
-    <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" Parameter=Service.IncrementValue.Value RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
+        <MudRatingRx RxInput=@Service.RatingValue />
+        <MudRatingRx RxInput=@Service.RatingValue />
+        <MudSwitchRx RxInput=@Service.CanIncrementCheck Label="Allow Increment" />
+        <MudCheckBoxRx RxInput=@Service.CanIncrementCheck Label="Allow Increment" />
+        <MudToggleIconButtonRx RxInput=@Service.CanIncrementCheck Icon="@Icons.Material.Outlined.Circle" Color="@Color.Error" Title="Off"
+                               ToggledIcon="@Icons.Material.Outlined.CheckCircle" ToggledColor="@Color.Success" ToggledTitle="On" />
+        <span>CanIncrementCheck is @(Service.CanIncrementCheck.Value ? "On" : "Off")</span>
+        <MudNumericFieldRx RxInput=@Service.IncrementValue Label="" Variant="Variant.Text" Min="0" Max="50" />
+        <MudSliderRx RxInput=@Service.IncrementValue Variant="Variant.Text" Min="0" Max="50" Immediate=@false>IncrementValue</MudSliderRx>
+        <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.AddIncrementValue)>Add Direct</MudButtonRx>
+        <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" Parameter=Service.IncrementValue.Value RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
 
-    <MudText Typo="Typo.h5" GutterBottom="true">@($"Simple CMD executions {_simpleExecutions}")</MudText>
-    <MudButtonRx Color="Color.Error" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Simple)>Simple CMD</MudButtonRx>
-    <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test" Immediate=@true />
-    <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test clone" Immediate=@true />
-    <MudAutocompleteRx RxInput=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
-</MudStack>
+        <MudText Typo="Typo.h5" GutterBottom="true">@($"Simple CMD executions {_simpleExecutions}")</MudText>
+        <MudButtonRx Color="Color.Error" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Simple)>Simple CMD</MudButtonRx>
+        <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test" Immediate=@true />
+        <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test clone" Immediate=@true />
+        <MudAutocompleteRx RxInput=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
+    </MudStack>
 
-@code {
+    @code {
+    [CascadingParameter]
+    public required TestService Service { get; init; }
+
     private string _imageSrc = "https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_Austria.svg";
     private CompositeDisposable _disposeBag = new();
     private long _simpleExecutions = 0;
@@ -121,11 +124,8 @@
         return states.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    protected override void Dispose(bool disposing)
+    public void Dispose()
     {
-        if (disposing)
-        {
-            _disposeBag.Dispose();
-        }
+        _disposeBag.Dispose();
     }
 }

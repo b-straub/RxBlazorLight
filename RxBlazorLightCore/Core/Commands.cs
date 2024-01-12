@@ -145,7 +145,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class CommandService<S> : Command, IDisposable where S : IRXService
+    public abstract class CommandService<S> : Command, IDisposable where S : IRxService
     {
         protected S Service { get; }
 
@@ -154,7 +154,7 @@ namespace RxBlazorLightCore
         protected CommandService(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND, LastException));
+            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.EXCEPTION : ServiceState.COMMAND, LastException));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -173,7 +173,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class CommandService<S, T> : Command<T>, IDisposable where S : IRXService
+    public abstract class CommandService<S, T> : Command<T>, IDisposable where S : IRxService
     {
         protected S Service { get; }
 
@@ -182,7 +182,7 @@ namespace RxBlazorLightCore
         protected CommandService(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND, LastException));
+            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.EXCEPTION : ServiceState.COMMAND, LastException));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -400,7 +400,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class CommandServiceAsync<S> : CommandAsync, IDisposable where S : IRXService
+    public abstract class CommandServiceAsync<S> : CommandAsync, IDisposable where S : IRxService
     {
         protected S Service { get; }
 
@@ -409,7 +409,7 @@ namespace RxBlazorLightCore
         protected CommandServiceAsync(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND, LastException));
+            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.EXCEPTION : ServiceState.COMMAND, LastException));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -428,7 +428,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class CommandServiceAsync<S, T> : CommandAsync<T>, IDisposable where S : IRXService
+    public abstract class CommandServiceAsync<S, T> : CommandAsync<T>, IDisposable where S : IRxService
     {
         protected S Service { get; }
 
@@ -437,7 +437,7 @@ namespace RxBlazorLightCore
         protected CommandServiceAsync(S service)
         {
             Service = service;
-            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.COMMAND_EXCEPTION : ServiceState.COMMAND, LastException));
+            _serviceDisposable = this.Subscribe(cs => Service.StateHasChanged(cs is CommandState.EXCEPTION ? ServiceState.EXCEPTION : ServiceState.COMMAND, LastException));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -457,7 +457,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class CommandLongRunningServiceAsync<S> : CommandServiceAsync<S> where S : IRXService
+    public abstract class CommandLongRunningServiceAsync<S> : CommandServiceAsync<S> where S : IRxService
     {
         protected CommandLongRunningServiceAsync(S service) : base(service)
         {
@@ -474,7 +474,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class CommandLongRunningServiceAsync<S, T> : CommandServiceAsync<S, T> where S : IRXService
+    public abstract class CommandLongRunningServiceAsync<S, T> : CommandServiceAsync<S, T> where S : IRxService
     {
         protected CommandLongRunningServiceAsync(S service) : base(service)
         {

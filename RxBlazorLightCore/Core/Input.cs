@@ -63,7 +63,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class InputBase<S, T> : InputBase<T>, IDisposable where S : IRXService
+    public class InputBase<S, T> : InputBase<T>, IDisposable where S : IRxService
     {
         protected S Service { get; }
         private IDisposable? _serviceDisposable;
@@ -94,7 +94,7 @@ namespace RxBlazorLightCore
     {
     }
 
-    public class Input<S, T> : InputBase<S, T>, IInput<T> where S : IRXService
+    public class Input<S, T> : InputBase<S, T>, IInput<T> where S : IRxService
     {
         protected Input(S service, T value) : base(service, value)
         {
@@ -137,7 +137,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class InputAsync<S, T> : InputBase<S, T>, IInputAsync<T> where S : IRXService
+    public class InputAsync<S, T> : InputBase<S, T>, IInputAsync<T> where S : IRxService
     {
         protected InputAsync(S service, T value) : base(service, value)
         {
@@ -196,7 +196,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class InputGroup<S, T> : Input<S, T>, IInputGroup<T> where S : IRXService
+    public abstract class InputGroup<S, T> : Input<S, T>, IInputGroup<T> where S : IRxService
     {
 
         protected InputGroup(S service, T value) : base(service, value)
@@ -229,7 +229,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class InputGroupP<S, T, P> : InputGroup<S, T>, IInputGroup<T, P> where S : IRXService
+    public abstract class InputGroupP<S, T, P> : InputGroup<S, T>, IInputGroup<T, P> where S : IRxService
     {
         protected P? Parameter { get; private set; }
       
@@ -267,7 +267,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class InputGroupAsync<S, T> : InputAsync<S, T>, IInputGroupAsync<T> where S : IRXService
+    public abstract class InputGroupAsync<S, T> : InputAsync<S, T>, IInputGroupAsync<T> where S : IRxService
     {
 
         protected InputGroupAsync(S service, T value) : base(service, value)
@@ -305,7 +305,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class InputGroupPAsync<S, T, P> : InputGroupAsync<S, T>, IInputGroupAsync<T, P> where S : IRXService
+    public abstract class InputGroupPAsync<S, T, P> : InputGroupAsync<S, T>, IInputGroupAsync<T, P> where S : IRxService
     {
         protected P? Parameter { get; private set; }
 

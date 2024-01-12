@@ -1,5 +1,4 @@
 ﻿@page "/"
-@inherits RxBLComponent<TestService>
 
 <PageTitle>Index</PageTitle>
 
@@ -11,4 +10,10 @@
 @if (!ServiceInitialized)
 {
     <MudAlert Severity="Severity.Warning">Waiting for TestService!</MudAlert>
+}
+
+@code
+{
+    [CascadingParameter]
+    public required bool ServiceInitialized { get; init; }
 }

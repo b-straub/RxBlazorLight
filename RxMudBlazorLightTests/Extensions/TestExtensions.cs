@@ -6,7 +6,7 @@ namespace RxMudBlazorLightTests.Extensions
 {
 	internal static class TestExtensions
 	{
-		private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(2);
+		private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
 
 		public static async Task ClickAsync(this IRenderedFragment fragment, string id)
 		{

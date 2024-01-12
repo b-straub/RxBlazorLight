@@ -55,6 +55,11 @@ namespace RxMudBlazorLightTestBase.Service
             {
                 Service.Count++;
             }
+
+            public override bool CanExecute()
+            {
+                return Service._canIncrement;
+            }
         }
 
         public class AddIncrementValueCMD(TestService testService) : CommandService<TestService>(testService)
@@ -89,6 +94,11 @@ namespace RxMudBlazorLightTestBase.Service
             {
                 await Task.Delay(500, CancellationToken.None);
                 Service.Count++;
+            }
+
+            public override bool CanExecute()
+            {
+                return Service._canIncrement;
             }
         }
 

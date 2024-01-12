@@ -20,7 +20,7 @@
 		<PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>..\Nuget</PackageOutputPath>
-		<PackageVersion>0.6.4</PackageVersion>
+		<PackageVersion>0.6.7</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,7 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.1" />
 		<PackageReference Include="MudBlazor" Version="6.12.0" />
 	</ItemGroup>
 
@@ -46,7 +46,7 @@
 
 	<Target Name="_AddCoreToOutput">
 		<ItemGroup>
-			<TfmSpecificPackageFile Include="$(OutputPath)\RxBlazorLightCore.dll" PackagePath="lib\$(TargetFramework)"/>
+			<TfmSpecificPackageFile Include="$(OutputPath)\RxBlazorLightCore.dll" PackagePath="lib\$(TargetFramework)" />
 		</ItemGroup>
 	</Target>
 

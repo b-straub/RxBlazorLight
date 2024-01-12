@@ -5,17 +5,19 @@ namespace RxBlazorLightCore
     {
         SERVICE,
         COMMAND,
-        COMMAND_EXCEPTION,
+        EXCEPTION,
         INPUT
     }
 
-    public interface IRXService
+    public interface IRxService
     {
-        public void OnInitialized();
-        public Task OnInitializedAsync();
-        public IEnumerable<Exception> CommandExceptions { get; }
-        public void ResetCommandExceptions();
-        public IDisposable Subscribe(Action stateHasChanged, double sampleMS);
+        public ValueTask OnContextInitialized();
+
+        public void OnContextDisposed();
+
+        public IEnumerable<Exception> Exceptions { get; }
+        public void ResetExceptions();
+        internal IDisposable Subscribe(Action stateHasChanged, double sampleMS);
         internal void StateHasChanged(ServiceState reason, Exception? exception);
     }
 

@@ -1,4 +1,5 @@
-﻿using RxBlazorLightCore;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -66,10 +67,14 @@ namespace RxMudBlazorLightTestBase.Service
         private readonly IInputGroupAsync<Pizza?> _pizzaIPGAsync;
         private readonly IInputGroup<Pizza> _pizzaIPG;
         private readonly IInputGroup<TestColor, ColorEnum> _radioTestExtended;
+        private bool _canIncrement = false;
 
-        public TestService()
+        public TestService(IServiceProvider serviceProvider)
         {
-            Count = 0;
+            Console.WriteLine("TestService Create");
+
+            var ts = serviceProvider.GetRequiredService<TimerService>();
+            Count = (int)ts.ComponentTimer;
             Simple = new SimpleCMD();
             EqualsTest = new EqualsTestCmd();
             EqualsTestAsync = new EqualsTestAsyncCmd();
@@ -92,9 +97,18 @@ namespace RxMudBlazorLightTestBase.Service
             _radioTestExtended = new ColorIPGP(this);
         }
 
-        public override async Task OnInitializedAsync()
-        {    
+        protected override async ValueTask InitializeContext()
+        {
+            Console.WriteLine("TestService OnContextInitialized");
             await Task.Delay(3000);
+            _canIncrement = true;
+            StateHasChanged();
+        }
+
+        protected override void DisposeContext()
+        {
+            _canIncrement = false;
+            Console.WriteLine("TestService OnContextDisposed");
         }
 
         public IInputGroup<Pizza> GetPizzaInput()

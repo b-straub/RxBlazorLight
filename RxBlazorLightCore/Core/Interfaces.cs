@@ -1,4 +1,6 @@
-﻿
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
+
 namespace RxBlazorLightCore
 {
     internal enum ServiceStateChanged
@@ -27,10 +29,27 @@ namespace RxBlazorLightCore
         public IDisposable Subscribe(Action stateHasChanged, double sampleMS);
     }
 
-    public interface IInput<T> : IObservable<T>
+    public enum InputState
     {
-        public T Value { get; set; }
+        NONE,
+        CHANGING,
+        CHANGED,
+        CANCELED,
+        EXCEPTION
+    }
+
+    public interface IInput<T>
+    {
+        public InputState State { get; }
+        public Exception? LastException { get; }
+        public T? Value { get; set; }
+
+        [MemberNotNullWhen(true, nameof(Value))]
+        public bool HasValue();
         public bool CanChange();
+        public void Cancel();
+
+        public IDisposable Subscribe(Action stateHasChanged);
     }
 
     public interface IInputGroup<T> : IInput<T>
@@ -50,11 +69,12 @@ namespace RxBlazorLightCore
         EXCEPTION
     }
 
-    public interface ICommandBase : IObservable<CommandState>
+    public interface ICommandBase
     {
         public CommandState State { get; }
         public Exception? LastException { get; }
         public bool PrepareModal();
+        public IDisposable Subscribe(Action stateHasChanged);
     }
 
     public interface ICommand : ICommandBase

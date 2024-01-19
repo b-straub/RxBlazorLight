@@ -21,7 +21,7 @@
     {
         Toggled = RxInput.Value;
         ToggledChanged = EventCallback.Factory.Create<bool>(this, v => RxInput.Value = v);
-        Disabled = !RxInput.CanChange();
+        Disabled = !RxInput.CanChange() || RxInput.State is InputState.CHANGING;
 
         base.OnParametersSet();
     }

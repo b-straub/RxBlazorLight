@@ -11,15 +11,17 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-
         SelectedValueChanged = EventCallback.Factory.Create<int>(this, v => RxInput.Value = v);
     }
 
     protected override void OnParametersSet()
     {
-        SelectedValue = RxInput.Value;
-        Disabled = !RxInput.CanChange();
+        if (RxInput.State is not InputState.CHANGING && RxInput.HasValue())
+        {
+            SelectedValue = RxInput.Value;
+        }
 
+        Disabled = !RxInput.CanChange() || RxInput.State is InputState.CHANGING;
         base.OnParametersSet();
     }
 }

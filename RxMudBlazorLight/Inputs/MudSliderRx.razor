@@ -9,12 +9,20 @@
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInput.Value = v);
+    }
+
     protected override void OnParametersSet()
     {
-        Value = RxInput.Value;
-        ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInput.Value = v);
-        Disabled = !RxInput.CanChange();
+        if (RxInput.State is not InputState.CHANGING)
+        {
+            Value = RxInput.Value;
+        }
 
+        Disabled = !RxInput.CanChange() || RxInput.State is InputState.CHANGING;
         base.OnParametersSet();
     }
 }

@@ -83,7 +83,7 @@ namespace RxMudBlazorLightTestBase.Service
         {
             Console.WriteLine("TestService Create");
 
-            State = CreateInput(this, new StateInfo("None"));
+            State = CreateInput(this, (StateInfo?)null);
 
             Increment = new IncrementCMD(this);
             AddAsync = new AddAsyncCMD(this);
@@ -116,22 +116,20 @@ namespace RxMudBlazorLightTestBase.Service
             return new SubScope(this);
         }
 
-        protected override async ValueTask InitializeContextAsync()
+        protected override async ValueTask ContextReadyAsync()
         {
             Console.WriteLine("TestService OnContextInitialized");
             await Task.Delay(3000);
             _canIncrement = true;
-        }
-
-        protected override void DisposeContext()
-        {
-            _canIncrement = false;
-            Console.WriteLine("TestService OnContextDisposed");
+            State.Value = new StateInfo("Initialize");
         }
 
         public void ChangeState(string state)
-        {
-            State.Value = State.Value with { State = state };
+        { 
+            if (State.HasValue())
+            {
+                State.Value = State.Value with { State = state };
+            }
         }
 
         public IInputGroup<Pizza> GetPizzas1()

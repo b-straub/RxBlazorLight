@@ -6,8 +6,12 @@ namespace RxMudBlazorLightTestBase.Service
     {
         public class IncrementValueIP(TestService service, int value) : Input<TestService, int>(service, value)
         {
-            protected override void OnValueChanged(int oldValue, int newValue)
+            protected override async ValueTask OnValueChangedAsync(int oldValue, int newValue, CancellationToken cancellationToken)
             {
+                await Task.Delay(3000, cancellationToken);
+
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(newValue, 40);
+
                 Service.Count = newValue;
             }
 
@@ -62,6 +66,11 @@ namespace RxMudBlazorLightTestBase.Service
             public override TestColor[] GetItems()
             {
                 return _colors;
+            }
+
+            protected override async ValueTask OnValueChangedAsync(TestColor? oldValue, TestColor newValue, CancellationToken cancellationToken)
+            {
+                await Task.Delay(2000, cancellationToken);
             }
 
             public override bool IsItemDisabled(int index)

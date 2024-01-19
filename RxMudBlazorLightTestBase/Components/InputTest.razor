@@ -8,6 +8,8 @@
         <TimerComponent Name="InputTest" />
     </RxBLServiceScope>
     <MudText Class="mb-4">Current count: @Service.Count</MudText>
+    <MudButton Disabled=@(!Service.IncrementValue.Changing()) Color="Color.Error" Variant="Variant.Filled" OnClick=@(() => Service.IncrementValue.Cancel())>Cancel Increment Change</MudButton>
+
     <MudImage @bind-Src=@_imageSrc Height="50" />
 
     <MudRadioGroupRx RxInputGroup=@Service.GetRadio() DenseCallback=@DenseCallback ColorCallback=@ColorCallback SizeCallback=@(_ => Size.Large) PlacementCallback=@(_ => Placement.Start) />
@@ -48,6 +50,16 @@
     <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test" Immediate=@true />
     <MudTextFieldRx RxInput=@Service.TextValue Label="Text Test clone" Immediate=@true />
     <MudAutocompleteRx RxInput=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
+
+    <MudGrid>
+        @if (Service.Exceptions.Any())
+        {
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" GutterBottom="true">@GetExceptions()</MudText>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.ResetExceptions())>Reset Exceptions</MudButton>
+            </MudItem>
+        }
+    </MudGrid>
 </MudStack>
 
     @code {
@@ -60,15 +72,15 @@
 
     protected override void OnInitialized()
     {
-        _disposeBag.Add(Service.CanIncrementCheck.Subscribe(val =>
+        _disposeBag.Add(Service.CanIncrementCheck.Subscribe(() =>
         {
-            _imageSrc = val ? "https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_Austria.svg" :
+            _imageSrc = Service.CanIncrementCheck.Value ? "https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_Austria.svg" :
                 "https://upload.wikimedia.org/wikipedia/commons/4/4b/Flag_of_Sweden_fixed.svg";
         }));
 
-        _disposeBag.Add(Service.Simple.Subscribe(cs =>
+        _disposeBag.Add(Service.Simple.Subscribe(() =>
         {
-            if (cs is CommandState.EXECUTED)
+            if (Service.Simple.Executed())
             {
                 _simpleExecutions++;
             }
@@ -125,6 +137,11 @@
         if (string.IsNullOrEmpty(value))
             return states;
         return states.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private string GetExceptions()
+    {
+        return Service.Exceptions.Aggregate("", (p, n) => p + n.Message + ", ").TrimEnd(new[] { ' ', ',' });
     }
 
     public void Dispose()

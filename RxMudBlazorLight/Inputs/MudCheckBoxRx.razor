@@ -11,16 +11,18 @@
 
     protected override void OnParametersSet()
     {
-        Value = RxInput.Value;
-        ValueChanged = EventCallback.Factory.Create<T?>(this, v =>
+        if (RxInput.State is not InputState.CHANGING)
         {
-            if (v is not null)
+            Value = RxInput.Value;
+            ValueChanged = EventCallback.Factory.Create<T?>(this, v =>
             {
-                RxInput.Value = v;
-            }
-        });
-
-        Disabled = !RxInput.CanChange();
+                if (v is not null)
+                {
+                    RxInput.Value = v;
+                }
+            });
+        }
+        Disabled = !RxInput.CanChange() || RxInput.State is InputState.CHANGING;
 
         base.OnParametersSet();
     }

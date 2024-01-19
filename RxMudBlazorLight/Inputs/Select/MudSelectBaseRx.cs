@@ -17,8 +17,11 @@ namespace RxMudBlazorLight.Inputs.Select
         {
             ArgumentNullException.ThrowIfNull(RxInputGroupBase);
 
-            Value = RxInputGroupBase.Value;
-            Text = Value?.ToString();
+            if (RxInputGroupBase.HasValue())
+            {
+                Value = RxInputGroupBase.Value;
+                Text = Value.ToString();
+            }
 
             ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.Value = v);
             Disabled = !RxInputGroupBase.CanChange();
@@ -45,6 +48,8 @@ namespace RxMudBlazorLight.Inputs.Select
                 };
             }
 
+            Disabled = !RxInputGroupBase.CanChange() || RxInputGroupBase.State is InputState.CHANGING;
+
             base.OnParametersSet();
         }
 
@@ -52,11 +57,11 @@ namespace RxMudBlazorLight.Inputs.Select
         {
             ArgumentNullException.ThrowIfNull(RxInputGroupBase);
 
-            if (!_initialized && firstRender)
+            if (!_initialized && firstRender && RxInputGroupBase.HasValue()) 
             {
                 _initialized = true;
                 Value = RxInputGroupBase.Value;
-                Text = Value?.ToString();
+                Text = Value.ToString();
             }
 
             base.OnAfterRender(firstRender);

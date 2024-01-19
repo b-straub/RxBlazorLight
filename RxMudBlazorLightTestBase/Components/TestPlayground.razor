@@ -16,7 +16,6 @@
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
     <MudButtonAsyncPRx Color="Color.Error" Variant="Variant.Filled" Parameter="1" RxCommandAsync=@Service.EqualsTestAsync>EqualsTest</MudButtonAsyncPRx>
 
-    <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick=@(() => _showNestedTimer = !_showNestedTimer)>Throw nested RxServiceException</MudButton>
     <MudGrid>
         @if (Service.Exceptions.Any())
         {
@@ -36,22 +35,21 @@
     private long _equalsAsyncExecutions = 0;
 
     private CompositeDisposable _disposeBag = new();
-    private bool _showNestedTimer = false;
 
     protected override void OnInitialized()
     {
-        _disposeBag.Add(Service.EqualsTest.Subscribe(cs =>
+        _disposeBag.Add(Service.EqualsTest.Subscribe(() =>
        {
-           if (cs is CommandState.EXECUTED)
+           if (Service.EqualsTest.Executed())
            {
                _equalsExecutions++;
            }
            StateHasChanged();
        }));
 
-        _disposeBag.Add(Service.EqualsTestAsync.Subscribe(cs =>
+        _disposeBag.Add(Service.EqualsTestAsync.Subscribe(() =>
         {
-            if (cs is CommandState.EXECUTED)
+            if (Service.EqualsTestAsync.Executed())
             {
                 _equalsAsyncExecutions++;
             }

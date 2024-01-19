@@ -98,10 +98,10 @@ namespace RxMudBlazorLight.Dialogs
 
             if (_buttonRef?.RxCommandAsync is not null && _buttonDisposable is null)
             {
-                _buttonDisposable = _buttonRef.RxCommandAsync.Subscribe(cs =>
+                _buttonDisposable = _buttonRef.RxCommandAsync.Subscribe(() =>
                 {
                     InvokeAsync(StateHasChanged);
-                    _canceled = cs is CommandState.CANCELED;
+                    _canceled = RxCommandAsync.State is CommandState.CANCELED;
                 });
             }
 

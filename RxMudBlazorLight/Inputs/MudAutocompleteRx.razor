@@ -11,13 +11,14 @@
 
     protected override void OnParametersSet()
     {
-        Value = RxInput.Value;
-        ArgumentNullException.ThrowIfNull(Value);
+        if (RxInput.State is not InputState.CHANGING && RxInput.HasValue())
+        {
+            Value = RxInput.Value;
+            Text = Value.ToString();
 
-        Text = Value.ToString();
-
-        ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInput.Value = v);
-        Disabled = !RxInput.CanChange();
+            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInput.Value = v);
+        }
+        Disabled = !RxInput.CanChange() || RxInput.State is InputState.CHANGING;
 
         base.OnParametersSet();
     }

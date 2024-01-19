@@ -17,10 +17,13 @@
 
     protected override void OnParametersSet()
     {
-        Value = RxInput.Value;
-        Text = Value?.ToString();
+        if (RxInput.State is not InputState.CHANGING && RxInput.HasValue())
+        {
+            Value = RxInput.Value;
+            Text = Value.ToString();
+        }
 
-        Disabled = !RxInput.CanChange();
+        Disabled = !RxInput.CanChange() || RxInput.State is InputState.CHANGING;
 
         base.OnParametersSet();
     }

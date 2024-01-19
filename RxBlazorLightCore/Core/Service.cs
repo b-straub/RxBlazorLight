@@ -52,23 +52,13 @@ namespace RxBlazorLightCore
                 throw new InvalidOperationException("Nested RxBLService context not allowed!");
             }
             Initialized = true;
-            await InitializeContextAsync();
+            await ContextReadyAsync();
             StateHasChanged();
         }
 
-        protected virtual ValueTask InitializeContextAsync()
+        protected virtual ValueTask ContextReadyAsync()
         {
             return ValueTask.CompletedTask;
-        }
-
-        public void OnContextDisposed()
-        {
-            DisposeContext();
-            Initialized = false;
-        }
-
-        protected virtual void DisposeContext()
-        {
         }
 
         public void ResetExceptions()
@@ -76,9 +66,9 @@ namespace RxBlazorLightCore
             _serviceExceptions.Clear();
         }
 
-        protected static IInput<T> CreateInput<S, T>(S service, T value) where S : RxBLService
+        protected static IInput<T> CreateInput<S, T>(S service, T? value, Func<bool>? canChange = null) where S : RxBLService
         {
-            return Input<S, T>.Create(service, value);
+            return Input<S, T>.Create(service, value, canChange);
         }
     }
 }

@@ -46,9 +46,12 @@ namespace RxMudBlazorLight.Inputs.Radio
                 };
             }
 
-            Value = RxInputGroupBase.Value;
-            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.Value = v);
-            Disabled = !RxInputGroupBase.CanChange();
+            if (RxInputGroupBase.State is not InputState.CHANGING)
+            {
+                Value = RxInputGroupBase.Value;
+                ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.Value = v);
+            }
+            Disabled = !RxInputGroupBase.CanChange() || RxInputGroupBase.State is InputState.CHANGING;
 
             base.OnParametersSet();
         }

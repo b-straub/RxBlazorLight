@@ -43,7 +43,7 @@ namespace RxMudBlazorLight.Dialogs
         [Parameter]
         public Color? CancelColor { get; set; }
 
-        private MudButtonAsyncPRx<T?>? _buttonRef;
+        private MudButtonAsyncPRx<T>? _buttonRef;
         private IDisposable? _buttonDisposable;
         private bool _canceled = false;
 

@@ -1,0 +1,15 @@
+﻿ <MudStack Row=@true AlignItems=@AlignItems.Center>
+    <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" RxCommand=@Service.Increment />
+    <MudIconButtonPRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" Parameter="5" RxCommand=@Service.Add />
+    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" RxCommandAsync=@Service.IncrementAsync />
+    <MudIconButtonAsyncPRx Color="Color.Secondary" Parameter=10 Variant=@Variant.Filled Icon="@Icons.Material.Filled.Add" RxCommandAsync=@Scope.AddAsync />
+    <MudIconButtonAsyncPRx Color="Color.Secondary" Parameter=10 Icon="@Icons.Material.Filled.Add" RxCommandAsync=@Scope.AddAsync />
+</MudStack>
+
+@code {
+    [CascadingParameter]
+    public required TestService Service { get; init; }
+
+    [CascadingParameter]
+    public required TestService.SubScope Scope { get; init; }
+}

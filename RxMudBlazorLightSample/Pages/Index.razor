@@ -7,7 +7,7 @@
 <MudAlert Severity="Severity.Normal">You can find documentation and a sample for RxMudBlazorLight here: <MudLink Href="https://github.com/b-straub/RxMudBlazorLight" Typo="Typo.body2" Color="Color.Inherit"><b>RxMudBlazorLight</b></MudLink></MudAlert>
 <MudAlert Severity="Severity.Info">You can find documentation and examples for MudBlazor here: <MudLink Href="https://mudblazor.com" Typo="Typo.body2" Color="Color.Inherit"><b>www.mudblazor.com</b></MudLink></MudAlert>
 
-@if (!ServiceInitialized)
+@if (!Service.Initialized)
 {
     <MudAlert Severity="Severity.Warning">Waiting for TestService!</MudAlert>
 }
@@ -15,5 +15,5 @@
 @code
 {
     [CascadingParameter]
-    public required bool ServiceInitialized { get; init; }
+    public required TestService Service { get; init; }
 }

@@ -26,8 +26,6 @@ namespace RxMudBlazorLight.Inputs.Radio
 
             if (ChildContent is null)
             {
-                RxInputGroupBase.Initialize();
-
                 var values = RxInputGroupBase.GetItems();
 
                 ChildContent = builder =>
@@ -49,7 +47,7 @@ namespace RxMudBlazorLight.Inputs.Radio
             }
 
             Value = RxInputGroupBase.Value;
-            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.SetValue(v));
+            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.Value = v);
             Disabled = !RxInputGroupBase.CanChange();
 
             base.OnParametersSet();

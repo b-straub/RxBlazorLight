@@ -4,20 +4,18 @@
 @RenderBase()
 
 @code {
-    [Parameter]
-    public IInput<T>? RxInput { get; set; }
+    [Parameter, EditorRequired]
+    public required IInput<T> RxInput { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
     protected override void OnParametersSet()
     {
-        ArgumentNullException.ThrowIfNull(RxInput);
-
         Value = RxInput.Value;
         ArgumentNullException.ThrowIfNull(Value);
 
         Text = Value.ToString();
-        ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInput.SetValue(v));
+        ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInput.Value = v);
         Disabled = !RxInput.CanChange();
 
         base.OnParametersSet();

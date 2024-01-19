@@ -7,7 +7,7 @@
         <DialogActions>
             <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
             <MudButtonAsyncRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                              RxCommandAsyncFactory=@(() => RxCommandAsync) PrepareExecutionAsync=@(PrepareExecutionAsync!)
+                              RxCommandAsync=@RxCommandAsync PrepareExecutionAsync=@(PrepareExecutionAsync!)
                               BeforeExecution=@BeforeExecutionDo AfterExecution=@AfterExecutionDo
                               CancelColor=@CancelColor CancelText=@CancelText>
                 @ConfirmButton

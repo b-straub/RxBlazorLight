@@ -7,7 +7,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required Func<ICommandAsync<T>> RxCommandAsyncFactory { get; init; }
+    public required ICommandAsync<T> RxCommandAsync { get; init; }
 
     [Parameter]
     public T? Parameter { get; set; }
@@ -33,14 +33,10 @@
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonAsyncPRX<T>? _buttonAsyncPRX;
     private Color _buttonColor;
-    private ICommandAsync<T>? _rxCommandAsync;
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
-        _rxCommandAsync = RxCommandAsyncFactory();
-
-        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.FAB, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, CancelText, null);
+        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.FAB, Color, null, RxCommandAsync, BeforeExecution, AfterExecution, CancelText, null);
         _buttonColor = Color;
 
         base.OnInitialized();
@@ -49,9 +45,8 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonAsyncPRX);
-        ArgumentNullException.ThrowIfNull(_rxCommandAsync);
 
-        _rxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
+        RxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
         _buttonAsyncPRX.SetParameters(Parameter);
 
         var parameters = _buttonAsyncPRX.GetFabParameters(StartIcon, EndIcon, Label, IconVariant);
@@ -68,7 +63,7 @@
 
     private string GetProgressIcon()
     {
-        if (_rxCommandAsync is not null && CancelText is null && _rxCommandAsync.HasProgress() && _rxCommandAsync.Executing())
+        if (CancelText is null && RxCommandAsync.HasProgress() && RxCommandAsync.Executing())
         {
             return IconVariant.GetProgressIcon();
         }

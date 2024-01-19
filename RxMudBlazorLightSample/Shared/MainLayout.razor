@@ -3,9 +3,10 @@
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+<RxBLServiceContext />
 
 <MudLayout>
-    <RxBLServiceContext TService=TestService>
+    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService>
         <MudAppBar Elevation="0">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
             <MudSpacer />
@@ -22,7 +23,7 @@
                 @Body
             </MudContainer>
         </MudMainContent>
-    </RxBLServiceContext>
+    </RxBLServiceScope>
 </MudLayout>
 
 @code {

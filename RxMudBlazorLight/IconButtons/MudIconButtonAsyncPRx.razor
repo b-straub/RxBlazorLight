@@ -6,8 +6,8 @@
 </MudBadge>
 
 @code {
-    [Parameter, EditorRequired]
-    public required Func<ICommandAsync<T>> RxCommandAsyncFactory { get; init; }
+    [Parameter]
+    public required ICommandAsync<T> RxCommandAsync { get; set; }
 
     [Parameter]
     public T? Parameter { get; set; }
@@ -27,13 +27,10 @@
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonAsyncPRX<T>? _buttonAsyncPRX;
     private Color _buttonColor;
-    private ICommandAsync<T>? _rxCommandAsync;
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
-        _rxCommandAsync = RxCommandAsyncFactory();
-        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.ICON, Color, null, _rxCommandAsync, BeforeExecution, AfterExecution, null, null);
+        _buttonAsyncPRX = ButtonAsyncPRX<T>.Create(MBButtonType.ICON, Color, null, RxCommandAsync, BeforeExecution, AfterExecution, null, null);
         _buttonColor = Color;
 
         base.OnInitialized();
@@ -47,10 +44,9 @@
         }
 
         ArgumentNullException.ThrowIfNull(_buttonAsyncPRX);
-        ArgumentNullException.ThrowIfNull(_rxCommandAsync);
         ArgumentNullException.ThrowIfNull(Icon);
 
-        _rxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
+        RxCommandAsync.PrepareExecutionAsync = PrepareExecutionAsync;
         _buttonAsyncPRX.SetParameters(Parameter);
 
         Icon = _buttonAsyncPRX.GetIconButtonParameters(Icon, IconVariant);
@@ -63,7 +59,7 @@
 
     private string GetProgressIcon()
     {
-        if (_rxCommandAsync is not null && _rxCommandAsync.HasProgress() && _rxCommandAsync.Executing())
+        if (RxCommandAsync.HasProgress() && RxCommandAsync.Executing())
         {
             return IconVariant.GetProgressIcon();
         }

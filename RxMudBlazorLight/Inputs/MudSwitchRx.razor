@@ -4,21 +4,19 @@
 @RenderBase()
 
 @code {
-    [Parameter]
-    public IInput<T>? RxInput { get; set; }
+    [Parameter, EditorRequired]
+    public required IInput<T> RxInput { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
     protected override void OnParametersSet()
     {
-        ArgumentNullException.ThrowIfNull(RxInput);
-
         Value = RxInput.Value;
         ValueChanged = EventCallback.Factory.Create<T?>(this, v =>
         {
             if (v is not null)
             {
-                RxInput.SetValue(v);
+                RxInput.Value = v;
             }
         });
 

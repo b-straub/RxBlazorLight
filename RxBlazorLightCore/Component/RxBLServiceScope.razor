@@ -1,0 +1,8 @@
+﻿@namespace RxBlazorLightCore
+@typeparam TScope where TScope : IRxBLScope
+@typeparam TService where TService : IRxBLService
+@implements IDisposable
+
+<CascadingValue Value=@Scope>
+    @ChildContent
+</CascadingValue>

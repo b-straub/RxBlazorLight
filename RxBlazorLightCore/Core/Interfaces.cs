@@ -1,58 +1,42 @@
 ﻿
 namespace RxBlazorLightCore
 {
-    public enum ServiceState
+    internal enum ServiceStateChanged
     {
-        SERVICE,
         COMMAND,
         EXCEPTION,
-        INPUT
+        INPUT,
+        SERVICE
     }
 
-    public interface IRxService
+    public interface IRxBLScope
     {
-        public ValueTask OnContextInitialized();
+        public void EnterScope() { }
 
-        public void OnContextDisposed();
+        public void LeaveScope() { }
+    }
 
+
+    public interface IRxBLService
+    {
+        public ValueTask OnContextReadyAsync();
+        public bool Initialized { get; }
         public IEnumerable<Exception> Exceptions { get; }
         public void ResetExceptions();
-        internal IDisposable Subscribe(Action stateHasChanged, double sampleMS);
-        internal void StateHasChanged(ServiceState reason, Exception? exception);
+        public IRxBLScope CreateScope();
+        public IDisposable Subscribe(Action stateHasChanged, double sampleMS);
     }
 
     public interface IInput<T> : IObservable<T>
     {
-        public T Value { get; }
-        public void SetValue(T value);
+        public T Value { get; set; }
         public bool CanChange();
-    }
-
-    public interface IInputAsync<T> : IInput<T>
-    {
-        public Task SetValueAsync(T value);
     }
 
     public interface IInputGroup<T> : IInput<T>
     {
         public T[] GetItems();
-        public void Initialize();
         public bool IsItemDisabled(int index);
-    }
-
-    public interface IInputGroup<T, P> : IInputGroup<T>
-    {
-        public void SetParameter(P parameter);
-    }
-
-    public interface IInputGroupAsync<T> : IInputGroup<T>, IInputAsync<T>
-    {
-        public Task InitializeAsync();
-    }
-
-    public interface IInputGroupAsync<T, P> : IInputGroupAsync<T>
-    {
-        public void SetParameter(P parameter);
     }
 
     public enum CommandState

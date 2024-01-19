@@ -35,6 +35,4 @@
 	  <ProjectReference Include="..\RxMudBlazorLightTestBase\RxMudBlazorLightTestBase.csproj" />
 	</ItemGroup>
 
-
-
 </Project>

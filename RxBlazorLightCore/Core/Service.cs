@@ -4,30 +4,33 @@ using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
-    public class RxBLServiceBase : IRxService
+    public abstract class RxBLService : IRxBLService
     {
+        public bool Initialized { get; private set; }
+
         public IEnumerable<Exception> Exceptions => _serviceExceptions;
 
         private readonly Subject<Unit> _changedSubject = new();
         private readonly IObservable<Unit> _changedObservable;
         private readonly List<Exception> _serviceExceptions;
-        private bool _contextInitialized;
-        public RxBLServiceBase()
+        public RxBLService()
         {
             _changedObservable = _changedSubject.Publish().RefCount();
             _serviceExceptions = [];
-            _contextInitialized = false;
+            Initialized = false;
         }
 
-        public void StateHasChanged(ServiceState reason = ServiceState.SERVICE, Exception? exception = null)
+        public abstract IRxBLScope CreateScope();
+
+        internal void StateHasChanged(ServiceStateChanged reason = ServiceStateChanged.SERVICE, Exception? exception = null)
         {
-            if (exception is null && reason is ServiceState.EXCEPTION ||
-                exception is not null && reason is not ServiceState.EXCEPTION)
+            if (exception is null && reason is ServiceStateChanged.EXCEPTION ||
+                exception is not null && reason is not ServiceStateChanged.EXCEPTION)
             {
                 throw new ArgumentException(reason.ToString());
             }
 
-            if (reason is ServiceState.EXCEPTION && exception is not null)
+            if (reason is ServiceStateChanged.EXCEPTION && exception is not null)
             {
                 _serviceExceptions.Add(exception);
             }
@@ -42,25 +45,26 @@ namespace RxBlazorLightCore
                 .Subscribe(_ => stateHasChanged());
         }
 
-        public ValueTask OnContextInitialized() 
+        public async ValueTask OnContextReadyAsync()
         {
-            if (_contextInitialized)
+            if (Initialized)
             {
                 throw new InvalidOperationException("Nested RxBLService context not allowed!");
             }
-            _contextInitialized = true;
-            return InitializeContext();
+            Initialized = true;
+            await InitializeContextAsync();
+            StateHasChanged();
         }
 
-        protected virtual ValueTask InitializeContext()
+        protected virtual ValueTask InitializeContextAsync()
         {
             return ValueTask.CompletedTask;
         }
 
-        public void OnContextDisposed() 
+        public void OnContextDisposed()
         {
             DisposeContext();
-            _contextInitialized = false;
+            Initialized = false;
         }
 
         protected virtual void DisposeContext()
@@ -72,14 +76,9 @@ namespace RxBlazorLightCore
             _serviceExceptions.Clear();
         }
 
-        protected static IInput<T> CreateInput<S, T>(S service, T value) where S : IRxService
+        protected static IInput<T> CreateInput<S, T>(S service, T value) where S : RxBLService
         {
             return Input<S, T>.Create(service, value);
-        }
-
-        protected static IInputAsync<T> CreateInputAsync<S, T>(S service, T value) where S : IRxService
-        {
-            return InputAsync<S, T>.Create(service, value);
         }
     }
 }

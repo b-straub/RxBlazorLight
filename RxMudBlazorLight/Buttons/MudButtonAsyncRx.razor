@@ -4,7 +4,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required Func<ICommandAsync>? RxCommandAsyncFactory { get; init; }
+    public required ICommandAsync RxCommandAsync { get; init; }
 
     [Parameter]
     public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
@@ -21,16 +21,11 @@
     [Parameter]
     public Color? CancelColor { get; set; }
 
-    public ICommandAsync? RxCommandAsync { get; private set; }
-
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonAsyncRX? _buttonAsyncRX;
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(RxCommandAsyncFactory);
-        RxCommandAsync = RxCommandAsyncFactory();
-
         _buttonAsyncRX = ButtonAsyncRX.Create(MBButtonType.DEFAULT, Color, ChildContent, RxCommandAsync, BeforeExecution, AfterExecution, CancelText, CancelColor);
         
         base.OnInitialized();

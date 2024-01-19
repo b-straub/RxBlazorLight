@@ -1,18 +1,19 @@
 ﻿
 using MudBlazor.Services;
-using RxMudBlazorLightTestBase.Service;
 using RxBlazorLightCore;
+using RxMudBlazorLightTestBase.Service;
 
 namespace RxMudBlazorLightTests.Context
 {
     public class TestContextBase : TestContext
     {
-        public TestContextBase() 
+        public TestContextBase()
         {
             Services.AddMudServices();
+
             Services.AddRxBLService(sp => new TestService(sp));
-            Services.AddSingleton<TimerService>();
             Services.AddRxBLService<TimerService>();
+
             JSInterop.Mode = JSRuntimeMode.Loose;
         }
     }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using RxBlazorLightCore;
-using RxMudBlazorLight.Extensions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RxMudBlazorLight.ButtonBase

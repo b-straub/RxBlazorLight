@@ -20,7 +20,7 @@ namespace RxMudBlazorLight.Inputs.Select
             Value = RxInputGroupBase.Value;
             Text = Value?.ToString();
 
-            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.SetValue(v));
+            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.Value = v);
             Disabled = !RxInputGroupBase.CanChange();
 
             if (ChildContent is null)
@@ -55,7 +55,6 @@ namespace RxMudBlazorLight.Inputs.Select
             if (!_initialized && firstRender)
             {
                 _initialized = true;
-                RxInputGroupBase.Initialize();
                 Value = RxInputGroupBase.Value;
                 Text = Value?.ToString();
             }

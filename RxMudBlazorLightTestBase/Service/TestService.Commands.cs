@@ -42,14 +42,14 @@ namespace RxMudBlazorLightTestBase.Service
         }
 
         public class ExceptionCMD(TestService testService) : CommandService<TestService>(testService)
-		{
+        {
             protected override void DoExecute()
-			{
+            {
                 throw new InvalidOperationException("Command test exception!");
-			}
-		}
+            }
+        }
 
-		public class IncrementCMD(TestService testService) : CommandService<TestService>(testService)
+        public class IncrementCMD(TestService testService) : CommandService<TestService>(testService)
         {
             protected override void DoExecute()
             {

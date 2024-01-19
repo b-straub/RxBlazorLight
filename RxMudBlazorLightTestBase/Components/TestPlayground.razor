@@ -1,31 +1,28 @@
 ﻿@implements IDisposable
+<PageTitle>TestPlayground</PageTitle>
 
 <MudStack AlignItems="AlignItems.Center">
     <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
-    <TimerComponent />
+    <TimerComponent Name="Gobal" />
+    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService>
+        <TimerComponent Name="TestPlayground" />
+    </RxBLServiceScope>
     <MudText id="result" Class="mb-4">Current count: @Service.Count</MudText>
-    <MudRadioGroupAsyncRx id="radio" RxInputGroupAsyncFactory=@Service.GetPizzaInputAsync />
-    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" RxCommandFactory=@(() => Service.Increment)>Increment</MudButtonRx>
-    <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommandFactory=@(() => Service.Add)>Add</MudButtonPRx>
+    <MudRadioGroupRx id="radio" RxInputGroup=@Service.GetPizzas1() />
+    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" RxCommand=@Service.Increment>Increment</MudButtonRx>
+    <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommand=@Service.Add>Add</MudButtonPRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals executions {_equalsExecutions}")</MudText>
-    <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" Parameter=@GetEqualsParameter() RxCommandFactory=@(() => Service.EqualsTest)>EqualsTest</MudButtonPRx>
+    <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" Parameter=@GetEqualsParameter() RxCommand=@Service.EqualsTest>EqualsTest</MudButtonPRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
-    <MudButtonAsyncPRx Color="Color.Error" Variant="Variant.Filled" Parameter="1" RxCommandAsyncFactory=@(() => Service.EqualsTestAsync)>EqualsTest</MudButtonAsyncPRx>
+    <MudButtonAsyncPRx Color="Color.Error" Variant="Variant.Filled" Parameter="1" RxCommandAsync=@Service.EqualsTestAsync>EqualsTest</MudButtonAsyncPRx>
 
     <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick=@(() => _showNestedTimer = !_showNestedTimer)>Throw nested RxServiceException</MudButton>
-    @if (_showNestedTimer)
-    {
-        <RxBLServiceContext TService=@TimerService>
-            <TimerComponent />
-        </RxBLServiceContext>
-    }
     <MudGrid>
-        @if (TimerService.Exceptions.Any())
+        @if (Service.Exceptions.Any())
         {
-            _showNestedTimer = false;
             <MudItem xs="12">
                 <MudText Typo="Typo.h5" GutterBottom="true">@GetExceptions()</MudText>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => TimerService.ResetExceptions())>Reset Exceptions</MudButton>
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.ResetExceptions())>Reset Exceptions</MudButton>
             </MudItem>
         }
     </MudGrid>
@@ -34,9 +31,6 @@
 @code {
     [CascadingParameter]
     public required TestService Service { get; init; }
-
-    [CascadingParameter]
-    public required TimerService TimerService { get; init; }
 
     private long _equalsExecutions = 0;
     private long _equalsAsyncExecutions = 0;
@@ -84,6 +78,6 @@
 
     private string GetExceptions()
     {
-        return TimerService.Exceptions.Aggregate("", (p, n) => p + n.Message + ", ").TrimEnd(new[] { ' ', ',' });
+        return Service.Exceptions.Aggregate("", (p, n) => p + n.Message + ", ").TrimEnd(new[] { ' ', ',' });
     }
 }

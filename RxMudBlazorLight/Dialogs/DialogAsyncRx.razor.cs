@@ -101,7 +101,7 @@ namespace RxMudBlazorLight.Dialogs
                 _buttonDisposable = _buttonRef.RxCommandAsync.Subscribe(cs =>
                 {
                     InvokeAsync(StateHasChanged);
-                     _canceled = cs is CommandState.CANCELED;
+                    _canceled = cs is CommandState.CANCELED;
                 });
             }
 

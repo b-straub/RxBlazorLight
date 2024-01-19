@@ -18,27 +18,38 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		DebugKeepJS|Any CPU = DebugKeepJS|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{72C03536-9A0D-444D-BD35-346672CAAA1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{72C03536-9A0D-444D-BD35-346672CAAA1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72C03536-9A0D-444D-BD35-346672CAAA1E}.DebugKeepJS|Any CPU.ActiveCfg = Debug|Any CPU
+		{72C03536-9A0D-444D-BD35-346672CAAA1E}.DebugKeepJS|Any CPU.Build.0 = Debug|Any CPU
 		{72C03536-9A0D-444D-BD35-346672CAAA1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72C03536-9A0D-444D-BD35-346672CAAA1E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.DebugKeepJS|Any CPU.ActiveCfg = Debug|Any CPU
+		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.DebugKeepJS|Any CPU.Build.0 = Debug|Any CPU
 		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0441C22D-02FC-4B54-BE53-D3F32EF779CE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F15C97D9-B35A-41DC-B32E-751357106EC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F15C97D9-B35A-41DC-B32E-751357106EC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F15C97D9-B35A-41DC-B32E-751357106EC2}.DebugKeepJS|Any CPU.ActiveCfg = Debug|Any CPU
+		{F15C97D9-B35A-41DC-B32E-751357106EC2}.DebugKeepJS|Any CPU.Build.0 = Debug|Any CPU
 		{F15C97D9-B35A-41DC-B32E-751357106EC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F15C97D9-B35A-41DC-B32E-751357106EC2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{600C1493-DE8C-47A9-99CC-19EE49ECAB6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{600C1493-DE8C-47A9-99CC-19EE49ECAB6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{600C1493-DE8C-47A9-99CC-19EE49ECAB6F}.DebugKeepJS|Any CPU.ActiveCfg = Debug|Any CPU
+		{600C1493-DE8C-47A9-99CC-19EE49ECAB6F}.DebugKeepJS|Any CPU.Build.0 = Debug|Any CPU
 		{600C1493-DE8C-47A9-99CC-19EE49ECAB6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{600C1493-DE8C-47A9-99CC-19EE49ECAB6F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ED0AFCB2-A7DC-48F8-9E99-A66493925FD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ED0AFCB2-A7DC-48F8-9E99-A66493925FD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED0AFCB2-A7DC-48F8-9E99-A66493925FD8}.DebugKeepJS|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED0AFCB2-A7DC-48F8-9E99-A66493925FD8}.DebugKeepJS|Any CPU.Build.0 = Debug|Any CPU
 		{ED0AFCB2-A7DC-48F8-9E99-A66493925FD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED0AFCB2-A7DC-48F8-9E99-A66493925FD8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

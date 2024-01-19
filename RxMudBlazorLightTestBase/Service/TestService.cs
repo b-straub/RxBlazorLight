@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RxBlazorLightCore;
+﻿using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -40,19 +39,30 @@ namespace RxMudBlazorLightTestBase.Service
         BLUE
     }
 
-    public sealed partial class TestService : RxBLServiceBase
+    public record StateInfo(string State);
+
+    public sealed partial class TestService : RxBLService
     {
+        public IInput<StateInfo> State { get; }
+
         public int Count { get; private set; }
         public ICommand Simple { get; }
-		public ICommand Exception { get; }
+        public ICommand Exception { get; }
+
+        public partial class SubScope(TestService service) : IRxBLScope
+        {
+            public ICommand Increment = new IncrementCMD(service);
+
+            public ICommandAsync<int> AddAsync = new AddAsyncCMD(service);
+        }
+
+        public ICommand Increment { get; }
+        public ICommandAsync<int> AddAsync { get; }
 
         public ICommand<int> EqualsTest { get; }
         public ICommandAsync<int> EqualsTestAsync { get; }
-
-        public ICommand Increment => new IncrementCMD(this);
         public ICommand<int> Add { get; }
         public ICommandAsync IncrementAsync { get; }
-        public ICommandAsync<int> AddAsync => new AddAsyncCMD(this);
         public ICommandAsync<int> AddAsyncForm { get; }
         public ICommandAsync<int> AddRemoveAsync { get; }
         public IInput<bool> AddMode { get; }
@@ -61,26 +71,29 @@ namespace RxMudBlazorLightTestBase.Service
         public IInput<int> IncrementValue { get; }
         public IInput<bool> CanIncrementCheck { get; }
         public IInput<string> TextValue { get; }
-
         public IInput<int> RatingValue { get; }
 
-        private readonly IInputGroupAsync<Pizza?> _pizzaIPGAsync;
-        private readonly IInputGroup<Pizza> _pizzaIPG;
-        private readonly IInputGroup<TestColor, ColorEnum> _radioTestExtended;
+        private readonly IInputGroup<Pizza> _pizzaInput1;
+        private readonly IInputGroup<Pizza> _pizzaInput2;
+
+        private readonly IInputGroup<TestColor> _radioTestExtended;
         private bool _canIncrement = false;
 
-        public TestService(IServiceProvider serviceProvider)
+        public TestService(IServiceProvider _)
         {
             Console.WriteLine("TestService Create");
 
-            var ts = serviceProvider.GetRequiredService<TimerService>();
-            Count = (int)ts.ComponentTimer;
+            State = CreateInput(this, new StateInfo("None"));
+
+            Increment = new IncrementCMD(this);
+            AddAsync = new AddAsyncCMD(this);
+
             Simple = new SimpleCMD();
             EqualsTest = new EqualsTestCmd();
             EqualsTestAsync = new EqualsTestAsyncCmd();
 
             Exception = new ExceptionCMD(this);
-			Add = new AddCMD(this);
+            Add = new AddCMD(this);
             IncrementAsync = new IncrementAsyncCMD(this);
             AddAsyncForm = new AddAsyncCMDForm(this);
             AddRemoveAsync = new AddRemoveAsyncCMDForm(this);
@@ -92,17 +105,22 @@ namespace RxMudBlazorLightTestBase.Service
             RatingValue = new RatingValueIP(this, 0);
             AddIncrementValue = new AddIncrementValueCMD(this);
 
-            _pizzaIPGAsync = new PizzaIPGAsync(this);
-            _pizzaIPG = new PizzaIPG(this, PizzaIPG.Pizzas[0]);
+            _pizzaInput1 = new PizzaIPG(this, PizzaIPG.Pizzas[0]);
+            _pizzaInput2 = new PizzaIPG(this, PizzaIPG.Pizzas[2]);
+
             _radioTestExtended = new ColorIPGP(this);
         }
 
-        protected override async ValueTask InitializeContext()
+        public override IRxBLScope CreateScope()
+        {
+            return new SubScope(this);
+        }
+
+        protected override async ValueTask InitializeContextAsync()
         {
             Console.WriteLine("TestService OnContextInitialized");
             await Task.Delay(3000);
             _canIncrement = true;
-            StateHasChanged();
         }
 
         protected override void DisposeContext()
@@ -111,17 +129,22 @@ namespace RxMudBlazorLightTestBase.Service
             Console.WriteLine("TestService OnContextDisposed");
         }
 
-        public IInputGroup<Pizza> GetPizzaInput()
+        public void ChangeState(string state)
         {
-            return _pizzaIPG;
+            State.Value = State.Value with { State = state };
         }
 
-        public IInputGroupAsync<Pizza?> GetPizzaInputAsync()
+        public IInputGroup<Pizza> GetPizzas1()
         {
-            return _pizzaIPGAsync;
+            return _pizzaInput1;
         }
 
-        public IInputGroup<TestColor, ColorEnum> GetRadio()
+        public IInputGroup<Pizza> GetPizzas2()
+        {
+            return _pizzaInput2;
+        }
+
+        public IInputGroup<TestColor> GetRadio()
         {
             return _radioTestExtended;
         }

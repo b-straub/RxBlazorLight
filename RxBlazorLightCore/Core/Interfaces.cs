@@ -1,14 +1,15 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
+﻿global using ServiceChangeReason = (RxBlazorLightCore.ChangeReason Reason, System.Guid ID);
+global using ServiceException = (System.Exception Exception, System.Guid ID);
+
+using System.Diagnostics.CodeAnalysis;
 
 namespace RxBlazorLightCore
 {
-    internal enum ServiceStateChanged
+    public enum ChangeReason
     {
-        COMMAND,
         EXCEPTION,
-        INPUT,
-        SERVICE
+        SERVICE,
+        STATE
     }
 
     public interface IRxBLScope
@@ -23,98 +24,78 @@ namespace RxBlazorLightCore
     {
         public ValueTask OnContextReadyAsync();
         public bool Initialized { get; }
-        public IEnumerable<Exception> Exceptions { get; }
+        public IEnumerable<ServiceException> Exceptions { get; }
         public void ResetExceptions();
         public IRxBLScope CreateScope();
-        public IDisposable Subscribe(Action stateHasChanged, double sampleMS);
+        public IDisposable Subscribe(Action<ServiceChangeReason> stateHasChanged, double sampleMS);
+        public Guid ID { get; }
     }
 
-    public enum InputState
-    {
-        NONE,
-        CHANGING,
-        CHANGED,
-        CANCELED,
-        EXCEPTION
-    }
 
-    public interface IInput<T>
+    public interface IState<TInterface, TType> : IValueProvider<TType> where TType : TInterface
     {
-        public InputState State { get; }
-        public Exception? LastException { get; }
-        public T? Value { get; set; }
+        public TInterface? Value { get; }
 
         [MemberNotNullWhen(true, nameof(Value))]
         public bool HasValue();
         public bool CanChange();
-        public void Cancel();
-
-        public IDisposable Subscribe(Action stateHasChanged);
     }
 
-    public interface IInputGroup<T> : IInput<T>
+    public interface IState<TType> : IState<TType, TType>;
+
+    public interface IState : IState<object?, object?>
     {
-        public T[] GetItems();
+        public static object? Default { get; } = default;
+    }
+
+    public interface IStateGroup<TType> : IState<TType>
+    {
+        public TType[] GetItems();
         public bool IsItemDisabled(int index);
     }
 
-    public enum CommandState
+    public interface IStateGroup<TInterface, TType> : IState<TInterface, TType>
+        where TType : TInterface
+    {
+        public TInterface[] GetItems();
+        public bool IsItemDisabled(int index);
+    }
+
+    public enum ValueProviderPhase
     {
         NONE,
-        PREPARING,
-        EXECUTING,
-        EXECUTED,
-        NOT_EXECUTED,
+        PROVIDING,
+        PROVIDED,
         CANCELED,
         EXCEPTION
     }
 
-    public interface ICommandBase
+    public interface IValueProviderBase<T>
     {
-        public CommandState State { get; }
-        public Exception? LastException { get; }
-        public bool PrepareModal();
-        public IDisposable Subscribe(Action stateHasChanged);
-    }
-
-    public interface ICommand : ICommandBase
-    {
-        public Func<ICommand, bool>? PrepareExecution { get; set; }
-        public void Execute();
-        public bool CanExecute();
-    }
-
-    public interface ICommand<T> : ICommandBase
-    {
-        public T? Parameter { get; }
-        public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
-        public void SetParameter(T? parameter);
-        public bool CanExecute(T? parameter);
-        public void Execute();
-        public void Execute(T parameter);
-    }
-
-    public interface ICommandAsyncBase : ICommandBase
-    {
+        public ValueProviderPhase Phase { get; }
+        public bool LongRunning();
         public bool CanCancel();
-        public bool HasProgress();
         public void Cancel();
+        public Guid ID { get; }
     }
 
-    public interface ICommandAsync : ICommandAsyncBase
+    public interface IValueProvider<T> : IValueProviderBase<T>
     {
-        public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
-        public bool CanExecute();
-        public Task Execute();
+        public void Run(T? value);
     }
 
-    public interface ICommandAsync<T> : ICommandAsyncBase
+    public interface IValueProviderVoid<T> : IValueProviderBase<object?>
     {
-        public T? Parameter { get; }
-        public Func<ICommandAsync<T>, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
-        public void SetParameter(T? parameter);
-        public Task Execute();
-        public bool CanExecute(T? parameter);
-        public Task Execute(T parameter);
+        public void Run();
+    }
+
+    public interface IStateProvider : IValueProviderBase<object?>
+    {
+        public void Run();
+    }
+
+    public interface IStateProvider<T> : IValueProviderBase<object?>
+    {
+        public void Run(T? value);
     }
 }

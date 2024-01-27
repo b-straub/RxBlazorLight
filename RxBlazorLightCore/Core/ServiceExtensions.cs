@@ -52,7 +52,7 @@ namespace RxBlazorLightCore
         private static CascadingValueSource<T> CreateCascadingValueSource<T>(this T service, double sampleMS) where T : IRxBLService
         {
             var source = new CascadingValueSource<T>(service, false);
-            service.Subscribe(() => source.NotifyChangedAsync(), sampleMS);
+            service.Subscribe(_ => source.NotifyChangedAsync(), sampleMS);
             return source;
         }
     }

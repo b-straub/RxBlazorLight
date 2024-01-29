@@ -49,7 +49,7 @@ namespace RxBlazorLightCore
             return new State<S, TInterface, TType>(service, value, valueProviderFactory);
         }
 
-        public void Run(TType? value)
+        public void Run(TType value)
         {
             _valueProvider.Run(value);
         }
@@ -94,8 +94,9 @@ namespace RxBlazorLightCore
         where S : RxBLService where
         TType : TInterface
     {
-        protected StateGroup(S service, TType? value, Func<IState<TInterface, TType>, IValueProvider<TType>>? valueProviderFactory = null) : 
-            base(service, value, valueProviderFactory) { }
+        protected StateGroup(S service, TType? value, Func<IState<TInterface, TType>, IValueProvider<TType>>? valueProviderFactory = null) :
+            base(service, value, valueProviderFactory)
+        { }
 
         public abstract TInterface[] GetItems();
 
@@ -107,8 +108,9 @@ namespace RxBlazorLightCore
 
     public abstract class StateGroup<S, TType> : State<S, TType, TType> where S : RxBLService
     {
-        protected StateGroup(S service, TType? value, Func<IState<TType>, IValueProvider<TType>>? valueProviderFactory = null) : 
-            base(service, value, valueProviderFactory) { }
+        protected StateGroup(S service, TType? value, Func<IState<TType>, IValueProvider<TType>>? valueProviderFactory = null) :
+            base(service, value, valueProviderFactory)
+        { }
 
         public abstract TType[] GetItems();
 
@@ -118,7 +120,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public abstract class ValueProviderBase<S, T, TInterface, TType> : IValueProviderBase<T>
+    public class ValueProviderBase<S, T, TInterface, TType> : IValueProviderBase<T>
         where S : RxBLService
         where TType : TInterface
     {
@@ -173,9 +175,18 @@ namespace RxBlazorLightCore
             return false;
         }
 
-        protected abstract IObservable<TType?> ProvideObervableValueBase(T? value, TType? state);
+        protected virtual IObservable<TType?> ProvideObervableValueBase(T? value, TType? state)
+        {
+            throw new NotImplementedException();
+        }
 
-        protected void RunBase(T? value)
+        protected void RunBaseSync(TType? value)
+        {
+            State.SetValueIntern(value);
+            StateChanged(ValueProviderPhase.PROVIDED);
+        }
+
+        protected void RunBaseAsync(T? value)
         {
             StateChanged(ValueProviderPhase.PROVIDING);
 
@@ -222,14 +233,9 @@ namespace RxBlazorLightCore
         where S : RxBLService
         where TType : TInterface
     {
-        public void Run(TType? value)
+        public void Run(TType value)
         {
-            RunBase(value);
-        }
-
-        protected override IObservable<TType?> ProvideObervableValueBase(TType? value, TType? state)
-        {
-            return Observable.Return(value);
+            RunBaseSync(value);
         }
     }
 
@@ -237,40 +243,34 @@ namespace RxBlazorLightCore
        ValueProviderBase<S, T, TType, TType>(service, state, true, true), IValueProvider<T>
        where S : RxBLService
     {
-        public void Run(T? value)
+        public void Run(T value)
         {
-            RunBase(value);
+            RunBaseAsync(value);
         }
 
         protected override IObservable<TType?> ProvideObervableValueBase(T? value, TType? state)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             return Observable.FromAsync(async ct =>
             {
                 return await ProvideValueAsync(value, ct);
             });
         }
 
-        protected abstract Task<TType?> ProvideValueAsync(T? value, CancellationToken cancellationToken);
+        protected abstract Task<TType> ProvideValueAsync(T value, CancellationToken cancellationToken);
     }
 
     public abstract class ValueProvider<S, T, TType>(S service, IState<TType> state) :
      ValueProviderBase<S, T, TType, TType>(service, state, true, false), IValueProvider<T>
      where S : RxBLService
     {
-        public void Run(T? value)
+        public void Run(T value)
         {
-            RunBase(value);
+            RunBaseSync(ProvideValue(value));
         }
 
-        protected override IObservable<TType?> ProvideObervableValueBase(T? value, TType? state)
-        {
-            return Observable.Return(Unit.Default).Select(_ =>
-            {
-                return ProvideValue(value);
-            });
-        }
-
-        protected abstract TType? ProvideValue(T? value);
+        protected abstract TType? ProvideValue(T value);
     }
 
     public abstract class AsyncValueProvider<S, T>(S service, IState<T> state) :
@@ -279,7 +279,7 @@ namespace RxBlazorLightCore
     {
         public void Run()
         {
-            RunBase(default);
+            RunBaseAsync(default);
         }
 
         protected override IObservable<T?> ProvideObervableValueBase(T? value, T? state)
@@ -296,18 +296,10 @@ namespace RxBlazorLightCore
     {
         public void Run()
         {
-            RunBase(default);
+            RunBaseSync(ProvideValue());
         }
 
-        protected override IObservable<T?> ProvideObervableValueBase(T? value, T? state)
-        {
-            return Observable.Return(Unit.Default).Select(_ =>
-            {
-                return ProvideValue();
-            });
-        }
-
-        protected abstract T? ProvideValue();
+        protected abstract T ProvideValue();
     }
 
     public abstract class AsyncValueRefProvider<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
@@ -315,22 +307,24 @@ namespace RxBlazorLightCore
          where S : RxBLService
          where TType : class, TInterface
     {
-        public void Run(T? value)
+        public void Run(T value)
         {
-            RunBase(value);
+            RunBaseAsync(value);
         }
 
         protected override IObservable<TType?> ProvideObervableValueBase(T? value, TType? state)
         {
+            ArgumentNullException.ThrowIfNull(state);
+            ArgumentNullException.ThrowIfNull(value);
+
             return Observable.FromAsync(async ct =>
             {
-                ArgumentNullException.ThrowIfNull(state);
                 await ProvideValueAsync(value, state, ct);
                 return (TType?)default;
             });
         }
 
-        protected abstract Task ProvideValueAsync(T? value, TType stateRef, CancellationToken cancellationToken);
+        protected abstract Task ProvideValueAsync(T value, TType stateRef, CancellationToken cancellationToken);
     }
 
     public abstract class ValueRefProvider<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
@@ -338,22 +332,14 @@ namespace RxBlazorLightCore
          where S : RxBLService
          where TType : class, TInterface
     {
-        public void Run(T? value)
+        public void Run(T value)
         {
-            RunBase(value);
+            ArgumentNullException.ThrowIfNull(State.Value);
+            ProvideState(value, (TType)State.Value);
+            RunBaseSync(default);
         }
 
-        protected override IObservable<TType?> ProvideObervableValueBase(T? value, TType? state)
-        {
-            return Observable.Return(Unit.Default).Select(_ =>
-            {
-                ArgumentNullException.ThrowIfNull(state);
-                ProvideState(value, state);
-                return (TType?)default;
-            });
-        }
-
-        protected abstract void ProvideState(T? value, TType stateRef);
+        protected abstract void ProvideState(T value, TType stateRef);
     }
 
     public abstract class AsyncStateProvider<S, T>(S service, IState state) :
@@ -363,11 +349,13 @@ namespace RxBlazorLightCore
     {
         public void Run(T? value)
         {
-            RunBase(value);
+            RunBaseAsync(value);
         }
 
         protected override IObservable<object?> ProvideObervableValueBase(T? value, object? state)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             return Observable.FromAsync(async cto =>
             {
                 await ProvideStateAsync(value, cto);
@@ -375,7 +363,7 @@ namespace RxBlazorLightCore
             });
         }
 
-        protected abstract Task ProvideStateAsync(T? value, CancellationToken cancellationToken);
+        protected abstract Task ProvideStateAsync(T value, CancellationToken cancellationToken);
     }
 
     public abstract class StateProvider<S, T>(S service, IState state) :
@@ -383,21 +371,13 @@ namespace RxBlazorLightCore
      where T : notnull
      where S : RxBLService
     {
-        public void Run(T? value)
+        public void Run(T value)
         {
-            RunBase(value);
+            ProvideState(value);
+            RunBaseSync(IState.Default);
         }
 
-        protected override IObservable<object?> ProvideObervableValueBase(T? value, object? state)
-        {
-            return Observable.Return(Unit.Default).Select(_ =>
-            {
-                ProvideState(value);
-                return IState.Default;
-            });
-        }
-
-        protected abstract void ProvideState(T? value);
+        protected abstract void ProvideState(T value);
     }
 
     public abstract class StateProviderAsync<S>(S service, IState state) :
@@ -406,7 +386,7 @@ namespace RxBlazorLightCore
     {
         public void Run()
         {
-            RunBase(IState.Default);
+            RunBaseAsync(IState.Default);
         }
 
         protected override IObservable<object?> ProvideObervableValueBase(object? value, object? state)
@@ -427,7 +407,8 @@ namespace RxBlazorLightCore
     {
         public void Run()
         {
-            RunBase(IState.Default);
+            ProvideState();
+            RunBaseSync(IState.Default);
         }
 
         protected override IObservable<object?> ProvideObervableValueBase(object? value, object? state)

@@ -81,7 +81,7 @@ namespace RxBlazorLightCore
 
     public interface IValueProvider<T> : IValueProviderBase<T>
     {
-        public void Run(T? value);
+        public void Run(T value);
     }
 
     public interface IValueProviderVoid<T> : IValueProviderBase<object?>
@@ -96,6 +96,6 @@ namespace RxBlazorLightCore
 
     public interface IStateProvider<T> : IValueProviderBase<object?>
     {
-        public void Run(T? value);
+        public void Run(T value);
     }
 }

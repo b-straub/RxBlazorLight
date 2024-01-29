@@ -215,7 +215,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
 
             Assert.Equal("Sync", fixture.Test);
-            Assert.Equal(2, stateChangeCount);
+            Assert.Equal(1, stateChangeCount);
         }
 
         [Fact]

@@ -15,7 +15,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            fixture.SubscribeMT(sc =>
             {
                 if (sc.ID == fixture.Increment.ID)
                 {
@@ -48,7 +48,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            fixture.SubscribeMT(sc =>
             {
                 if (sc.ID == fixture.Add.ID)
                 {
@@ -81,7 +81,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            fixture.SubscribeMT(sc =>
             {
                 if (sc.ID == fixture.IntStateAsyncX.ID)
                 {
@@ -112,7 +112,7 @@ namespace RxBlazorLightCoreTests
             bool exception = false;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            fixture.SubscribeMT(sc =>
             {
                 if (!done && sc.ID == fixture.Add.ID)
                 {
@@ -159,7 +159,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            fixture.SubscribeMT(sc =>
             {
                 if (sc.ID == fixture.ChangeTest.ID)
                 {
@@ -192,7 +192,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            fixture.SubscribeMT(sc =>
             {
                 if (sc.ID == fixture.ChangeTestSync.ID)
                 {
@@ -226,7 +226,7 @@ namespace RxBlazorLightCoreTests
             bool canceled = false;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            fixture.SubscribeMT(sc =>
             {
                 if (sc.ID == fixture.ChangeTest.ID)
                 {
@@ -271,7 +271,7 @@ namespace RxBlazorLightCoreTests
                 done = false;
                 stateChangeCount = 0;
 
-                return fixture.Subscribe(sc =>
+                return fixture.SubscribeMT(sc =>
                 {
                     if (!done && sc.ID == fixture.CRUDListCmds.ID)
                     {

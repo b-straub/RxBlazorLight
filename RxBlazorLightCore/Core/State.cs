@@ -10,23 +10,26 @@ namespace RxBlazorLightCore
         where TType : TInterface
     {
         public TInterface? Value { get; private set; }
-        public ValueProviderPhase Phase => _valueProvider.Phase;
+        public bool CanRun => _valueProvider.CanRun;
+        public bool LongRunning => _valueProvider.LongRunning;
+        public bool CanCancel => _valueProvider.CanCancel;
+        public StateChangePhase Phase => _valueProvider.Phase;
         public Guid ID => _valueProvider.ID;
 
-        private readonly IValueProvider<TType> _valueProvider;
+        private readonly IStateTransformer<TType> _valueProvider;
 
-        protected State(S service, TType? value, Func<IState<TInterface, TType>, IValueProvider<TType>>? valueProviderFactory = null)
+        protected internal State(S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? valueProviderFactory = null)
         {
             Value = value;
             _valueProvider = valueProviderFactory is null ?
-                new DefaultValueProvider<S, TInterface, TType>(service, this) : valueProviderFactory(this);
+                new StateTransformDirect<S, TInterface, TType>(service, this) : valueProviderFactory(this);
         }
 
-        protected State(S service, TType? value, Func<IState<TType>, IValueProvider<TType>>? valueProviderFactory = null)
+        protected internal State(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null)
         {
             Value = value;
             _valueProvider = valueProviderFactory is null ?
-                new DefaultValueProvider<S, TInterface, TType>(service, this) : valueProviderFactory((IState<TType>)this);
+                new StateTransformDirect<S, TInterface, TType>(service, this) : valueProviderFactory((IState<TType>)this);
         }
 
         public bool HasValue()
@@ -34,97 +37,114 @@ namespace RxBlazorLightCore
             return Value is not null;
         }
 
-        public virtual bool CanChange()
-        {
-            return true;
-        }
-
         internal void SetValueIntern(TType? value)
         {
             Value = value;
         }
 
-        public static IState<TInterface, TType> Create(S service, TType? value, Func<IState<TInterface, TType>, IValueProvider<TType>>? valueProviderFactory = null)
+        public void Transform(TType value)
         {
-            return new State<S, TInterface, TType>(service, value, valueProviderFactory);
-        }
-
-        public void Run(TType value)
-        {
-            _valueProvider.Run(value);
-        }
-
-        public bool LongRunning()
-        {
-            return _valueProvider.LongRunning();
-        }
-
-        public bool CanCancel()
-        {
-            return _valueProvider.CanCancel();
+            _valueProvider.Transform(value);
         }
 
         public void Cancel()
         {
             _valueProvider.Cancel();
         }
+
+        public static IState<TInterface, TType> Create(S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? valueProviderFactory = null)
+        {
+            return new State<S, TInterface, TType>(service, value, valueProviderFactory);
+        }
     }
 
-    public class State<S, TType>(S service, TType? value, Func<IState<TType>, IValueProvider<TType>>? valueProviderFactory = null) :
-        State<S, TType, TType>(service, value, valueProviderFactory), IState<TType>
+    public class State<S, TType> : State<S, TType, TType>, IState<TType>
         where S : RxBLService
     {
-        public static IState<TType> Create(S service, TType? value, Func<IState<TType>, IValueProvider<TType>>? valueProviderFactory = null)
+        private State(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null) :
+            base(service, value, valueProviderFactory)
+        {
+
+        }
+
+        public static IState<TType> Create(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null)
         {
             return new State<S, TType>(service, value, valueProviderFactory);
         }
     }
 
-    public class State<S>(S service) :
-        State<S, object?, object?>(service, IState.Default, null), IState
+    public class State<S> : State<S, object?, object?>, IState
         where S : RxBLService
     {
+        private State(S service) : base (service, IState.Default, null) { }
+
         public static IState Create(S service)
         {
             return new State<S>(service);
         }
     }
 
-    public abstract class StateGroup<S, TInterface, TType> : State<S, TInterface, TType>, IStateGroup<TInterface, TType>
-        where S : RxBLService where
-        TType : TInterface
-    {
-        protected StateGroup(S service, TType? value, Func<IState<TInterface, TType>, IValueProvider<TType>>? valueProviderFactory = null) :
-            base(service, value, valueProviderFactory)
-        { }
-
-        public abstract TInterface[] GetItems();
-
-        public virtual bool IsItemDisabled(int index)
-        {
-            return false;
-        }
-    }
-
-    public abstract class StateGroup<S, TType> : State<S, TType, TType> where S : RxBLService
-    {
-        protected StateGroup(S service, TType? value, Func<IState<TType>, IValueProvider<TType>>? valueProviderFactory = null) :
-            base(service, value, valueProviderFactory)
-        { }
-
-        public abstract TType[] GetItems();
-
-        public virtual bool IsItemDisabled(int index)
-        {
-            return false;
-        }
-    }
-
-    public class ValueProviderBase<S, T, TInterface, TType> : IValueProviderBase<T>
+    public class StateGroup<S, TInterface, TType> : State<S, TInterface, TType>, IStateGroup<TInterface, TType>
         where S : RxBLService
         where TType : TInterface
     {
-        public ValueProviderPhase Phase { get; protected set; } = ValueProviderPhase.NONE;
+        protected S Service { get; }
+        protected StateGroup(S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? valueProviderFactory = null) :
+            base(service, value, valueProviderFactory)
+        {
+            Service = service;
+        }
+
+        public virtual TInterface[] GetItems()
+        {
+            return [];
+        }
+
+        public virtual bool IsItemDisabled(int index)
+        {
+            return false;
+        }
+
+        public static IStateGroup<TInterface, TType> CreateSG(S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? valueProviderFactory = null)
+        {
+            return new StateGroup<S, TInterface, TType>(service, value, valueProviderFactory);
+        }
+    }
+
+    public class StateGroup<S, TType> : State<S, TType, TType>, IStateGroup<TType>
+        where S : RxBLService
+    {
+        protected S Service { get; }
+        protected StateGroup(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null) :
+            base(service, value, valueProviderFactory)
+        {
+            Service = service;
+        }
+
+        public virtual TType[] GetItems()
+        {
+            return [];
+        }
+
+        public virtual bool IsItemDisabled(int index)
+        {
+            return false;
+        }
+
+        public static IStateGroup<TType> CreateSG(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null)
+        {
+            return new StateGroup<S, TType>(service, value, valueProviderFactory);
+        }
+    }
+
+    public class StateProvideTransformBase<S, T, TInterface, TType> : IStateProvideTransformBase
+        where S : RxBLService
+        where TType : TInterface
+    {
+        public virtual bool CanRun => true;
+        public virtual bool CanCancel => false;
+        public virtual bool LongRunning => false;
+        public StateChangePhase Phase { get; protected set; } = StateChangePhase.NONE;
         public Guid ID { get; }
 
         protected S Service { get; }
@@ -136,10 +156,10 @@ namespace RxBlazorLightCore
         private bool _canceled;
         private IDisposable? _runDisposable;
 
-        protected ValueProviderBase(S service, IState<TInterface, TType> state, bool setState, bool runAsync)
+        protected internal StateProvideTransformBase(S service, IState<TInterface, TType>? state, bool setState, bool runAsync)
         {
             Service = service;
-            State = (State<S, TInterface, TType>)state;
+            State = state is null ? (State<S, TInterface, TType>)State<S, object?, object?>.Create(service, IState.Default) : (State<S, TInterface, TType>)state;
             _setState = setState;
             _runAsync = runAsync;
             _canceled = false;
@@ -147,22 +167,17 @@ namespace RxBlazorLightCore
             ID = Guid.NewGuid();
         }
 
-        public virtual bool CanCancel()
-        {
-            return false;
-        }
-
         public void Cancel()
         {
-            if (!CanCancel())
+            if (!CanCancel)
             {
-                StateChanged(ValueProviderPhase.EXCEPTION, new InvalidOperationException("CanCancel() returning false!"));
+                StateChanged(StateChangePhase.EXCEPTION, new InvalidOperationException("CanCancel() returning false!"));
                 return;
             }
 
             if (!_runAsync)
             {
-                StateChanged(ValueProviderPhase.EXCEPTION, new InvalidOperationException("Cancel() not allowed for Sync Provider!"));
+                StateChanged(StateChangePhase.EXCEPTION, new InvalidOperationException("Cancel() not allowed for Sync Provider!"));
                 return;
             }
 
@@ -170,32 +185,28 @@ namespace RxBlazorLightCore
             _runDisposable?.Dispose();
         }
 
-        public virtual bool LongRunning()
-        {
-            return false;
-        }
-
         protected virtual IObservable<TType?> ProvideObervableValueBase(T? value, TType? state)
         {
             throw new NotImplementedException();
         }
 
-        protected void RunBaseSync(TType? value)
+        protected void TransformBaseSync(TType? value)
         {
             State.SetValueIntern(value);
-            StateChanged(ValueProviderPhase.PROVIDED);
+            StateChanged(StateChangePhase.CHANGED);
         }
 
-        protected void RunBaseAsync(T? value)
+        protected void TransformBaseAsync(T? value)
         {
-            StateChanged(ValueProviderPhase.PROVIDING);
+            StateChanged(StateChangePhase.CHANGING);
 
             _runDisposable = ProvideObervableValueBase(value, (TType?)State.Value)
                 .Finally(() =>
                 {
                     if (_canceled)
                     {
-                        StateChanged(ValueProviderPhase.CANCELED);
+                        _canceled = false;
+                        StateChanged(StateChangePhase.CANCELED);
                     }
                 })
                 .Subscribe(v =>
@@ -205,47 +216,57 @@ namespace RxBlazorLightCore
                         State.SetValueIntern(v);
                     }
 
-                    StateChanged(ValueProviderPhase.PROVIDED);
+                    StateChanged(StateChangePhase.CHANGED);
                 },
                 ex =>
                 {
                     if (ex.GetType() == typeof(TaskCanceledException))
                     {
-                        StateChanged(ValueProviderPhase.CANCELED);
+                        StateChanged(StateChangePhase.CANCELED);
                     }
                     else
                     {
-                        StateChanged(ValueProviderPhase.EXCEPTION, ex);
+                        StateChanged(StateChangePhase.EXCEPTION, ex);
                     }
                 });
         }
 
-        private void StateChanged(ValueProviderPhase phase, Exception? exception = null)
+        protected void StateChanged(StateChangePhase phase, Exception? exception = null)
         {
             Phase = phase;
-            Service.StateHasChanged(ID, Phase is ValueProviderPhase.EXCEPTION ? ChangeReason.EXCEPTION : ChangeReason.STATE, exception);
+            Service.StateHasChanged(ID, Phase is StateChangePhase.EXCEPTION ? ChangeReason.EXCEPTION : ChangeReason.STATE, exception);
         }
 
     }
 
-    internal class DefaultValueProvider<S, TInterface, TType>(S service, IState<TInterface, TType> state) :
-        ValueProviderBase<S, TType, TInterface, TType>(service, state, true, true), IValueProvider<TType>
+    public class StateTransformDirect<S, TInterface, TType>(S service, IState<TInterface, TType> state) :
+        StateProvideTransformBase<S, TType, TInterface, TType>(service, state, true, true), IStateTransformer<TType>
         where S : RxBLService
         where TType : TInterface
     {
-        public void Run(TType value)
+        public void Transform(TType value)
         {
-            RunBaseSync(value);
+            TransformBaseSync(value);
         }
     }
 
-    public abstract class AsyncValueProvider<S, T, TType>(S service, IState<TType> state) :
-       ValueProviderBase<S, T, TType, TType>(service, state, true, true), IValueProvider<T>
+    public class StateTransformDirect<S, TType>(S service, IState<TType> state) :
+       StateProvideTransformBase<S, TType, TType, TType>(service, state, true, true), IStateTransformer<TType>
        where S : RxBLService
     {
-        public void Run(T value)
+        public void Transform(TType value)
         {
-            RunBaseAsync(value);
+            TransformBaseSync(value);
+        }
+    }
+
+    public abstract class StateTransformAsync<S, T, TType>(S service, IState<TType> state) :
+       StateProvideTransformBase<S, T, TType, TType>(service, state, true, true), IStateTransformer<T>
+       where S : RxBLService
+    {
+        public void Transform(T value)
+        {
+            TransformBaseAsync(value);
         }
 
         protected override IObservable<TType?> ProvideObervableValueBase(T? value, TType? state)
@@ -254,32 +275,39 @@ namespace RxBlazorLightCore
 
             return Observable.FromAsync(async ct =>
             {
-                return await ProvideValueAsync(value, ct);
+                return await TransformStateAsync(value, ct);
             });
         }
 
-        protected abstract Task<TType> ProvideValueAsync(T value, CancellationToken cancellationToken);
+        protected abstract Task<TType> TransformStateAsync(T value, CancellationToken cancellationToken);
     }
 
-    public abstract class ValueProvider<S, T, TType>(S service, IState<TType> state) :
-     ValueProviderBase<S, T, TType, TType>(service, state, true, false), IValueProvider<T>
+    public abstract class StateTransform<S, T, TType>(S service, IState<TType> state) :
+     StateProvideTransformBase<S, T, TType, TType>(service, state, true, false), IStateTransformer<T>
      where S : RxBLService
     {
-        public void Run(T value)
+        public void Transform(T value)
         {
-            RunBaseSync(ProvideValue(value));
+            try
+            {
+                TransformBaseSync(TransformState(value));
+            }
+            catch (Exception ex)
+            {
+                StateChanged(StateChangePhase.EXCEPTION, ex);
+            }
         }
 
-        protected abstract TType? ProvideValue(T value);
+        protected abstract TType? TransformState(T value);
     }
 
-    public abstract class AsyncValueProvider<S, T>(S service, IState<T> state) :
-       ValueProviderBase<S, T, T, T>(service, state, true, true), IValueProviderVoid<T>
+    public abstract class ValueProviderAsync<S, T>(S service, IState<T> state) :
+       StateProvideTransformBase<S, T, T, T>(service, state, true, true), IStateProvider<T>
        where S : RxBLService
     {
-        public void Run()
+        public void Provide()
         {
-            RunBaseAsync(default);
+            TransformBaseAsync(default);
         }
 
         protected override IObservable<T?> ProvideObervableValueBase(T? value, T? state)
@@ -291,25 +319,32 @@ namespace RxBlazorLightCore
     }
 
     public abstract class ValueProvider<S, T>(S service, IState<T> state) :
-      ValueProviderBase<S, T, T, T>(service, state, true, false), IValueProviderVoid<T>
+      StateProvideTransformBase<S, T, T, T>(service, state, true, false), IStateProvider<T>
       where S : RxBLService
     {
-        public void Run()
+        public void Provide()
         {
-            RunBaseSync(ProvideValue());
+            try
+            {
+                TransformBaseSync(ProvideValue());
+            }
+            catch (Exception ex)
+            {
+                StateChanged(StateChangePhase.EXCEPTION, ex);
+            }
         }
 
         protected abstract T ProvideValue();
     }
 
-    public abstract class AsyncValueRefProvider<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
-         ValueProviderBase<S, T, TInterface, TType>(service, state, false, true), IValueProvider<T>
+    public abstract class StateRefTransformAsync<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
+         StateProvideTransformBase<S, T, TInterface, TType>(service, state, false, true), IStateTransformer<T>
          where S : RxBLService
          where TType : class, TInterface
     {
-        public void Run(T value)
+        public void Transform(T value)
         {
-            RunBaseAsync(value);
+            TransformBaseAsync(value);
         }
 
         protected override IObservable<TType?> ProvideObervableValueBase(T? value, TType? state)
@@ -319,37 +354,44 @@ namespace RxBlazorLightCore
 
             return Observable.FromAsync(async ct =>
             {
-                await ProvideValueAsync(value, state, ct);
+                await TransformStateAsync(value, state, ct);
                 return (TType?)default;
             });
         }
 
-        protected abstract Task ProvideValueAsync(T value, TType stateRef, CancellationToken cancellationToken);
+        protected abstract Task TransformStateAsync(T value, TType stateRef, CancellationToken cancellationToken);
     }
 
-    public abstract class ValueRefProvider<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
-         ValueProviderBase<S, T, TInterface, TType>(service, state, false, false), IValueProvider<T>
+    public abstract class StateRefTransform<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
+         StateProvideTransformBase<S, T, TInterface, TType>(service, state, false, false), IStateTransformer<T>
          where S : RxBLService
          where TType : class, TInterface
     {
-        public void Run(T value)
+        public void Transform(T value)
         {
             ArgumentNullException.ThrowIfNull(State.Value);
-            ProvideState(value, (TType)State.Value);
-            RunBaseSync(default);
+            try
+            {
+                TransformState(value, (TType)State.Value);
+                TransformBaseSync(default);
+            }
+            catch (Exception ex)
+            {
+                StateChanged(StateChangePhase.EXCEPTION, ex);
+            }
         }
 
-        protected abstract void ProvideState(T value, TType stateRef);
+        protected abstract void TransformState(T value, TType stateRef);
     }
 
-    public abstract class AsyncStateProvider<S, T>(S service, IState state) :
-       ValueProviderBase<S, T?, object?, object?>(service, state, true, true), IStateProvider<T>
+    public abstract class ServiceProviderAsync<S, T>(S service) :
+       StateProvideTransformBase<S, T?, object?, object?>(service, null, true, true), IServiceStateProvider<T>
        where T : notnull
        where S : RxBLService
     {
-        public void Run(T? value)
+        public void Transform(T value)
         {
-            RunBaseAsync(value);
+            TransformBaseAsync(value);
         }
 
         protected override IObservable<object?> ProvideObervableValueBase(T? value, object? state)
@@ -358,35 +400,42 @@ namespace RxBlazorLightCore
 
             return Observable.FromAsync(async cto =>
             {
-                await ProvideStateAsync(value, cto);
+                await TransformStateAsync(value, cto);
                 return IState.Default;
             });
         }
 
-        protected abstract Task ProvideStateAsync(T value, CancellationToken cancellationToken);
+        protected abstract Task TransformStateAsync(T value, CancellationToken cancellationToken);
     }
 
-    public abstract class StateProvider<S, T>(S service, IState state) :
-     ValueProviderBase<S, T?, object?, object?>(service, state, true, false), IStateProvider<T>
+    public abstract class ServiceProvider<S, T>(S service) :
+     StateProvideTransformBase<S, T?, object?, object?>(service, null, true, false), IServiceStateProvider<T>
      where T : notnull
      where S : RxBLService
     {
-        public void Run(T value)
+        public void Transform(T value)
         {
-            ProvideState(value);
-            RunBaseSync(IState.Default);
+            try
+            {
+                TransformState(value);
+                TransformBaseSync(IState.Default);
+            }
+            catch (Exception ex)
+            {
+                StateChanged(StateChangePhase.EXCEPTION, ex);
+            }
         }
 
-        protected abstract void ProvideState(T value);
+        protected abstract void TransformState(T value);
     }
 
-    public abstract class StateProviderAsync<S>(S service, IState state) :
-       ValueProviderBase<S, object?, object?, object?>(service, state, true, true), IStateProvider
+    public abstract class ServiceProviderAsync<S>(S service) :
+       StateProvideTransformBase<S, object?, object?, object?>(service, null, true, true), IServiceStateProvider
        where S : RxBLService
     {
-        public void Run()
+        public void Provide()
         {
-            RunBaseAsync(IState.Default);
+            TransformBaseAsync(IState.Default);
         }
 
         protected override IObservable<object?> ProvideObervableValueBase(object? value, object? state)
@@ -401,14 +450,21 @@ namespace RxBlazorLightCore
         protected abstract Task ProvideStateAsync(CancellationToken cancellationToken);
     }
 
-    public abstract class StateProvider<S>(S service, IState state) :
-      ValueProviderBase<S, object?, object?, object?>(service, state, false, false), IStateProvider
+    public abstract class ServiceProvider<S>(S service) :
+      StateProvideTransformBase<S, object?, object?, object?>(service, null, false, false), IServiceStateProvider
       where S : RxBLService
     {
-        public void Run()
+        public void Provide()
         {
-            ProvideState();
-            RunBaseSync(IState.Default);
+            try
+            {
+                ProvideState();
+                TransformBaseSync(IState.Default);
+            }
+            catch (Exception ex)
+            {
+                StateChanged(StateChangePhase.EXCEPTION, ex);
+            }
         }
 
         protected override IObservable<object?> ProvideObervableValueBase(object? value, object? state)

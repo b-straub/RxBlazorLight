@@ -22,19 +22,19 @@ namespace RxBlazorLightCoreTests
                     stateChangeCount++;
                 }
 
+                _output.WriteLine($"Done {fixture.Increment.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.Increment.Phase}, ID {sc.ID}, VPID {fixture.Increment.ID}");
+
                 if (fixture.Increment.Done())
                 {
                     done = true;
                 }
-
-                _output.WriteLine($"Done {done}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.Increment.Phase}, ID {sc.ID}, VPID {fixture.Increment.ID}");
             }, 0);
 
-            fixture.IntState.Run(0);
+            fixture.IntState.Transform(0);
 
             Assert.Equal(0, fixture.IntState.Value);
 
-            fixture.Increment.Run();
+            fixture.Increment.Provide();
             while (!done);
 
             Assert.Equal(1, fixture.IntState.Value);
@@ -55,19 +55,19 @@ namespace RxBlazorLightCoreTests
                     stateChangeCount++;
                 }
 
+                _output.WriteLine($"Done {fixture.Add.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.Add.Phase}, ID {sc.ID}, VPID {fixture.Add.ID}");
+
                 if (fixture.Add.Done())
                 {
                     done = true;
                 }
-
-                _output.WriteLine($"Done {done}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.Add.Phase}, ID {sc.ID}, VPID {fixture.Add.ID}");
             }, 0);
 
-            fixture.IntState.Run(0);
+            fixture.IntState.Transform(0);
 
             Assert.Equal(0, fixture.IntState.Value);
 
-            fixture.Add.Run(10);
+            fixture.Add.Transform(10);
             while (!done) ;
 
             Assert.Equal(10, fixture.IntState.Value);
@@ -88,16 +88,16 @@ namespace RxBlazorLightCoreTests
                     stateChangeCount++;
                 }
 
+                _output.WriteLine($"Done {fixture.IntStateAsyncX.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntStateAsyncX.Phase}, ID {sc.ID}, VPID {fixture.IntStateAsyncX.ID}");
+
                 if (fixture.IntStateAsyncX.Done())
                 {
                     done = true;
                 }
-
-                _output.WriteLine($"Done {done}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntStateAsyncX.Phase}, ID {sc.ID}, VPID {fixture.IntStateAsyncX.ID}");
             }, 0);
 
             Assert.Equal(10, fixture.IntStateAsyncX.Value);
-            fixture.IntStateAsyncX.Run(5);
+            fixture.IntStateAsyncX.Transform(5);
             while (!done) ;
 
             Assert.Equal(50, fixture.IntStateAsyncX.Value);
@@ -119,25 +119,25 @@ namespace RxBlazorLightCoreTests
                     stateChangeCount++;
                 }
 
-                if (fixture.Add.Phase is ValueProviderPhase.EXCEPTION &&
+                if (fixture.Add.Phase is StateChangePhase.EXCEPTION &&
                     fixture.Exceptions.First().Exception.Message == "AddVP")
                 {
                     exception = true;
                 }
 
+                _output.WriteLine($"Done {fixture.Add.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.Add.Phase}, ID {sc.ID}, VPID {fixture.Add.ID}");
+
                 if (fixture.Add.Done())
                 {
                     done = true;
                 }
-
-                _output.WriteLine($"Done {done}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.Add.Phase}, ID {sc.ID}, VPID {fixture.Add.ID}");
             }, 0);
 
             fixture.ResetExceptions();
-            fixture.IntState.Run(0);
+            fixture.IntState.Transform(0);
 
             Assert.Equal(0, fixture.IntState.Value);
-            fixture.Add.Run(10);
+            fixture.Add.Transform(10);
             while (!done) ;
             Assert.Equal(10, fixture.IntState.Value);
             Assert.Equal(2, stateChangeCount);
@@ -145,7 +145,7 @@ namespace RxBlazorLightCoreTests
             done = false;
             stateChangeCount = 0;
 
-            fixture.Add.Run(1);
+            fixture.Add.Transform(1);
             while (!done) ;
 
             Assert.True(exception);
@@ -166,19 +166,19 @@ namespace RxBlazorLightCoreTests
                     stateChangeCount++;
                 }
 
+                _output.WriteLine($"Done {fixture.ChangeTest.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTest.Phase}, ID {sc.ID}, VPID {fixture.ChangeTest.ID}");
+
                 if (fixture.ChangeTest.Done())
                 {
                     done = true;
                 }
-
-                _output.WriteLine($"Done {done}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTest.Phase}, ID {sc.ID}, VPID {fixture.ChangeTest.ID}");
             }, 0);
 
             fixture.ClearTest();
 
             Assert.Equal(string.Empty, fixture.Test);
 
-            fixture.ChangeTest.Run("Test");
+            fixture.ChangeTest.Transform("Test");
             while (!done) ;
 
             Assert.Equal("Test", fixture.Test);
@@ -199,19 +199,19 @@ namespace RxBlazorLightCoreTests
                     stateChangeCount++;
                 }
 
+                _output.WriteLine($"Done {fixture.ChangeTestSync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTestSync.Phase}, ID {sc.ID}, VPID {fixture.ChangeTestSync.ID}");
+
                 if (fixture.ChangeTestSync.Done())
                 {
                     done = true;
                 }
-
-                _output.WriteLine($"Done {done}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTestSync.Phase}, ID {sc.ID}, VPID {fixture.ChangeTestSync.ID}");
             }, 0);
 
             fixture.ClearTest();
 
             Assert.Equal(string.Empty, fixture.Test);
 
-            fixture.ChangeTestSync.Run();
+            fixture.ChangeTestSync.Provide();
             while (!done) ;
 
             Assert.Equal("Sync", fixture.Test);
@@ -232,24 +232,24 @@ namespace RxBlazorLightCoreTests
                 {
                     stateChangeCount++;
 
-                    if (fixture.ChangeTest.Phase is ValueProviderPhase.CANCELED)
+                    if (fixture.ChangeTest.Phase is StateChangePhase.CANCELED)
                     {
                         canceled = true;
                     }
+
+                    _output.WriteLine($"Done {fixture.ChangeTest.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTest.Phase}, ID {sc.ID}, VPID {fixture.ChangeTest.ID}");
 
                     if (fixture.ChangeTest.Done())
                     {
                         done = true;
                     }
-
-                    _output.WriteLine($"Done {done}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTest.Phase}, ID {sc.ID}, VPID {fixture.ChangeTest.ID}");
                 }
             }, 0);
 
             fixture.ClearTest();
             Assert.Equal(string.Empty, fixture.Test);
 
-            fixture.ChangeTest.Run("Test");
+            fixture.ChangeTest.Transform("Test");
             fixture.ChangeTest.Cancel();
 
             while (!done) ;
@@ -266,41 +266,52 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             var done = false;
 
-            fixture.Subscribe(sc =>
+            IDisposable subscribeTest()
             {
-                if (!done && sc.ID == fixture.CRUDListCmds.ID)
+                done = false;
+                stateChangeCount = 0;
+
+                return fixture.Subscribe(sc =>
                 {
-                    stateChangeCount++;
-                }
+                    if (!done && sc.ID == fixture.CRUDListCmds.ID)
+                    {
+                        stateChangeCount++;
+                    }
 
-                if (fixture.CRUDListCmds.Done())
-                {
-                    done = true;
-                }
+                    _output.WriteLine($"Done {fixture.CRUDListCmds.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CRUDListCmds.Phase}, ID {sc.ID}, VPID {fixture.CRUDListCmds.ID}");
 
-                _output.WriteLine($"Done {done}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CRUDListCmds.Phase}, ID {sc.ID}, VPID {fixture.CRUDListCmds.ID}");
+                    if (fixture.CRUDListCmds.Done())
+                    {
+                        done = true;
+                    }
+                }, 0);
+            }
 
-            }, 0);
-
-            fixture.CRUDListCmds.Run((ServiceFixture.IntListVP.CMD.CLEAR, null));
+            var disposable = subscribeTest();
+            fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.CLEAR, null));
+            while (!done) ;
+            disposable.Dispose();
 
             Assert.True(fixture.CRUDListState.HasValue());
+            Assert.Equal(2, stateChangeCount);
+            disposable.Dispose();
 
             if (fixture.CRUDListState.HasValue())
             {
                 Assert.Empty(fixture.CRUDListState.Value);
-
-                fixture.CRUDListCmds.Run((ServiceFixture.IntListVP.CMD.ADD, new CRUDTest("Item1", Guid.NewGuid())));
+                disposable = subscribeTest();
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.ADD, new CRUDTest("Item1", Guid.NewGuid())));
                 while (!done) ;
+                disposable.Dispose();
 
                 Assert.Single(fixture.CRUDListState.Value);
                 Assert.Equal("Item1", fixture.CRUDListState.Value.Last().Item);
                 Assert.Equal(2, stateChangeCount);
 
-                done = false;
-                stateChangeCount = 0;
-                fixture.CRUDListCmds.Run((ServiceFixture.IntListVP.CMD.ADD, new CRUDTest("Item2", Guid.NewGuid())));
+                disposable = subscribeTest();
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.ADD, new CRUDTest("Item2", Guid.NewGuid())));
                 while (!done) ;
+                disposable.Dispose();
 
                 Assert.Equal(2, fixture.CRUDListState.Value.Count());
                 Assert.Equal("Item2", fixture.CRUDListState.Value.Last().Item);
@@ -309,27 +320,27 @@ namespace RxBlazorLightCoreTests
                 var lastItem = fixture.CRUDListState.Value.Last();
                 var updateItem = lastItem with { Item = "Item3" };
 
-                done = false;
-                stateChangeCount = 0;
-                fixture.CRUDListCmds.Run((ServiceFixture.IntListVP.CMD.UPDATE, updateItem));
+                disposable = subscribeTest();
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.UPDATE, updateItem));
                 while (!done) ;
+                disposable.Dispose();
 
                 Assert.Equal(2, fixture.CRUDListState.Value.Count());
                 Assert.Equal("Item3", fixture.CRUDListState.Value.Last().Item);
                 Assert.Equal(2, stateChangeCount);
 
-                done = false;
-                stateChangeCount = 0;
-                fixture.CRUDListCmds.Run((ServiceFixture.IntListVP.CMD.DELETE, updateItem));
+                disposable = subscribeTest();
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.DELETE, updateItem));
                 while (!done) ;
+                disposable.Dispose();
 
                 Assert.Single(fixture.CRUDListState.Value);
                 Assert.Equal(2, stateChangeCount);
 
-                done = false;
-                stateChangeCount = 0;
-                fixture.CRUDListCmds.Run((ServiceFixture.IntListVP.CMD.CLEAR, null));
+                disposable = subscribeTest();
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.CLEAR, null));
                 while (!done) ;
+                disposable.Dispose();
 
                 Assert.Empty(fixture.CRUDListState.Value);
                 Assert.Equal(2, stateChangeCount);

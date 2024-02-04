@@ -18,15 +18,15 @@ namespace RxMudBlazorLight.Inputs.Radio
         [Parameter]
         public Func<T, Placement> PlacementCallback { get; set; } = _ => Placement.End;
 
-        protected IInputGroup<T>? RxInputGroupBase { get; set; }
+        protected IStateGroup<T>? RxStateGroupBase { get; set; }
 
         protected override void OnParametersSet()
         {
-            ArgumentNullException.ThrowIfNull(RxInputGroupBase);
+            ArgumentNullException.ThrowIfNull(RxStateGroupBase);
 
             if (ChildContent is null)
             {
-                var values = RxInputGroupBase.GetItems();
+                var values = RxStateGroupBase.GetItems();
 
                 ChildContent = builder =>
                 {
@@ -39,19 +39,19 @@ namespace RxMudBlazorLight.Inputs.Radio
                         builder.AddAttribute(4, "Size", SizeCallback(values[i]));
                         builder.AddAttribute(5, "Color", ColorCallback(values[i]));
                         builder.AddAttribute(6, "Placement", PlacementCallback(values[i]));
-                        builder.AddAttribute(7, "Disabled", RxInputGroupBase.IsItemDisabled(i));
-                        builder.AddAttribute(8, "InitialSelection", RxInputGroupBase.Value);
+                        builder.AddAttribute(7, "Disabled", RxStateGroupBase.IsItemDisabled(i));
+                        builder.AddAttribute(8, "InitialSelection", RxStateGroupBase.Value);
                         builder.CloseComponent();
                     }
                 };
             }
 
-            if (RxInputGroupBase.State is not InputState.CHANGING)
+            if (RxStateGroupBase.Phase is not StateChangePhase.CHANGING)
             {
-                Value = RxInputGroupBase.Value;
-                ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.Value = v);
+                Value = RxStateGroupBase.Value;
+                ValueChanged = EventCallback.Factory.Create<T>(this, RxStateGroupBase.Transform);
             }
-            Disabled = !RxInputGroupBase.CanChange() || RxInputGroupBase.State is InputState.CHANGING;
+            Disabled = !RxStateGroupBase.CanRun || RxStateGroupBase.Phase is StateChangePhase.CHANGING;
 
             base.OnParametersSet();
         }

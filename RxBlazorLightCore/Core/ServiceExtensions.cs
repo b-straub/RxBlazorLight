@@ -34,7 +34,7 @@ namespace RxBlazorLightCore
             return services;
         }
 
-        public static IServiceCollection AddRxBLService<T>(this IServiceCollection services, Func<IServiceProvider, T> serviceFactory, double sampleMS = 100) where T : RxBLService
+        public static IServiceCollection AddRxBLService<T>(this IServiceCollection services, Func<System.IServiceProvider, T> serviceFactory, double sampleMS = 100) where T : RxBLService
         {
             services.TryAddSingleton<RxServiceCollector>();
 

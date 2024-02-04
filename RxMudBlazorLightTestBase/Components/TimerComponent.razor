@@ -1,5 +1,5 @@
 ﻿<MudStack Row=@true AlignItems="AlignItems.Center">
-    <MudToggleIconButtonRx RxInput=@Scope.Suspended Icon="@Icons.Material.Outlined.PauseCircle" Color="@Color.Error"
+    <MudToggleIconButtonRx RxState=@Scope.Suspended Icon="@Icons.Material.Outlined.PauseCircle" Color="@Color.Error"
                         ToggledIcon="@Icons.Material.Outlined.NotStarted" ToggledColor="@Color.Success" />
     <MudText Color=@(Scope.TimerState.Value is TimerService.State.OVER20 ? Color.Warning : Color.Default)>Current seconds in @Name: @Scope.ComponentTimer.Value</MudText>
 </MudStack>

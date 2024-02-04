@@ -3,55 +3,50 @@ namespace RxBlazorLightCore
 {
     public static class RxExtensions
     {
-        public static IState<TInterface, TType> CreateState<S, TInterface, TType>(this S service, TType? value, Func<IState<TInterface, TType>, IValueProvider<TType>>? valueProviderFactory = null)
+        public static IState<TInterface, TType> CreateState<S, TInterface, TType>(this S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? valueProviderFactory = null)
             where S : RxBLService
             where TType : class, TInterface
         {
             return State<S, TInterface, TType>.Create(service, value, valueProviderFactory);
         }
 
-        public static IState<TType> CreateState<S, TType>(this S service, TType? value, Func<IState<TType>, IValueProvider<TType>>? valueProviderFactory = null) where S : RxBLService
+        public static IState<TType> CreateState<S, TType>(this S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null) where S : RxBLService
         {
             return State<S, TType>.Create(service, value, valueProviderFactory);
         }
 
-        public static IState CreateState<S>(this S service) where S : RxBLService
+        public static bool Changing(this IStateProvideTransformBase valueProvider)
         {
-            return State<S>.Create(service);
+            return valueProvider.Phase is StateChangePhase.CHANGING;
         }
 
-        public static bool Providing<T>(this IValueProviderBase<T> valueProvider)
+        public static bool Changed(this IStateProvideTransformBase valueProvider)
         {
-            return valueProvider.Phase is ValueProviderPhase.PROVIDING;
+            return valueProvider.Phase is StateChangePhase.CHANGED;
         }
 
-        public static bool Provided<T>(this IValueProviderBase<T> valueProvider)
+        public static bool Canceled(this IStateProvideTransformBase valueProvider)
         {
-            return valueProvider.Phase is ValueProviderPhase.PROVIDED;
+            return valueProvider.Phase is StateChangePhase.CANCELED;
         }
 
-        public static bool Canceled<T>(this IValueProviderBase<T> valueProvider)
+        public static bool Exception(this IStateProvideTransformBase valueProvider)
         {
-            return valueProvider.Phase is ValueProviderPhase.CANCELED;
+            return valueProvider.Phase is StateChangePhase.EXCEPTION;
         }
 
-        public static bool Exception<T>(this IValueProviderBase<T> valueProvider)
+        public static bool Done(this IStateProvideTransformBase valueProvider)
         {
-            return valueProvider.Phase is ValueProviderPhase.EXCEPTION;
-        }
-
-        public static bool Done<T>(this IValueProviderBase<T> valueProvider)
-        {
-            return valueProvider.Phase is ValueProviderPhase.PROVIDED ||
-                valueProvider.Phase is ValueProviderPhase.CANCELED ||
-                valueProvider.Phase is ValueProviderPhase.EXCEPTION;
+            return valueProvider.Phase is StateChangePhase.CHANGED ||
+                valueProvider.Phase is StateChangePhase.CANCELED ||
+                valueProvider.Phase is StateChangePhase.EXCEPTION;
         }
 
         internal static void RunValueTask(this ValueTask valueTask)
         {
             if (!valueTask.IsCompleted)
             {
-                throw new InvalidOperationException("ValueTask does nor run synchronously!");
+                throw new InvalidOperationException("ValueTask does not run synchronously!");
             }
 
             valueTask.GetAwaiter().GetResult();
@@ -61,7 +56,7 @@ namespace RxBlazorLightCore
         {
             if (!valueTask.IsCompleted)
             {
-                throw new InvalidOperationException("ValueTask does nor run synchronously!");
+                throw new InvalidOperationException("ValueTask does not run synchronously!");
             }
 
             return valueTask.GetAwaiter().GetResult();

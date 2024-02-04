@@ -5,24 +5,31 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IInput<T> RxInput { get; init; }
+    public required IState<T> RxState { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Value = RxState.Value;
+        ValueChanged = EventCallback.Factory.Create<T?>(this, v =>
+        {
+            if (v is not null && !v.Equals(RxState.Value))
+            {
+                RxState.Transform(v);
+            }
+        });
+    }
+
     protected override void OnParametersSet()
     {
-        if (RxInput.State is not InputState.CHANGING)
+        if (RxState.Done())
         {
-            Value = RxInput.Value;
-            ValueChanged = EventCallback.Factory.Create<T?>(this, v =>
-            {
-                if (v is not null)
-                {
-                    RxInput.Value = v;
-                }
-            });
+            Value = RxState.Value;
         }
-        Disabled = !RxInput.CanChange() || RxInput.State is InputState.CHANGING;
+
+        Disabled = !RxState.CanRun || RxState.Phase is StateChangePhase.CHANGING;
 
         base.OnParametersSet();
     }

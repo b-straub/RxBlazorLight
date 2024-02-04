@@ -15,7 +15,6 @@ namespace RxBlazorLightCore
     public interface IRxBLScope
     {
         public void EnterScope() { }
-
         public void LeaveScope() { }
     }
 
@@ -32,13 +31,12 @@ namespace RxBlazorLightCore
     }
 
 
-    public interface IState<TInterface, TType> : IValueProvider<TType> where TType : TInterface
+    public interface IState<TInterface, TType> : IStateTransformer<TType> where TType : TInterface
     {
         public TInterface? Value { get; }
 
         [MemberNotNullWhen(true, nameof(Value))]
         public bool HasValue();
-        public bool CanChange();
     }
 
     public interface IState<TType> : IState<TType, TType>;
@@ -61,41 +59,40 @@ namespace RxBlazorLightCore
         public bool IsItemDisabled(int index);
     }
 
-    public enum ValueProviderPhase
+    public enum StateChangePhase
     {
         NONE,
-        PROVIDING,
-        PROVIDED,
+        CHANGING,
+        CHANGED,
         CANCELED,
         EXCEPTION
     }
 
-    public interface IValueProviderBase<T>
+    public interface IStateProvideTransformBase
     {
-        public ValueProviderPhase Phase { get; }
-        public bool LongRunning();
-        public bool CanCancel();
+        public StateChangePhase Phase { get; }
+        public bool CanRun { get; }
+        public bool LongRunning { get; }
+        public bool CanCancel { get; }
         public void Cancel();
         public Guid ID { get; }
     }
 
-    public interface IValueProvider<T> : IValueProviderBase<T>
+    public interface IStateTransformer<T> : IStateProvideTransformBase
     {
-        public void Run(T value);
+        public void Transform(T value);
     }
 
-    public interface IValueProviderVoid<T> : IValueProviderBase<object?>
+    public interface IStateProvider<T> : IStateProvideTransformBase
     {
-        public void Run();
+        public void Provide();
     }
 
-    public interface IStateProvider : IValueProviderBase<object?>
+    public interface IServiceStateProvider<T> : IStateTransformer<T>
     {
-        public void Run();
     }
 
-    public interface IStateProvider<T> : IValueProviderBase<object?>
+    public interface IServiceStateProvider : IStateProvider<object?>
     {
-        public void Run(T value);
     }
 }

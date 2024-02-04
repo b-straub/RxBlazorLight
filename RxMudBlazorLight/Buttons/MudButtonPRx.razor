@@ -5,44 +5,39 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required ICommand<T> RxCommand { get; init; }
+    public required IStateTransformer<T> StateTransformer { get; init; }
+
+    [Parameter, EditorRequired]
+    public required Func<IStateTransformer<T>, Task> ValueFactoryAsync { get; init; }
 
     [Parameter]
-    public T? Parameter { get; set; }
+    public string? CancelText { get; set; }
 
     [Parameter]
-    public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
-
-    [Parameter]
-    public Func<T?, Task<bool>>? ConfirmExecution { get; set; }
-
-    [Parameter]
-    public Action? BeforeExecution { get; set; }
-
-    [Parameter]
-    public Action? AfterExecution { get; set; }
+    public Color? CancelColor { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonPRX<T>? _buttonPRX;
+    private ButtonPRx<T>? _buttonPRx;
+    private Color _buttonColor;
 
     protected override void OnInitialized()
     {
-        _buttonPRX = ButtonPRX<T>.Create(MBButtonType.DEFAULT, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
+        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.DEFAULT, ValueFactoryAsync, Color, ChildContent, CancelText, CancelColor);
+        _buttonColor = Color;
 
         base.OnInitialized();
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        ArgumentNullException.ThrowIfNull(_buttonPRX);
-        ArgumentNullException.ThrowIfNull(RxCommand);
+        ArgumentNullException.ThrowIfNull(_buttonPRx);
+        _buttonPRx.SetParameter(StateTransformer);
 
-        RxCommand.PrepareExecution = PrepareExecution;
-        _buttonPRX.SetParameters(Parameter);
+        ChildContent = _buttonPRx.ChildContent;
+        Color = _buttonPRx.Color;
+        OnClick = (EventCallback<MouseEventArgs>)_buttonPRx.OnClick;
+        Disabled = _buttonPRx.Disabled;
 
-        Disabled = !RxCommand.CanExecute(Parameter);
-        OnClick = _buttonPRX.OnClick;
-
-        base.OnParametersSet();
+        await base.OnParametersSetAsync();
     }
 }

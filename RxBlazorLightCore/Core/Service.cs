@@ -70,23 +70,5 @@ namespace RxBlazorLightCore
         {
             _serviceExceptions.Clear();
         }
-
-        protected static IState<TInterface, TType> CreateState<S, TInterface, TType>(S service, TType? value, Func<IState<TInterface, TType>, IValueProvider<TType>>? valueProviderFactory = null)
-            where S : RxBLService
-            where TType : class, TInterface
-        {
-            return State<S, TInterface, TType>.Create(service, value, valueProviderFactory);
-        }
-
-        protected static IState<TType> CreateState<S, TType>(S service, TType? value, Func<IState<TType>, IValueProvider<TType>>? valueProviderFactory = null) where S : RxBLService
-        {
-            return State<S, TType>.Create(service, value, valueProviderFactory);
-        }
-
-        protected static IState CreateState<S>(S service)
-           where S : RxBLService
-        {
-            return State<S>.Create(service);
-        }
     }
 }

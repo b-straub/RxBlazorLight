@@ -2,43 +2,39 @@
 
 <MudStack>
     <MudText Typo="Typo.h3" GutterBottom="true">Counter</MudText>
-    <MudText Typo="Typo.h3" GutterBottom="true">@Service.State.Value?.State</MudText>
+    <MudText Typo="Typo.h3" GutterBottom="true">@Service.StateInfoState.Value?.State</MudText>
 
     <TimerComponent Name="Gobal" />
     <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService>
         <TimerComponent Name="ButtonTest" />
     </RxBLServiceScope>
 
-    <MudText Class="mb-4">Current count: @Service.Count</MudText>
+    <MudText Class="mb-4">Current count: @Service.CountState.Value</MudText>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" RxCommand=@Service.Increment ConfirmExecution=@ConfirmIncrement>Increment</MudButtonRx>
-        <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommand=@Service.Add>Add 5</MudButtonPRx>
-
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" RxCommandAsync=@Service.IncrementAsync>
-            IncrementAsync
-        </MudButtonAsyncRx>
-
-        <MudButtonAsyncPRx Color="Color.Secondary" Variant="Variant.Filled" Parameter=2 RxCommandAsync=@Service.AddAsync PrepareExecutionAsync=@DoPrepareAddAsync CancelColor=Color.Error CancelText="Cancel Add">
+        <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateProvider=@Service.Increment ConfirmExecutionAsync=@ConfirmIncrement>Increment</MudButtonRx>
+        <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" ValueFactoryAsync=@DVFA.Factory(5) StateTransformer=@Service.Add>Add 5</MudButtonPRx>
+        <MudButtonRx Color="Color.Secondary" Variant="Variant.Filled" StateProvider=@Service.IncrementAsync>IncrementAsync</MudButtonRx>
+        <MudButtonPRx Color="Color.Secondary" Variant="Variant.Filled" StateTransformer=@Service.AddAsync ValueFactoryAsync=@DoPrepareAddAsync CancelColor=Color.Error CancelText="Cancel Add">
             AddAsync 2
-        </MudButtonAsyncPRx>
+        </MudButtonPRx>
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudMenu Label="Counter Menu">
-            <MudMenuItemRx RxCommand=@Service.Increment ConfirmExecution=@ConfirmIncrement>Increment</MudMenuItemRx>
-            <MudMenuItemPRx Parameter="5" RxCommand=@Service.Add>Add 5</MudMenuItemPRx>
+            <MudMenuItemRx StateProvider=@Service.Increment ConfirmExecutionAsync=@ConfirmIncrement>Increment</MudMenuItemRx>
+            <MudMenuItemPRx ValueFactoryAsync=@DVFA.Factory(5) StateTransformer=@Service.Add>Add 5</MudMenuItemPRx>
             <MudMenuItem OnClick=@(() => CmdDialogClick()) OnTouch=@(() => CmdDialogClick())>IncrementAsync</MudMenuItem>
             <MudMenuItem OnClick=@(() => CmdDialogClick(2)) OnTouch=@(() => CmdDialogClick(2))>AddAsync 2</MudMenuItem>
         </MudMenu>
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudFabRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlusOne" RxCommand=@Service.Increment Label="Increment" />
-        <MudFabPRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Parameter="5" RxCommand=@Service.Add Label="Add 5" />
-        <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne" RxCommandAsync=@Service.IncrementAsync Label="IncrementAsync" />
-        <MudFabAsyncPRx Color="Color.Secondary" Parameter=2 EndIcon="@Icons.Material.Filled.Add" CancelText="Cancel Add" CancelColor=@Color.Error RxCommandAsync=@Service.AddAsync PrepareExecutionAsync=@DoPrepareAddAsync Label="AddAsync 2" />
-        <MudFabAsyncPRx Color="Color.Secondary" Parameter=5 EndIcon="@Icons.Material.Filled.Add" RxCommandAsync=@Service.AddAsync PrepareExecutionAsync=@DoPrepareAddAsync Label="AddAsync 5" />
+        <MudFabRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlusOne" StateProvider=@Service.Increment Label="Increment" />
+        <MudFabPRx Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" ValueFactoryAsync=@DVFA.Factory(5) StateTransformer=@Service.Add Label="Add 5" />
+        <MudFabRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne" StateProvider=@Service.IncrementAsync Label="IncrementAsync" />
+        <MudFabPRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add" CancelText="Cancel Add" CancelColor=@Color.Error StateTransformer=@Service.AddAsync ValueFactoryAsync=@DoPrepareAddAsync Label="AddAsync 10" />
+        <MudFabPRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add" StateTransformer=@Service.AddAsync ValueFactoryAsync=@DoPrepareAddAsync Label="AddAsync 10" />
     </MudStack>
 
     <RxBLServiceScope TScope=@TestService.SubScope TService=@TestService>
@@ -46,10 +42,10 @@
     </RxBLServiceScope>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudSwitchRx RxInput=@Service.AddMode Label="Switch to Add mode" />
-        <MudFabAsyncPRx Color="Color.Secondary" Parameter=2 PrepareExecutionAsync=@DoPrepareAddRemoveAsync
-                        EndIcon=@(Service.AddMode.Value ? @Icons.Material.Filled.Add : Icons.Material.Filled.Remove)
-                        RxCommandAsync=@Service.AddRemoveAsync />
+        <MudSwitchRx RxState=@Service.AddMode Label="Switch to Add mode" />
+        <MudFabPRx Color="Color.Secondary" ValueFactoryAsync=@DoPrepareAddRemoveAsync
+                       EndIcon=@(Service.AddMode.Value ? @Icons.Material.Filled.Add : Icons.Material.Filled.Remove)
+                       StateTransformer=@Service.AddRemoveAsync />
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
@@ -68,7 +64,7 @@
             </MudItem>
         }
         <MudItem xs="12">
-            <MudFabRx Color="Color.Error" StartIcon="@Icons.Material.Filled.ErrorOutline" RxCommand=@Service.Exception Label="New Exception" />
+            <MudFabRx Color="Color.Error" StartIcon="@Icons.Material.Filled.ErrorOutline" StateProvider=@Service.Exception Label="New Exception" />
         </MudItem>
     </MudGrid>
 </MudStack>
@@ -105,14 +101,14 @@
         return true;
     }
 
-    private async Task<bool> DoPrepareAddAsync(ICommandAsync<int> cmd, CancellationToken token)
+    private async Task DoPrepareAddAsync(IStateTransformer<int> st)
     {
         ArgumentNullException.ThrowIfNull(DialogService);
-        var parameter = Math.Abs(cmd.Parameter) * 2;
+        var value = 10;
 
         var parameters = new DialogParameters
             {
-                ["Message"] = $"Add {cmd.Parameter} * 2 to counter?",
+                ["Message"] = $"Add {value} to counter?",
                 ["ConfirmButton"] = "Add"
             };
 
@@ -122,27 +118,25 @@
 
         if (res.Canceled)
         {
-            return false;
+            return;
         }
 
-        cmd.SetParameter(parameter);
-
-        return true;
+        st.Transform(value);
     }
 
     private async Task<bool> CmdDialogClick(int? parameter = null)
     {
         if (parameter is null)
         {
-            return await DialogAsyncRx.Show(DialogService, Service.IncrementAsync,
+            return await DialogAsyncRx<TestService, int>.Show(DialogService, Service.IncrementAsync,
                 "Increment", "Increment counter.", "Increment", "Cancel", false);
         }
 
-        return await DialogAsyncPRx<int>.Show(DialogService, Service.AddAsync, (int)(parameter!),
+        return await DialogAsyncPRx<TestService, int>.Show(DialogService, Service.AddAsync, DVFA.Factory((int)parameter),
             $"Add {parameter}", $"Add {parameter} to counter?", $"Add {parameter}", "Cancel", true, "Cancel adding!", Color.Error);
     }
 
-    private async Task<bool> DoPrepareAddRemoveAsync(ICommandAsync<int> cmd, CancellationToken token)
+    private async Task DoPrepareAddRemoveAsync(IStateTransformer<int> st)
     {
         var config = (SnackbarOptions options) =>
         {
@@ -157,27 +151,25 @@
 
         try
         {
-            await Task.Delay(2000, token);
+            await Task.Delay(2000);
         }
         finally
         {
             Snackbar.RemoveByKey(sbKey);
         }
 
-        var value = Math.Abs(Service.Count) * 5;
+        var value = Math.Abs(Service.CountState.Value) * 5;
 
         if (value > 100 && Service.AddMode.Value)
         {
-            return false;
+            return;
         }
 
-        cmd.SetParameter(value);
-
-        return true;
+        st.Transform(value);
     }
 
     private string GetExceptions()
     {
-        return Service.Exceptions.Aggregate("", (p, n) => p + n.Message + ", ").TrimEnd(new[] { ' ', ',' });
+        return Service.Exceptions.Aggregate("", (p, n) => p + $"{n.Exception.Message} - {n.ID}, ").TrimEnd(new[] { ' ', ',' });
     }
 }

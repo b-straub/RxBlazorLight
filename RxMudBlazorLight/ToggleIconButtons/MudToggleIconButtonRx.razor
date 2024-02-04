@@ -4,7 +4,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IInput<bool> RxInput { get; init; }
+    public required IState<bool> RxState { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
@@ -19,9 +19,9 @@
 
     protected override void OnParametersSet()
     {
-        Toggled = RxInput.Value;
-        ToggledChanged = EventCallback.Factory.Create<bool>(this, v => RxInput.Value = v);
-        Disabled = !RxInput.CanChange() || RxInput.State is InputState.CHANGING;
+        Toggled = RxState.Value;
+        ToggledChanged = EventCallback.Factory.Create<bool>(this, v => RxState.Transform(v));
+        Disabled = !RxState.CanRun || RxState.Phase is StateChangePhase.CHANGING;
 
         base.OnParametersSet();
     }

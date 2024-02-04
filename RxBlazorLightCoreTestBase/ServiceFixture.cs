@@ -8,25 +8,23 @@ namespace RxBlazorLightCoreTestBase
 
     public partial class ServiceFixture : RxBLService
     {
-        public IState ServiceState { get; }
         public IState<int> IntState { get; }
 
         public IState<int> IntStateAsyncX { get; }
 
         public IState<IEnumerable<CRUDTest>, IList<CRUDTest>> CRUDListState { get; }
 
-        public IValueProviderVoid<int> Increment { get; }
-        public IValueProvider<int> Add { get; }
-        public IStateProvider<string> ChangeTest { get; }
-        public IStateProvider ChangeTestSync { get; }
+        public IStateProvider<int> Increment { get; }
+        public IStateTransformer<int> Add { get; }
+        public IServiceStateProvider<string> ChangeTest { get; }
+        public IServiceStateProvider ChangeTestSync { get; }
 
-        public IValueProvider<(CMD CMD, CRUDTest? ITEM)> CRUDListCmds { get; }
+        public IStateTransformer<(CMD CMD, CRUDTest? ITEM)> CRUDListCmds { get; }
 
         public string Test { get; private set; } = string.Empty;
 
         public ServiceFixture() 
         {
-            ServiceState = this.CreateState();
             IntState = this.CreateState(-1);
 
             IntStateAsyncX = this.CreateState(10, s => new AsyncIntX(this, s));
@@ -36,8 +34,8 @@ namespace RxBlazorLightCoreTestBase
 
             Increment = new IncremementVP(this, IntState);
             Add = new AddVP(this, IntState);
-            ChangeTest = new ChangeTestSP(this, ServiceState);
-            ChangeTestSync = new ChangeTestSyncSP(this, ServiceState);
+            ChangeTest = new ChangeTestSP(this);
+            ChangeTestSync = new ChangeTestSyncSP(this);
         }
 
         public void ClearTest()

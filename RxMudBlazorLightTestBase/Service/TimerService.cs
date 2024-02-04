@@ -18,10 +18,10 @@ namespace RxMudBlazorLightTestBase.Service
 
         public sealed partial class TimerScope(TimerService service) : IRxBLScope
         {
-            public IInput<long> ComponentTimer { get; } = CreateInput(service, 0L);
-            public IInput<bool> Suspended { get; } = CreateInput(service, false);
+            public IState<long> ComponentTimer { get; } = service.CreateState(0L);
+            public IState<bool> Suspended { get; } = service.CreateState(false);
 
-            public IInput<State> TimerState { get; } = CreateInput(service, State.STARTED);
+            public IState<State> TimerState { get; } = service.CreateState(State.STARTED);
 
             private IDisposable? _timerDisposable;
 
@@ -33,11 +33,11 @@ namespace RxMudBlazorLightTestBase.Service
                   {
                       if (!Suspended.Value)
                       {
-                          ComponentTimer.Value++;
+                          ComponentTimer.Transform(ComponentTimer.Value + 1);
 
                           if (ComponentTimer.Value > 20 && TimerState.Value is State.STARTED)
                           {
-                              TimerState.Value = State.OVER20;
+                              TimerState.Transform(State.OVER20);
                           }
                       }
                   });

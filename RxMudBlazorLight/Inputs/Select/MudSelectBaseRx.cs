@@ -9,32 +9,32 @@ namespace RxMudBlazorLight.Inputs.Select
         [Parameter]
         public bool HideDisabled { get; set; } = false;
 
-        protected IInputGroup<T>? RxInputGroupBase { get; set; }
+        protected IStateGroup<T>? RxStateGroupBase { get; set; }
 
         private bool _initialized = false;
 
         protected override void OnParametersSet()
         {
-            ArgumentNullException.ThrowIfNull(RxInputGroupBase);
+            ArgumentNullException.ThrowIfNull(RxStateGroupBase);
 
-            if (RxInputGroupBase.HasValue())
+            if (RxStateGroupBase.HasValue())
             {
-                Value = RxInputGroupBase.Value;
+                Value = RxStateGroupBase.Value;
                 Text = Value.ToString();
             }
 
-            ValueChanged = EventCallback.Factory.Create<T>(this, v => RxInputGroupBase.Value = v);
-            Disabled = !RxInputGroupBase.CanChange();
+            ValueChanged = EventCallback.Factory.Create<T>(this, RxStateGroupBase.Transform);
+            Disabled = !RxStateGroupBase.CanRun;
 
             if (ChildContent is null)
             {
-                var values = RxInputGroupBase.GetItems();
+                var values = RxStateGroupBase.GetItems();
 
                 ChildContent = builder =>
                 {
                     for (var i = 0; i < values.Length; i++)
                     {
-                        if (HideDisabled && RxInputGroupBase.IsItemDisabled(i))
+                        if (HideDisabled && RxStateGroupBase.IsItemDisabled(i))
                         {
                             continue;
                         }
@@ -42,25 +42,25 @@ namespace RxMudBlazorLight.Inputs.Select
                         builder.OpenComponent(0, typeof(MudSelectItemRx<T>));
                         builder.AddAttribute(1, "Index", i);
                         builder.AddAttribute(2, "Values", values);
-                        builder.AddAttribute(3, "Disabled", RxInputGroupBase.IsItemDisabled(i));
+                        builder.AddAttribute(3, "Disabled", RxStateGroupBase.IsItemDisabled(i));
                         builder.CloseComponent();
                     }
                 };
             }
 
-            Disabled = !RxInputGroupBase.CanChange() || RxInputGroupBase.State is InputState.CHANGING;
+            Disabled = !RxStateGroupBase.CanRun || RxStateGroupBase.Phase is StateChangePhase.CHANGING;
 
             base.OnParametersSet();
         }
 
         protected override void OnAfterRender(bool firstRender)
         {
-            ArgumentNullException.ThrowIfNull(RxInputGroupBase);
+            ArgumentNullException.ThrowIfNull(RxStateGroupBase);
 
-            if (!_initialized && firstRender && RxInputGroupBase.HasValue()) 
+            if (!_initialized && firstRender && RxStateGroupBase.HasValue()) 
             {
                 _initialized = true;
-                Value = RxInputGroupBase.Value;
+                Value = RxStateGroupBase.Value;
                 Text = Value.ToString();
             }
 

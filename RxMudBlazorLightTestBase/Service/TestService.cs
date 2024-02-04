@@ -1,4 +1,5 @@
-﻿using RxBlazorLightCore;
+﻿using Microsoft.AspNetCore.Components.Routing;
+using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -43,72 +44,87 @@ namespace RxMudBlazorLightTestBase.Service
 
     public sealed partial class TestService : RxBLService
     {
-        public IInput<StateInfo> State { get; }
+        public IState<StateInfo> StateInfoState { get; }
 
-        public int Count { get; private set; }
-        public ICommand Simple { get; }
-        public ICommand Exception { get; }
+        public IState<int> CountState { get; }
+
+        public IStateProvider<int> Exception { get; }
 
         public partial class SubScope(TestService service) : IRxBLScope
         {
-            public ICommand Increment = new IncrementCMD(service);
+            public IStateProvider<int> Increment = new IncrementVP(service, service.CountState);
 
-            public ICommandAsync<int> AddAsync = new AddAsyncCMD(service);
+            public IStateTransformer<int> AddAsync = new AddSPAsync(service, service.CountState);
+
+            public void EnterScope()
+            {
+                Console.WriteLine("EnterScope");
+            }
+
+            public void LiveScope()
+            {
+                Console.WriteLine("EnterScope");
+            }
         }
 
-        public ICommand Increment { get; }
-        public ICommandAsync<int> AddAsync { get; }
+        public IStateProvider<int> Increment { get; }
+        public IStateTransformer<int> AddAsync { get; }
 
-        public ICommand<int> EqualsTest { get; }
-        public ICommandAsync<int> EqualsTestAsync { get; }
-        public ICommand<int> Add { get; }
-        public ICommandAsync IncrementAsync { get; }
-        public ICommandAsync<int> AddAsyncForm { get; }
-        public ICommandAsync<int> AddRemoveAsync { get; }
-        public IInput<bool> AddMode { get; }
+        public IServiceStateProvider EqualsTest { get; }
+        public IServiceStateProvider<int> EqualsTestAsync { get; }
+        public IStateTransformer<int> Add { get; }
+        public IStateProvider<int> IncrementAsync { get; }
+  
+        public IStateTransformer<int> AddRemoveAsync { get; }
 
-        public ICommand AddIncrementValue { get; }
-        public IInput<int> IncrementValue { get; }
-        public IInput<bool> CanIncrementCheck { get; }
-        public IInput<string> TextValue { get; }
-        public IInput<int> RatingValue { get; }
+        public IState<bool> AddMode { get; }
 
-        private readonly IInputGroup<Pizza> _pizzaInput1;
-        private readonly IInputGroup<Pizza> _pizzaInput2;
+        public IState<int> IncrementState { get; }
+        public IStateTransformer<int> IncrementStateAdd { get; }
 
-        private readonly IInputGroup<TestColor> _radioTestExtended;
+        public IState<bool> CanIncrementCheck { get; }
+        public IState<string> TextValue { get; }
+        public IState<int> RatingValue { get; }
+
+        private readonly IStateGroup<Pizza> _pizzaState1;
+        private readonly IStateGroup<Pizza> _pizzaState2;
+
+        private readonly IStateGroup<TestColor> _radioTestExtended;
         private bool _canIncrement = false;
+        private int _equalTestValue = 0;
+        private int _equalTestAsyncValue = 0;
 
-        public TestService(IServiceProvider _)
+        public TestService(System.IServiceProvider _)
         {
             Console.WriteLine("TestService Create");
 
-            State = CreateInput(this, (StateInfo?)null);
+            StateInfoState = this.CreateState((StateInfo?)null);
+            CountState = this.CreateState(0);
 
-            Increment = new IncrementCMD(this);
-            AddAsync = new AddAsyncCMD(this);
+            Increment = new IncrementVP(this, CountState);
+            AddAsync = new AddSPAsync(this, CountState);
 
-            Simple = new SimpleCMD();
-            EqualsTest = new EqualsTestCmd();
-            EqualsTestAsync = new EqualsTestAsyncCmd();
+            EqualsTest = new EqualsTestVP(this);
+            EqualsTestAsync = new EqualsTestSPAsync(this);
 
-            Exception = new ExceptionCMD(this);
-            Add = new AddCMD(this);
-            IncrementAsync = new IncrementAsyncCMD(this);
-            AddAsyncForm = new AddAsyncCMDForm(this);
-            AddRemoveAsync = new AddRemoveAsyncCMDForm(this);
-            AddMode = new AddModeIP(this, false);
+            Exception = new ExceptionVP(this, CountState);
 
-            IncrementValue = new IncrementValueIP(this, 0);
-            CanIncrementCheck = CreateInput(this, false);
-            TextValue = CreateInput(this, "No Text");
-            RatingValue = new RatingValueIP(this, 0);
-            AddIncrementValue = new AddIncrementValueCMD(this);
+            Add = new AddSP(this, CountState);
+            IncrementAsync = new IncrementVPAsync(this, CountState);
+            AddRemoveAsync = new AddRemoveAsyncSP(this, CountState);
 
-            _pizzaInput1 = new PizzaIPG(this, PizzaIPG.Pizzas[0]);
-            _pizzaInput2 = new PizzaIPG(this, PizzaIPG.Pizzas[2]);
+            AddMode = this.CreateState(false, s => new AddModeVP(this, s));
+            IncrementState = this.CreateState(10, s => new IncrementStateVP(this, s));
+            IncrementStateAdd = new IncrementStateAddVP(this, IncrementState);
 
-            _radioTestExtended = new ColorIPGP(this);
+            CanIncrementCheck = this.CreateState(false);
+            TextValue = this.CreateState("No Text");
+            RatingValue = this.CreateState(0, s => new RatingValueVP(this, s));
+
+            _pizzaState1 = new PizzaSG(this, PizzaSG.Pizzas[0]);
+            _pizzaState2 = new PizzaSG(this, PizzaSG.Pizzas[2]);
+
+            _radioTestExtended = new ColorSG(this);
         }
 
         public override IRxBLScope CreateScope()
@@ -121,28 +137,28 @@ namespace RxMudBlazorLightTestBase.Service
             Console.WriteLine("TestService OnContextInitialized");
             await Task.Delay(3000);
             _canIncrement = true;
-            State.Value = new StateInfo("Initialize");
+            StateInfoState.Transform(new StateInfo("Initialize"));
         }
 
         public void ChangeState(string state)
         { 
-            if (State.HasValue())
+            if (StateInfoState.HasValue())
             {
-                State.Value = State.Value with { State = state };
+                StateInfoState.Transform(StateInfoState.Value with { State = state });
             }
         }
 
-        public IInputGroup<Pizza> GetPizzas1()
+        public IStateGroup<Pizza> GetPizzas1()
         {
-            return _pizzaInput1;
+            return _pizzaState1;
         }
 
-        public IInputGroup<Pizza> GetPizzas2()
+        public IStateGroup<Pizza> GetPizzas2()
         {
-            return _pizzaInput2;
+            return _pizzaState2;
         }
 
-        public IInputGroup<TestColor> GetRadio()
+        public IStateGroup<TestColor> GetRadio()
         {
             return _radioTestExtended;
         }

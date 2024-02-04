@@ -1,4 +1,7 @@
-﻿
+﻿@typeparam TService
+@typeparam TParam
+@inherits RxBLServiceChangeSubscriber<TService>
+
 <MudElement>
     <MudDialog>
         <DialogContent>
@@ -6,12 +9,11 @@
         </DialogContent>
         <DialogActions>
             <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
-            <MudButtonAsyncRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                              RxCommandAsync=@RxCommandAsync PrepareExecutionAsync=@(PrepareExecutionAsync!)
-                              BeforeExecution=@BeforeExecutionDo AfterExecution=@AfterExecutionDo
-                              CancelColor=@CancelColor CancelText=@CancelText>
+            <MudButtonRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
+                         StateProvider=@StateProvider
+                         CancelColor=@CancelColor CancelText=@CancelText>
                 @ConfirmButton
-            </MudButtonAsyncRx>
+            </MudButtonRx>
         </DialogActions>
     </MudDialog>
 </MudElement>

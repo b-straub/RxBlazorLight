@@ -5,7 +5,7 @@ using RxMudBlazorLight.Buttons;
 
 namespace RxMudBlazorLight.Dialogs
 {
-    public partial class DialogAsyncRx : ComponentBase
+    public partial class DialogAsyncRx<TService, TParam> : RxBLServiceChangeSubscriber<TService> where TService : IRxBLService
     {
         [CascadingParameter]
         MudDialogInstance? MudDialog { get; set; }
@@ -23,10 +23,7 @@ namespace RxMudBlazorLight.Dialogs
         public bool SuccessOnConfirm { get; set; } = false;
 
         [Parameter, EditorRequired]
-        public required ICommandAsync RxCommandAsync { get; init; }
-
-        [Parameter]
-        public Func<ICommandAsync, CancellationToken, Task<bool>>? PrepareExecutionAsync { get; set; }
+        public required IStateProvider<TParam> StateProvider { get; init; }
 
         [Parameter]
         public Action? BeforeExecution { get; set; }
@@ -40,18 +37,18 @@ namespace RxMudBlazorLight.Dialogs
         [Parameter]
         public Color? CancelColor { get; set; }
 
-        private MudButtonAsyncRx? _buttonRef;
+        private MudButtonRx<TParam>? _buttonRef;
         private IDisposable? _buttonDisposable;
         private bool _canceled = false;
 
-        public static async Task<bool> Show(IDialogService DialogService,
-           ICommandAsync RxCommandAsync, string title,
+        public static async Task<bool> Show(IDialogService dialogService,
+           IStateProvider<TParam> stateProvider, string title,
            string message, string confirmButton, string cancelButton, bool successOnConfirm,
            string? cancelText = null, Color? cancelColor = null)
         {
             var parameters = new DialogParameters
             {
-                ["RxCommandAsync"] = RxCommandAsync,
+                ["StateProvider"] = stateProvider,
                 ["Message"] = message,
                 ["ConfirmButton"] = confirmButton,
                 ["CancelButton"] = cancelButton,
@@ -60,7 +57,7 @@ namespace RxMudBlazorLight.Dialogs
                 ["CancelText"] = cancelText
             };
 
-            var dialog = DialogService.Show<DialogAsyncRx>(title, parameters);
+            var dialog = dialogService.Show<DialogAsyncRx<TService, TParam>>(title, parameters);
 
             var res = await dialog.Result;
 
@@ -74,56 +71,39 @@ namespace RxMudBlazorLight.Dialogs
 
         private bool CanNotCancel()
         {
-            if (_buttonRef?.RxCommandAsync is null)
+            if (_buttonRef?.StateProvider is null)
             {
                 return false;
             }
 
-            return _buttonRef.RxCommandAsync.Running();
+            return _buttonRef.StateProvider.Changing();
         }
 
         private void Cancel()
         {
-            ArgumentNullException.ThrowIfNull(_buttonRef?.RxCommandAsync);
+            ArgumentNullException.ThrowIfNull(_buttonRef?.StateProvider);
 
-            if (!_buttonRef.RxCommandAsync.Running())
+            if (!_buttonRef.StateProvider.Changing())
             {
                 MudDialog?.Cancel();
             }
         }
 
-        private void BeforeExecutionDo()
+        protected override void ServiceStateHasChanged(Guid id, ChangeReason changeReason)
         {
-            _canceled = false;
-
-            if (_buttonRef?.RxCommandAsync is not null && _buttonDisposable is null)
+            if (changeReason is ChangeReason.STATE && _buttonRef is not null && id == _buttonRef.StateProvider.ID)
             {
-                _buttonDisposable = _buttonRef.RxCommandAsync.Subscribe(() =>
+                if (_buttonRef.StateProvider.Done())
                 {
-                    InvokeAsync(StateHasChanged);
-                    _canceled = RxCommandAsync.State is CommandState.CANCELED;
-                });
-            }
+                    _canceled = StateProvider.Phase is StateChangePhase.CANCELED;
+                    if (!_canceled)
+                    {
+                        _buttonDisposable?.Dispose();
+                        _buttonDisposable = null;
 
-            if (BeforeExecution is not null)
-            {
-                BeforeExecution();
-            }
-        }
-
-        private void AfterExecutionDo()
-        {
-            if (AfterExecution is not null)
-            {
-                AfterExecution();
-            }
-
-            if (!_canceled)
-            {
-                _buttonDisposable?.Dispose();
-                _buttonDisposable = null;
-
-                MudDialog?.Close(DialogResult.Ok(true));
+                        MudDialog?.Close(DialogResult.Ok(true));
+                    }
+                }
             }
         }
     }

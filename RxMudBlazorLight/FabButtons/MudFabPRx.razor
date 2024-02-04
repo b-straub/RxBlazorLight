@@ -1,46 +1,50 @@
 ﻿@inherits MudFab
 @typeparam T
 
-@RenderBase()
+<MudBadge Visible=@(_buttonPRx is not null && _buttonPRx.GetFabProgressIcon(StateTransformer, IconVariant) != string.Empty) 
+    Icon=@_buttonPRx?.GetFabProgressIcon(StateTransformer, IconVariant) Color=@Color Overlap="true" Bordered="true">
+    @RenderBase()
+</MudBadge>
 
 @code {
     [Parameter, EditorRequired]
-    public required ICommand<T> RxCommand { get; init; }
+    public required IStateTransformer<T> StateTransformer { get; init; }
+
+    [Parameter, EditorRequired]
+    public required Func<IStateTransformer<T>, Task> ValueFactoryAsync { get; init; }
 
     [Parameter]
-    public T? Parameter { get; set; }
+    public string? CancelText { get; set; }
 
     [Parameter]
-    public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
+    public Color? CancelColor { get; set; }
 
     [Parameter]
-    public Func<T?, Task<bool>>? ConfirmExecution { get; set; }
-
-    [Parameter]
-    public Action? BeforeExecution { get; set; }
-
-    [Parameter]
-    public Action? AfterExecution { get; set; }
+    public MBIconVariant? IconVariant { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonPRX<T>? _buttonPRX;
+
+    private ButtonPRx<T>? _buttonPRx;
 
     protected override void OnInitialized()
     {
-        _buttonPRX = ButtonPRX<T>.Create(MBButtonType.FAB, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
+        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.FAB, ValueFactoryAsync, Color, null, CancelText, CancelColor);
 
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
-        ArgumentNullException.ThrowIfNull(_buttonPRX);
+        ArgumentNullException.ThrowIfNull(_buttonPRx);
+        _buttonPRx.SetParameter(StateTransformer);
 
-        RxCommand.PrepareExecution = PrepareExecution;
-        _buttonPRX.SetParameters(Parameter);
+        var parameters = _buttonPRx.GetFabParameters(StateTransformer, StartIcon, EndIcon, Label, IconVariant);
+        StartIcon = parameters.StartIcon;
+        EndIcon = parameters.EndIcon;
+        Label = parameters.Label;
 
-        Disabled = !RxCommand.CanExecute(Parameter);
-        OnClick = _buttonPRX.OnClick;
+        OnClick = (EventCallback<MouseEventArgs>)_buttonPRx.OnClick;
+        Disabled = _buttonPRx.Disabled;
 
         base.OnParametersSet();
     }

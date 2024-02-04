@@ -1,4 +1,13 @@
-﻿namespace RxMudBlazorLight;
+﻿
+namespace RxMudBlazorLight;
+internal enum MBButtonType
+{
+    DEFAULT,
+    FAB,
+    ICON,
+    MENU,
+    TOGGLEICON
+}
 
 public enum MBIconVariant
 {

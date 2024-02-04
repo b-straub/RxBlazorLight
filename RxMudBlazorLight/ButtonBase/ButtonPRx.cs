@@ -1,62 +1,69 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using MudBlazor;
 using RxBlazorLightCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RxMudBlazorLight.ButtonBase
 {
-    public class ButtonPRX<T> : ButtonBaseRX
+    internal class ButtonPRx<T> : ButtonBaseRx<T>
     {
-        public EventCallback<MouseEventArgs> OnClick { get; private set; }
-        public EventCallback<TouchEventArgs> OnTouch { get; private set; }
+        public EventCallback<MouseEventArgs>? OnClick { get; private set; }
+        public EventCallback<TouchEventArgs>? OnTouch { get; private set; }
 
-        private readonly ICommand<T> _command;
-        private readonly Func<T?, Task<bool>>? _confirmExecution;
+        private readonly Func<IStateTransformer<T>, Task> _valueFactoryAsync;
 
-        private ButtonPRX(MBButtonType type, ICommand<T>? command, Func<T?, Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution) :
-            base(type, beforeExecution, afterExecution)
+        private ButtonPRx(MBButtonType type, Func<IStateTransformer<T>, Task> valueFactoryAsync, Color buttonColor,
+            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor) :
+            base(type, buttonColor, buttonChildContent, cancelText, cancelColor)
         {
-            ArgumentNullException.ThrowIfNull(command);
-            _command = command;
-            _confirmExecution = confirmExecution;
+            _valueFactoryAsync = valueFactoryAsync;
         }
 
-        public static ButtonPRX<T> Create(MBButtonType type, ICommand<T>? command, Func<T?, Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution)
+        public static ButtonPRx<T> Create(MBButtonType type, Func<IStateTransformer<T>, Task> valueFactoryAsync, Color buttonColor,
+            RenderFragment ? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null)
         {
-            return new ButtonPRX<T>(type, command, confirmExecution, beforeExecution, afterExecution);
+            return new ButtonPRx<T>(type, valueFactoryAsync, buttonColor, buttonChildContent, cancelText, cancelColor);
         }
 
-        public void SetParameters(T? parameter)
+        [MemberNotNull(nameof(OnClick))]
+        [MemberNotNull(nameof(OnTouch))]
+        public void SetParameter(IStateTransformer<T> stateTransformer)
         {
-            ArgumentNullException.ThrowIfNull(parameter);
+            VerifyCancelArguments(stateTransformer.CanCancel);
 
-            _command.SetParameter(parameter);
-            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute());
-            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => Execute());
+            if (stateTransformer.Changing() && stateTransformer.CanCancel)
+            {
+                Color = _cancelColor ?? Color.Warning;
+
+                if (_buttonType is not MBButtonType.FAB)
+                {
+                    ChildContent = RenderCancel();
+                }
+
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => stateTransformer.Cancel());
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => stateTransformer.Cancel());
+
+                Disabled = false;
+            }
+            else
+            {
+                Color = _buttonColor;
+                if (_buttonType is not MBButtonType.FAB)
+                {
+                    ChildContent = stateTransformer.Changing() && stateTransformer.LongRunning ? RenderProgress() : _buttonChildContent;
+                }
+
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteValueProvider(stateTransformer));
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteValueProvider(stateTransformer));
+
+                Disabled = !stateTransformer.CanRun;
+            }
         }
 
-        private async Task Execute()
+        private async Task ExecuteValueProvider(IStateTransformer<T> stateTransformer)
         {
-            if (_beforeExecution is not null)
-            {
-                _beforeExecution();
-            }
-
-            bool canExecute = true;
-
-            if (_confirmExecution is not null)
-            {
-                canExecute = await _confirmExecution(_command.Parameter);
-            }
-
-            if (canExecute)
-            {
-                _command.Execute();
-            }
-
-            if (_afterExecution is not null)
-            {
-                _afterExecution();
-            }
+            await _valueFactoryAsync(stateTransformer);
         }
     }
 }

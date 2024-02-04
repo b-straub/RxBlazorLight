@@ -5,43 +5,30 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required ICommand<T> RxCommand { get; init; }
+    public required IStateTransformer<T> StateTransformer { get; init; }
 
-    [Parameter]
-    public T? Parameter { get; set; }
-
-    [Parameter]
-    public Func<ICommand<T>, bool>? PrepareExecution { get; set; }
-
-    [Parameter]
-    public Func<T?, Task<bool>>? ConfirmExecution { get; set; }
-
-    [Parameter]
-    public Action? BeforeExecution { get; set; }
-
-    [Parameter]
-    public Action? AfterExecution { get; set; }
+    [Parameter, EditorRequired]
+    public required Func<IStateTransformer<T>, Task> ValueFactoryAsync { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonPRX<T>? _buttonPRX;
+    private ButtonPRx<T>? _buttonPRx;
 
     protected override void OnInitialized()
     {
-        _buttonPRX = ButtonPRX<T>.Create(MBButtonType.DEFAULT, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
+        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.DEFAULT, ValueFactoryAsync, Color.Default);
 
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
-        ArgumentNullException.ThrowIfNull(_buttonPRX);
+        ArgumentNullException.ThrowIfNull(_buttonPRx);
+        _buttonPRx.SetParameter(StateTransformer);
 
-        RxCommand.PrepareExecution = PrepareExecution;
-        _buttonPRX.SetParameters(Parameter);
+        OnClick = (EventCallback<MouseEventArgs>)_buttonPRx.OnClick;
+        OnTouch = (EventCallback<TouchEventArgs>)_buttonPRx.OnTouch;
+        Disabled = _buttonPRx.Disabled;
 
-        Disabled = !RxCommand.CanExecute(Parameter);
-        OnClick = _buttonPRX.OnClick;
-        OnTouch = _buttonPRX.OnTouch;
         base.OnParametersSet();
     }
 }

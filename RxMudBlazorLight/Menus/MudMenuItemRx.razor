@@ -1,38 +1,33 @@
 ﻿@inherits MudMenuItem
+@typeparam T
 
 @RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required ICommand RxCommand { get; init; }
+    public required IStateProvider<T> StateProvider { get; init; }
 
     [Parameter]
-    public Func<ICommand, bool>? PrepareExecution { get; set; }
-
-    [Parameter]
-    public Func<Task<bool>>? ConfirmExecution { get; set; }
-
-    [Parameter]
-    public Action? BeforeExecution { get; set; }
-
-    [Parameter]
-    public Action? AfterExecution { get; set; }
+    public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonRX? _buttonRX;
+    private ButtonRx<T>? _buttonRx;
 
     protected override void OnInitialized()
     {
-        _buttonRX = ButtonRX.Create(MBButtonType.DEFAULT, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
-        OnClick = _buttonRX.OnClick;
-        OnTouch = _buttonRX.OnTouch;
+        _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color.Default);
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
-        RxCommand.PrepareExecution = PrepareExecution;
-        Disabled = !RxCommand.CanExecute();
+        ArgumentNullException.ThrowIfNull(_buttonRx);
+        _buttonRx.SetParameter(StateProvider);
+
+        OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
+        OnTouch = (EventCallback<TouchEventArgs>)_buttonRx.OnTouch;
+        Disabled = _buttonRx.Disabled;
+
         base.OnParametersSet();
     }
 }

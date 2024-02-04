@@ -1,52 +1,71 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using MudBlazor;
 using RxBlazorLightCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RxMudBlazorLight.ButtonBase
 {
-    public class ButtonRX : ButtonBaseRX
+    internal class ButtonRx<T> : ButtonBaseRx<T>
     {
-        public EventCallback<MouseEventArgs> OnClick { get; }
-        public EventCallback<TouchEventArgs> OnTouch { get; }
+        public EventCallback<MouseEventArgs>? OnClick { get; private set; }
+        public EventCallback<TouchEventArgs>? OnTouch { get; private set; }
 
-        private readonly Func<Task<bool>>? _confirmExecution;
+        private readonly Func<Task<bool>>? _confirmExecutionAsync;
 
-        private ButtonRX(MBButtonType type, ICommand? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution) :
-            base(type, beforeExecution, afterExecution)
+        private ButtonRx(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
+            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor) :
+            base(type, buttonColor, buttonChildContent, cancelText, cancelColor)
         {
-            ArgumentNullException.ThrowIfNull(command);
-            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Execute(command.Execute));
-            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => Execute(command.Execute));
-            _confirmExecution = confirmExecution;
+            _confirmExecutionAsync = confirmExecutionAsync;
         }
 
-        public static ButtonRX Create(MBButtonType type, ICommand? command, Func<Task<bool>>? confirmExecution, Action? beforeExecution, Action? afterExecution)
+        public static ButtonRx<T> Create(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
+            RenderFragment? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null)
         {
-            return new ButtonRX(type, command, confirmExecution, beforeExecution, afterExecution);
+            return new ButtonRx<T>(type, confirmExecutionAsync, buttonColor, buttonChildContent, cancelText, cancelColor);
         }
 
-        private async Task Execute(Action execute)
+        [MemberNotNull(nameof(OnClick))]
+        [MemberNotNull(nameof(OnTouch))]
+        public void SetParameter(IStateProvider<T> stateProvider)
         {
-            if (_beforeExecution is not null)
+            VerifyCancelArguments(stateProvider.CanCancel);
+
+            if (stateProvider.Changing() && stateProvider.CanCancel)
             {
-                _beforeExecution();
+                Color = _cancelColor ?? Color.Warning;
+;
+                if (_buttonType is not MBButtonType.FAB)
+                {
+                    ChildContent = RenderCancel();
+                }
+
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => stateProvider.Cancel());
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => stateProvider.Cancel());
+
+                Disabled = false;
             }
-
-            bool canExecute = true;
-
-            if (_confirmExecution is not null)
+            else
             {
-                canExecute = await _confirmExecution();
+                Color = _buttonColor;
+                if (_buttonType is not MBButtonType.FAB)
+                {
+                    ChildContent = stateProvider.Changing() && stateProvider.LongRunning ? RenderProgress() : _buttonChildContent;
+                }
+
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteValueProvider(stateProvider));
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteValueProvider(stateProvider));
+
+                Disabled = !stateProvider.CanRun;
             }
+        }
 
-            if (canExecute)
+        private async Task ExecuteValueProvider(IStateProvider<T> stateProvider)
+        {
+            if (_confirmExecutionAsync is null || await _confirmExecutionAsync())
             {
-                execute();
-            }
-
-            if (_afterExecution is not null)
-            {
-                _afterExecution();
+                stateProvider.Provide();
             }
         }
     }

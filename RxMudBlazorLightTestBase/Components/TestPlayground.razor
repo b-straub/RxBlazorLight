@@ -1,4 +1,5 @@
-﻿@implements IDisposable
+﻿@inherits RxBLServiceChangeSubscriber<TestService>
+
 <PageTitle>TestPlayground</PageTitle>
 
 <MudStack AlignItems="AlignItems.Center">
@@ -7,56 +8,43 @@
     <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService>
         <TimerComponent Name="TestPlayground" />
     </RxBLServiceScope>
-    <MudText id="result" Class="mb-4">Current count: @Service.Count</MudText>
-    <MudRadioGroupRx id="radio" RxInputGroup=@Service.GetPizzas1() />
-    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" RxCommand=@Service.Increment>Increment</MudButtonRx>
-    <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" Parameter="5" RxCommand=@Service.Add>Add</MudButtonPRx>
+    <MudText id="result" Class="mb-4">Current count: @Service.CountState.Value</MudText>
+    <MudRadioGroupRx id="radio" RxStateGroup=@Service.GetPizzas1() />
+    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateProvider=@Service.Increment>Increment</MudButtonRx>
+    <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" ValueFactoryAsync=@DVFA.Factory(5) StateTransformer=@Service.Add>Add 5</MudButtonPRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals executions {_equalsExecutions}")</MudText>
-    <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" Parameter=@GetEqualsParameter() RxCommand=@Service.EqualsTest>EqualsTest</MudButtonPRx>
+    <MudButtonRx Color="Color.Error" Variant="Variant.Filled" StateProvider=@Service.EqualsTest>EqualsTest</MudButtonRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
-    <MudButtonAsyncPRx Color="Color.Error" Variant="Variant.Filled" Parameter="1" RxCommandAsync=@Service.EqualsTestAsync>EqualsTest</MudButtonAsyncPRx>
+    <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" ValueFactoryAsync=@DVFA.Factory(1) StateTransformer=@Service.EqualsTestAsync>EqualsTestAsync</MudButtonPRx>
 
     <MudGrid>
         @if (Service.Exceptions.Any())
-        {
-            <MudItem xs="12">
-                <MudText Typo="Typo.h5" GutterBottom="true">@GetExceptions()</MudText>
-                    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.ResetExceptions())>Reset Exceptions</MudButton>
-            </MudItem>
-        }
+    {
+        <MudItem xs="12">
+            <MudText Typo="Typo.h5" GutterBottom="true">@GetExceptions()</MudText>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.ResetExceptions())>Reset Exceptions</MudButton>
+        </MudItem>
+    }
     </MudGrid>
 </MudStack>
 
 @code {
-    [CascadingParameter]
-    public required TestService Service { get; init; }
-
     private long _equalsExecutions = 0;
     private long _equalsAsyncExecutions = 0;
 
-    private CompositeDisposable _disposeBag = new();
-
-    protected override void OnInitialized()
+    protected override void ServiceStateHasChanged(Guid id, ChangeReason changeReason)
     {
-        _disposeBag.Add(Service.EqualsTest.Subscribe(() =>
-       {
-           if (Service.EqualsTest.Executed())
-           {
-               _equalsExecutions++;
-           }
-           StateHasChanged();
-       }));
-
-        _disposeBag.Add(Service.EqualsTestAsync.Subscribe(() =>
+        if (id == Service.EqualsTest.ID && Service.EqualsTest.Changed())
         {
-            if (Service.EqualsTestAsync.Executed())
-            {
-                _equalsAsyncExecutions++;
-            }
+            _equalsExecutions++;
             StateHasChanged();
-        }));
+        }
 
-        base.OnInitialized();
+        if (id == Service.EqualsTestAsync.ID && Service.EqualsTestAsync.Changed())
+        {
+            _equalsAsyncExecutions++;
+            StateHasChanged();
+        }
     }
 
     private int GetEqualsParameter()
@@ -64,18 +52,8 @@
         return _equalsExecutions == 0 ? 1 : 2;
     }
 
-    private void Clicked()
-    {
-        Service.Increment.Execute();
-    }
-
-    public void Dispose()
-    {
-        _disposeBag.Dispose();
-    }
-
     private string GetExceptions()
     {
-        return Service.Exceptions.Aggregate("", (p, n) => p + n.Message + ", ").TrimEnd(new[] { ' ', ',' });
+        return Service.Exceptions.Aggregate("", (p, n) => p + $"{n.Exception.Message} - {n.ID}, ").TrimEnd(new[] { ' ', ',' });
     }
 }

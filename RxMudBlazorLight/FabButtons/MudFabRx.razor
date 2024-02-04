@@ -1,38 +1,50 @@
 ﻿@inherits MudFab
+@typeparam T
 
-@RenderBase()
+<MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetFabProgressIcon(StateProvider, IconVariant) != string.Empty)
+          Icon=@_buttonRx?.GetFabProgressIcon(StateProvider, IconVariant) Color=@Color Overlap="true" Bordered="true">
+    @RenderBase()
+</MudBadge>
 
 @code {
     [Parameter, EditorRequired]
-    public required ICommand RxCommand { get; init; }
+    public required IStateProvider<T> StateProvider { get; init; }
 
     [Parameter]
-    public Func<ICommand, bool>? PrepareExecution { get; set; }
+    public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
     [Parameter]
-    public Func<Task<bool>>? ConfirmExecution { get; set; }
+    public string? CancelText { get; set; }
 
     [Parameter]
-    public Action? BeforeExecution { get; set; }
+    public Color? CancelColor { get; set; }
 
     [Parameter]
-    public Action? AfterExecution { get; set; }
+    public MBIconVariant? IconVariant { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonRX? _buttonRX;
+    private ButtonRx<T>? _buttonRx;
 
     protected override void OnInitialized()
     {
-        _buttonRX = ButtonRX.Create(MBButtonType.FAB, RxCommand, ConfirmExecution, BeforeExecution, AfterExecution);
-        OnClick = _buttonRX.OnClick;
+        _buttonRx = ButtonRx<T>.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color, null, CancelText, CancelColor);
 
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
-        RxCommand.PrepareExecution = PrepareExecution;
-        Disabled = !RxCommand.CanExecute();
+        ArgumentNullException.ThrowIfNull(_buttonRx);
+        _buttonRx.SetParameter(StateProvider);
+
+        var parameters = _buttonRx.GetFabParameters(StateProvider, StartIcon, EndIcon, Label, IconVariant);
+        StartIcon = parameters.StartIcon;
+        EndIcon = parameters.EndIcon;
+        Label = parameters.Label;
+
+        OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
+        Disabled = _buttonRx.Disabled;
+
         base.OnParametersSet();
     }
 }

@@ -14,7 +14,7 @@ fixture.Subscribe(cr =>
     }
 });
 
-fixture.IntStateAsyncX.Run(5);
+fixture.IntStateAsyncX.Transform(5);
 
 while (!done) { };
 

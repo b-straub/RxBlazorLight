@@ -6,7 +6,7 @@ namespace RxBlazorLightCoreTestBase
 {
     public partial class ServiceFixture
     {
-        public class IncremementVP(ServiceFixture service, IState<int> state) : AsyncValueProvider<ServiceFixture, int>(service, state)
+        public class IncremementVP(ServiceFixture service, IState<int> state) : ValueProviderAsync<ServiceFixture, int>(service, state)
         {
             protected override Task<int> ProvideValueAsync(CancellationToken cancellationToken)
             {
@@ -14,43 +14,42 @@ namespace RxBlazorLightCoreTestBase
             }
         }
 
-        public class AddVP(ServiceFixture service, IState<int> state) : AsyncValueProvider<ServiceFixture, int, int>(service, state)
+        public class AddVP(ServiceFixture service, IState<int> state) : StateTransformAsync<ServiceFixture, int, int>(service, state)
         {
-            protected override Task<int> ProvideValueAsync(int value, CancellationToken cancellationToken)
+            protected override async Task<int> TransformStateAsync(int value, CancellationToken cancellationToken)
             {
                 if (State.Value > 0)
                 {
                     throw new InvalidOperationException("AddVP");
                 }
-                return Task.FromResult(State.Value + value);
+
+                await Task.Delay(5, cancellationToken);
+                return State.Value + value;
             }
         }
 
-        public class AsyncIntX(ServiceFixture service, IState<int> state) : AsyncValueProvider<ServiceFixture, int, int>(service, state)
+        public class AsyncIntX(ServiceFixture service, IState<int> state) : StateTransformAsync<ServiceFixture, int, int>(service, state)
         {
-            protected override async Task<int> ProvideValueAsync(int value, CancellationToken cancellationToken)
+            protected override async Task<int> TransformStateAsync(int value, CancellationToken cancellationToken)
             {
                 await Task.Delay(1000, cancellationToken);
                 return State.Value * value;
             }
         }
 
-        public class ChangeTestSP(ServiceFixture service, IState state) : AsyncStateProvider<ServiceFixture, string>(service, state)
+        public class ChangeTestSP(ServiceFixture service) : ServiceProviderAsync<ServiceFixture, string>(service)
         {
-            protected override async Task ProvideStateAsync(string? valueIn, CancellationToken cancellationToken)
+            public override bool CanCancel => true;
+
+            protected override async Task TransformStateAsync(string? valueIn, CancellationToken cancellationToken)
             {
                 ArgumentNullException.ThrowIfNull(valueIn);
                 await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
                 Service.Test = valueIn;
             }
-
-            public override bool CanCancel()
-            {
-                return true;
-            }
         }
 
-        public class ChangeTestSyncSP(ServiceFixture service, IState state) : StateProvider<ServiceFixture>(service, state)
+        public class ChangeTestSyncSP(ServiceFixture service) : ServiceProvider<ServiceFixture>(service)
         {
             protected override void ProvideState()
             {
@@ -59,7 +58,7 @@ namespace RxBlazorLightCoreTestBase
         }
 
         public class IntListVP(ServiceFixture service, IState<IEnumerable<CRUDTest>, IList<CRUDTest>> state) :
-            AsyncValueRefProvider<ServiceFixture, (CMD CMD, CRUDTest? ITEM), IEnumerable<CRUDTest>, IList<CRUDTest>>(service, state)
+            StateRefTransformAsync<ServiceFixture, (CMD CMD, CRUDTest? ITEM), IEnumerable<CRUDTest>, IList<CRUDTest>>(service, state)
         {
             public enum CMD
             {
@@ -69,7 +68,7 @@ namespace RxBlazorLightCoreTestBase
                 CLEAR
             }
 
-            protected override Task ProvideValueAsync((CMD CMD, CRUDTest? ITEM) value, IList<CRUDTest> stateRef, CancellationToken cancellationToken)
+            protected override async Task TransformStateAsync((CMD CMD, CRUDTest? ITEM) value, IList<CRUDTest> stateRef, CancellationToken cancellationToken)
             {
                 if (value.CMD is CMD.ADD)
                 {
@@ -99,7 +98,7 @@ namespace RxBlazorLightCoreTestBase
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                return Task.CompletedTask;
+                await Task.Delay(5, cancellationToken);
             }
         }
     }

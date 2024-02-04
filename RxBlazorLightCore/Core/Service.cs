@@ -1,8 +1,5 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.CompilerServices;
-
-[assembly:InternalsVisibleTo("RxBlazorLightCoreTests")]
 
 namespace RxBlazorLightCore
 {
@@ -50,14 +47,6 @@ namespace RxBlazorLightCore
         {
             return _changedObservable
                 .Sample(TimeSpan.FromMilliseconds(sampleMS))
-                .Subscribe(r => stateHasChanged(r));
-        }
-
-        internal IDisposable SubscribeMT(Action<ServiceChangeReason> stateHasChanged, double sampleMS = 100)
-        {
-            return _changedObservable
-                .Sample(TimeSpan.FromMilliseconds(sampleMS))
-                .ObserveOn(System.Reactive.Concurrency.ThreadPoolScheduler.Instance)
                 .Subscribe(r => stateHasChanged(r));
         }
 

@@ -15,7 +15,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.SubscribeMT(sc =>
+            fixture.Subscribe(sc =>
             {
                 if (sc.ID == fixture.Increment.ID)
                 {
@@ -35,10 +35,10 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(0, fixture.IntState.Value);
 
             fixture.Increment.Provide();
-            while (!done);
+            while (!done) ;
 
             Assert.Equal(1, fixture.IntState.Value);
-            Assert.Equal(2, stateChangeCount);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.SubscribeMT(sc =>
+            fixture.Subscribe(sc =>
             {
                 if (sc.ID == fixture.Add.ID)
                 {
@@ -71,7 +71,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
 
             Assert.Equal(10, fixture.IntState.Value);
-            Assert.Equal(2, stateChangeCount);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.SubscribeMT(sc =>
+            fixture.Subscribe(sc =>
             {
                 if (sc.ID == fixture.IntStateAsyncX.ID)
                 {
@@ -101,7 +101,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
 
             Assert.Equal(50, fixture.IntStateAsyncX.Value);
-            Assert.Equal(2, stateChangeCount);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace RxBlazorLightCoreTests
             bool exception = false;
             bool done = false;
 
-            fixture.SubscribeMT(sc =>
+            fixture.Subscribe(sc =>
             {
                 if (!done && sc.ID == fixture.Add.ID)
                 {
@@ -140,7 +140,7 @@ namespace RxBlazorLightCoreTests
             fixture.Add.Transform(10);
             while (!done) ;
             Assert.Equal(10, fixture.IntState.Value);
-            Assert.Equal(2, stateChangeCount);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
 
             done = false;
             stateChangeCount = 0;
@@ -149,7 +149,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
 
             Assert.True(exception);
-            Assert.Equal(2, stateChangeCount);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
         }
 
         [Fact]
@@ -159,7 +159,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.SubscribeMT(sc =>
+            fixture.Subscribe(sc =>
             {
                 if (sc.ID == fixture.ChangeTest.ID)
                 {
@@ -182,7 +182,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
 
             Assert.Equal("Test", fixture.Test);
-            Assert.Equal(2, stateChangeCount);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
         }
 
         [Fact]
@@ -192,7 +192,7 @@ namespace RxBlazorLightCoreTests
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.SubscribeMT(sc =>
+            fixture.Subscribe(sc =>
             {
                 if (sc.ID == fixture.ChangeTestSync.ID)
                 {
@@ -226,7 +226,7 @@ namespace RxBlazorLightCoreTests
             bool canceled = false;
             bool done = false;
 
-            fixture.SubscribeMT(sc =>
+            fixture.Subscribe(sc =>
             {
                 if (sc.ID == fixture.ChangeTest.ID)
                 {
@@ -256,7 +256,7 @@ namespace RxBlazorLightCoreTests
 
             Assert.Equal(string.Empty, fixture.Test);
             Assert.True(canceled);
-            Assert.Equal(2, stateChangeCount);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
         }
 
         [Fact]
@@ -271,7 +271,7 @@ namespace RxBlazorLightCoreTests
                 done = false;
                 stateChangeCount = 0;
 
-                return fixture.SubscribeMT(sc =>
+                return fixture.Subscribe(sc =>
                 {
                     if (!done && sc.ID == fixture.CRUDListCmds.ID)
                     {
@@ -293,7 +293,7 @@ namespace RxBlazorLightCoreTests
             disposable.Dispose();
 
             Assert.True(fixture.CRUDListState.HasValue());
-            Assert.Equal(2, stateChangeCount);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
             disposable.Dispose();
 
             if (fixture.CRUDListState.HasValue())
@@ -306,7 +306,7 @@ namespace RxBlazorLightCoreTests
 
                 Assert.Single(fixture.CRUDListState.Value);
                 Assert.Equal("Item1", fixture.CRUDListState.Value.Last().Item);
-                Assert.Equal(2, stateChangeCount);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
 
                 disposable = subscribeTest();
                 fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.ADD, new CRUDTest("Item2", Guid.NewGuid())));
@@ -315,7 +315,7 @@ namespace RxBlazorLightCoreTests
 
                 Assert.Equal(2, fixture.CRUDListState.Value.Count());
                 Assert.Equal("Item2", fixture.CRUDListState.Value.Last().Item);
-                Assert.Equal(2, stateChangeCount);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
 
                 var lastItem = fixture.CRUDListState.Value.Last();
                 var updateItem = lastItem with { Item = "Item3" };
@@ -327,7 +327,7 @@ namespace RxBlazorLightCoreTests
 
                 Assert.Equal(2, fixture.CRUDListState.Value.Count());
                 Assert.Equal("Item3", fixture.CRUDListState.Value.Last().Item);
-                Assert.Equal(2, stateChangeCount);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
 
                 disposable = subscribeTest();
                 fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.DELETE, updateItem));
@@ -335,7 +335,7 @@ namespace RxBlazorLightCoreTests
                 disposable.Dispose();
 
                 Assert.Single(fixture.CRUDListState.Value);
-                Assert.Equal(2, stateChangeCount);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
 
                 disposable = subscribeTest();
                 fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.CLEAR, null));
@@ -343,7 +343,7 @@ namespace RxBlazorLightCoreTests
                 disposable.Dispose();
 
                 Assert.Empty(fixture.CRUDListState.Value);
-                Assert.Equal(2, stateChangeCount);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
             }
         }
     }

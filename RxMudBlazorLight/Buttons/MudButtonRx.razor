@@ -16,13 +16,16 @@
     [Parameter]
     public Color? CancelColor { get; set; }
 
+    [Parameter]
+    public Func<bool>? DisabledFactory { get; set; }
+
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonRx<T>? _buttonRx;
     private Color _buttonColor;
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, CancelText, CancelColor);
+        _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, CancelText, CancelColor, DisabledFactory);
         _buttonColor = Color;
 
         base.OnInitialized();

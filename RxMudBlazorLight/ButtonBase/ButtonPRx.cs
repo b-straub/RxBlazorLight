@@ -12,18 +12,20 @@ namespace RxMudBlazorLight.ButtonBase
         public EventCallback<TouchEventArgs>? OnTouch { get; private set; }
 
         private readonly Func<IStateTransformer<T>, Task> _valueFactoryAsync;
+        private readonly Func<bool>? _disabledFactory;
 
         private ButtonPRx(MBButtonType type, Func<IStateTransformer<T>, Task> valueFactoryAsync, Color buttonColor,
-            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor) :
+            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor, Func<bool>? disabledFactory) :
             base(type, buttonColor, buttonChildContent, cancelText, cancelColor)
         {
             _valueFactoryAsync = valueFactoryAsync;
+            _disabledFactory = disabledFactory;
         }
 
         public static ButtonPRx<T> Create(MBButtonType type, Func<IStateTransformer<T>, Task> valueFactoryAsync, Color buttonColor,
-            RenderFragment ? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null)
+            RenderFragment ? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null, Func<bool>? disabledFactory = null)
         {
-            return new ButtonPRx<T>(type, valueFactoryAsync, buttonColor, buttonChildContent, cancelText, cancelColor);
+            return new ButtonPRx<T>(type, valueFactoryAsync, buttonColor, buttonChildContent, cancelText, cancelColor, disabledFactory);
         }
 
         [MemberNotNull(nameof(OnClick))]
@@ -54,14 +56,14 @@ namespace RxMudBlazorLight.ButtonBase
                     ChildContent = stateTransformer.Changing() && stateTransformer.LongRunning ? RenderProgress() : _buttonChildContent;
                 }
 
-                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteValueProvider(stateTransformer));
-                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteValueProvider(stateTransformer));
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteStateProvider(stateTransformer));
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteStateProvider(stateTransformer));
 
-                Disabled = !stateTransformer.CanRun;
+                Disabled = _disabledFactory is null ? !stateTransformer.CanRun : _disabledFactory();
             }
         }
 
-        private async Task ExecuteValueProvider(IStateTransformer<T> stateTransformer)
+        private async Task ExecuteStateProvider(IStateTransformer<T> stateTransformer)
         {
             await _valueFactoryAsync(stateTransformer);
         }

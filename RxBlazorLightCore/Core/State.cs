@@ -13,6 +13,11 @@ namespace RxBlazorLightCore
         public bool CanRun => _valueProvider.CanRun;
         public bool LongRunning => _valueProvider.LongRunning;
         public bool CanCancel => _valueProvider.CanCancel;
+        public virtual bool CanTransform(TType _)
+        {
+            return _valueProvider.CanRun;
+        }
+
         public StateChangePhase Phase => _valueProvider.Phase;
         public Guid ID => _valueProvider.ID;
 
@@ -22,14 +27,14 @@ namespace RxBlazorLightCore
         {
             Value = value;
             _valueProvider = valueProviderFactory is null ?
-                new StateTransformDirect<S, TInterface, TType>(service, this) : valueProviderFactory(this);
+                new StateTransformerDirect<S, TInterface, TType>(service, this) : valueProviderFactory(this);
         }
 
         protected internal State(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null)
         {
             Value = value;
             _valueProvider = valueProviderFactory is null ?
-                new StateTransformDirect<S, TInterface, TType>(service, this) : valueProviderFactory((IState<TType>)this);
+                new StateTransformerDirect<S, TInterface, TType>(service, this) : valueProviderFactory((IState<TType>)this);
         }
 
         public bool HasValue()
@@ -76,7 +81,7 @@ namespace RxBlazorLightCore
     public class State<S> : State<S, object?, object?>, IState
         where S : RxBLService
     {
-        private State(S service) : base (service, IState.Default, null) { }
+        private State(S service) : base(service, IState.Default, null) { }
 
         public static IState Create(S service)
         {
@@ -239,31 +244,46 @@ namespace RxBlazorLightCore
 
     }
 
-    public class StateTransformDirect<S, TInterface, TType>(S service, IState<TInterface, TType> state) :
+    public class StateTransformerDirect<S, TInterface, TType>(S service, IState<TInterface, TType> state) :
         StateProvideTransformBase<S, TType, TInterface, TType>(service, state, true, true), IStateTransformer<TType>
         where S : RxBLService
         where TType : TInterface
     {
+        public virtual bool CanTransform(TType _)
+        {
+            return CanRun;
+        }
+
         public void Transform(TType value)
         {
             TransformBaseSync(value);
         }
     }
 
-    public class StateTransformDirect<S, TType>(S service, IState<TType> state) :
-       StateProvideTransformBase<S, TType, TType, TType>(service, state, true, true), IStateTransformer<TType>
+    public class StateTransformerDirect<S, T>(S service, IState<T> state) :
+       StateProvideTransformBase<S, T, T, T>(service, state, true, true), IStateTransformer<T>
        where S : RxBLService
     {
-        public void Transform(TType value)
+        public virtual bool CanTransform(T _)
+        {
+            return CanRun;
+        }
+
+        public void Transform(T value)
         {
             TransformBaseSync(value);
         }
     }
 
-    public abstract class StateTransformAsync<S, T, TType>(S service, IState<TType> state) :
+    public abstract class StateTransformerAsync<S, T, TType>(S service, IState<TType> state) :
        StateProvideTransformBase<S, T, TType, TType>(service, state, true, true), IStateTransformer<T>
        where S : RxBLService
     {
+        public virtual bool CanTransform(T _)
+        {
+            return CanRun;
+        }
+
         public void Transform(T value)
         {
             TransformBaseAsync(value);
@@ -282,10 +302,15 @@ namespace RxBlazorLightCore
         protected abstract Task<TType> TransformStateAsync(T value, CancellationToken cancellationToken);
     }
 
-    public abstract class StateTransform<S, T, TType>(S service, IState<TType> state) :
+    public abstract class StateTransformer<S, T, TType>(S service, IState<TType> state) :
      StateProvideTransformBase<S, T, TType, TType>(service, state, true, false), IStateTransformer<T>
      where S : RxBLService
     {
+        public virtual bool CanTransform(T _)
+        {
+            return CanRun;
+        }
+
         public void Transform(T value)
         {
             try
@@ -301,10 +326,15 @@ namespace RxBlazorLightCore
         protected abstract TType? TransformState(T value);
     }
 
-    public abstract class ValueProviderAsync<S, T>(S service, IState<T> state) :
+    public abstract class StateProviderAsync<S, T>(S service, IState<T> state) :
        StateProvideTransformBase<S, T, T, T>(service, state, true, true), IStateProvider<T>
        where S : RxBLService
     {
+        public virtual bool CanProvide(T _)
+        {
+            return CanRun;
+        }
+
         public void Provide()
         {
             TransformBaseAsync(default);
@@ -318,10 +348,15 @@ namespace RxBlazorLightCore
         protected abstract Task<T?> ProvideValueAsync(CancellationToken cancellationToken);
     }
 
-    public abstract class ValueProvider<S, T>(S service, IState<T> state) :
+    public abstract class StateProvider<S, T>(S service, IState<T> state) :
       StateProvideTransformBase<S, T, T, T>(service, state, true, false), IStateProvider<T>
       where S : RxBLService
     {
+        public virtual bool CanProvide(T _)
+        {
+            return CanRun;
+        }
+
         public void Provide()
         {
             try
@@ -337,11 +372,16 @@ namespace RxBlazorLightCore
         protected abstract T ProvideValue();
     }
 
-    public abstract class StateRefTransformAsync<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
+    public abstract class StateRefTransformerAsync<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
          StateProvideTransformBase<S, T, TInterface, TType>(service, state, false, true), IStateTransformer<T>
          where S : RxBLService
          where TType : class, TInterface
     {
+        public virtual bool CanTransform(T _)
+        {
+            return CanRun;
+        }
+
         public void Transform(T value)
         {
             TransformBaseAsync(value);
@@ -362,11 +402,16 @@ namespace RxBlazorLightCore
         protected abstract Task TransformStateAsync(T value, TType stateRef, CancellationToken cancellationToken);
     }
 
-    public abstract class StateRefTransform<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
+    public abstract class StateRefTransformer<S, T, TInterface, TType>(S service, IState<TInterface, TType> state) :
          StateProvideTransformBase<S, T, TInterface, TType>(service, state, false, false), IStateTransformer<T>
          where S : RxBLService
          where TType : class, TInterface
     {
+        public virtual bool CanTransform(T _)
+        {
+            return CanRun;
+        }
+
         public void Transform(T value)
         {
             ArgumentNullException.ThrowIfNull(State.Value);
@@ -384,11 +429,16 @@ namespace RxBlazorLightCore
         protected abstract void TransformState(T value, TType stateRef);
     }
 
-    public abstract class ServiceProviderAsync<S, T>(S service) :
-       StateProvideTransformBase<S, T?, object?, object?>(service, null, true, true), IServiceStateProvider<T>
+    public abstract class ServiceStateTransformerAsync<S, T>(S service) :
+       StateProvideTransformBase<S, T?, object?, object?>(service, null, true, true), IServiceStateTransformer<T>
        where T : notnull
        where S : RxBLService
     {
+        public virtual bool CanTransform(T _)
+        {
+            return CanRun;
+        }
+
         public void Transform(T value)
         {
             TransformBaseAsync(value);
@@ -408,11 +458,16 @@ namespace RxBlazorLightCore
         protected abstract Task TransformStateAsync(T value, CancellationToken cancellationToken);
     }
 
-    public abstract class ServiceProvider<S, T>(S service) :
-     StateProvideTransformBase<S, T?, object?, object?>(service, null, true, false), IServiceStateProvider<T>
-     where T : notnull
-     where S : RxBLService
+    public abstract class ServiceStateTransformer<S, T>(S service) :
+        StateProvideTransformBase<S, T?, object?, object?>(service, null, true, false), IServiceStateTransformer<T>
+        where T : notnull
+        where S : RxBLService
     {
+        public virtual bool CanTransform(T _)
+        {
+            return CanRun;
+        }
+
         public void Transform(T value)
         {
             try
@@ -429,10 +484,15 @@ namespace RxBlazorLightCore
         protected abstract void TransformState(T value);
     }
 
-    public abstract class ServiceProviderAsync<S>(S service) :
+    public abstract class ServiceStateProviderAsync<S>(S service) :
        StateProvideTransformBase<S, object?, object?, object?>(service, null, true, true), IServiceStateProvider
        where S : RxBLService
     {
+        public bool CanProvide(object? _)
+        {
+            return CanRun;
+        }
+
         public void Provide()
         {
             TransformBaseAsync(IState.Default);
@@ -450,10 +510,15 @@ namespace RxBlazorLightCore
         protected abstract Task ProvideStateAsync(CancellationToken cancellationToken);
     }
 
-    public abstract class ServiceProvider<S>(S service) :
+    public abstract class ServiceStateProvider<S>(S service) :
       StateProvideTransformBase<S, object?, object?, object?>(service, null, false, false), IServiceStateProvider
       where S : RxBLService
     {
+        public bool CanProvide(object? _)
+        {
+            return CanRun;
+        }
+
         public void Provide()
         {
             try

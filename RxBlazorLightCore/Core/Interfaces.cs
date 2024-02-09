@@ -18,7 +18,6 @@ namespace RxBlazorLightCore
         public void LeaveScope() { }
     }
 
-
     public interface IRxBLService
     {
         public ValueTask OnContextReadyAsync();
@@ -81,14 +80,18 @@ namespace RxBlazorLightCore
     public interface IStateTransformer<T> : IStateProvideTransformBase
     {
         public void Transform(T value);
+
+        public bool CanTransform(T value);
     }
 
     public interface IStateProvider<T> : IStateProvideTransformBase
     {
         public void Provide();
+
+        public bool CanProvide(T value);
     }
 
-    public interface IServiceStateProvider<T> : IStateTransformer<T>
+    public interface IServiceStateTransformer<T> : IStateTransformer<T>
     {
     }
 

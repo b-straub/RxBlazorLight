@@ -5,7 +5,7 @@ namespace RxMudBlazorLightTestBase.Service
 {
     public sealed partial class TestService
     {
-        public class EqualsTestVP(TestService service) : ServiceProvider<TestService>(service)
+        public class EqualsTestVP(TestService service) : ServiceStateProvider<TestService>(service)
         {
             public override bool CanRun => Service._equalTestValue < 1;
 
@@ -15,7 +15,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class EqualsTestSPAsync(TestService service) : ServiceProviderAsync<TestService, int>(service)
+        public class EqualsTestSPAsync(TestService service) : ServiceStateTransformerAsync<TestService, int>(service)
         {
             public override bool CanRun => Service._equalTestAsyncValue < 2;
 
@@ -26,7 +26,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class ExceptionVP(TestService service, IState<int> state) : ValueProvider<TestService, int>(service, state)
+        public class ExceptionVP(TestService service, IState<int> state) : StateProvider<TestService, int>(service, state)
         {
             protected override int ProvideValue()
             {
@@ -34,7 +34,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class IncrementVP(TestService service, IState<int> state) : ValueProvider<TestService, int>(service, state)
+        public class IncrementVP(TestService service, IState<int> state) : StateProvider<TestService, int>(service, state)
         {
             public override bool CanRun => Service._canIncrement;
      
@@ -44,7 +44,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddSP(TestService service, IState<int> state) : StateTransform<TestService, int, int>(service, state)
+        public class AddSP(TestService service, IState<int> state) : StateTransformer<TestService, int, int>(service, state)
         {
             public override bool CanRun => State.Value > 1;
 
@@ -54,7 +54,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class IncrementVPAsync(TestService service, IState<int> state) : ValueProviderAsync<TestService, int>(service, state)
+        public class IncrementVPAsync(TestService service, IState<int> state) : StateProviderAsync<TestService, int>(service, state)
         {
             public override bool CanRun => Service._canIncrement;
 
@@ -63,9 +63,14 @@ namespace RxMudBlazorLightTestBase.Service
                 await Task.Delay(500, cancellationToken);
                 return State.Value + 1;
             }
+
+            public override bool CanProvide(int v)
+            {
+                return Service.CountState.Value > v;
+            }
         }
 
-        public class AddSPAsync(TestService service, IState<int> state) : StateTransformAsync<TestService, int, int>(service, state)
+        public class AddSPAsync(TestService service, IState<int> state) : StateTransformerAsync<TestService, int, int>(service, state)
         {
             public override bool CanRun => State.Value > 2;
 
@@ -78,7 +83,7 @@ namespace RxMudBlazorLightTestBase.Service
             public override bool LongRunning => true;
         }
 
-        public class AddRemoveAsyncSP(TestService service, IState<int> state) : StateTransformAsync<TestService, int, int>(service, state)
+        public class AddRemoveAsyncSP(TestService service, IState<int> state) : StateTransformerAsync<TestService, int, int>(service, state)
         {
             protected override async Task<int> TransformStateAsync(int value, CancellationToken cancellationToken)
             {

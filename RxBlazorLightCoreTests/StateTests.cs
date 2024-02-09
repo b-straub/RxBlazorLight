@@ -288,7 +288,7 @@ namespace RxBlazorLightCoreTests
             }
 
             var disposable = subscribeTest();
-            fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.CLEAR, null));
+            fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD_LIST.CLEAR, null));
             while (!done) ;
             disposable.Dispose();
 
@@ -300,7 +300,7 @@ namespace RxBlazorLightCoreTests
             {
                 Assert.Empty(fixture.CRUDListState.Value);
                 disposable = subscribeTest();
-                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.ADD, new CRUDTest("Item1", Guid.NewGuid())));
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD_LIST.ADD, new CRUDTest("Item1", Guid.NewGuid())));
                 while (!done) ;
                 disposable.Dispose();
 
@@ -309,7 +309,7 @@ namespace RxBlazorLightCoreTests
                 Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
 
                 disposable = subscribeTest();
-                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.ADD, new CRUDTest("Item2", Guid.NewGuid())));
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD_LIST.ADD, new CRUDTest("Item2", Guid.NewGuid())));
                 while (!done) ;
                 disposable.Dispose();
 
@@ -321,7 +321,7 @@ namespace RxBlazorLightCoreTests
                 var updateItem = lastItem with { Item = "Item3" };
 
                 disposable = subscribeTest();
-                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.UPDATE, updateItem));
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD_LIST.UPDATE, updateItem));
                 while (!done) ;
                 disposable.Dispose();
 
@@ -330,7 +330,7 @@ namespace RxBlazorLightCoreTests
                 Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
 
                 disposable = subscribeTest();
-                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.DELETE, updateItem));
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD_LIST.DELETE, updateItem));
                 while (!done) ;
                 disposable.Dispose();
 
@@ -338,11 +338,101 @@ namespace RxBlazorLightCoreTests
                 Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
 
                 disposable = subscribeTest();
-                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD.CLEAR, null));
+                fixture.CRUDListCmds.Transform((ServiceFixture.IntListVP.CMD_LIST.CLEAR, null));
                 while (!done) ;
                 disposable.Dispose();
 
                 Assert.Empty(fixture.CRUDListState.Value);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
+            }
+        }
+
+        [Fact]
+        public void TestCRUDDict()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            var done = false;
+
+            IDisposable subscribeTest()
+            {
+                done = false;
+                stateChangeCount = 0;
+
+                return fixture.Subscribe(sc =>
+                {
+                    if (!done && sc.ID == fixture.CRUDDictCmds.ID)
+                    {
+                        stateChangeCount++;
+                    }
+
+                    _output.WriteLine($"Done {fixture.CRUDDictCmds.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CRUDDictCmds.Phase}, ID {sc.ID}, VPID {fixture.CRUDDictCmds.ID}");
+
+                    if (fixture.CRUDDictCmds.Done())
+                    {
+                        done = true;
+                    }
+                }, 0);
+            }
+
+            var disposable = subscribeTest();
+            fixture.CRUDDictCmds.Transform((ServiceFixture.IntDictVP.CMD_DICT.CLEAR, default, null));
+            while (!done) ;
+            disposable.Dispose();
+
+            Assert.True(fixture.CRUDDictState.HasValue());
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
+            disposable.Dispose();
+
+            if (fixture.CRUDDictState.HasValue())
+            {
+                Assert.Empty(fixture.CRUDDictState.Value);
+                disposable = subscribeTest();
+                var addGuid1 = Guid.NewGuid();
+                fixture.CRUDDictCmds.Transform((ServiceFixture.IntDictVP.CMD_DICT.ADD, addGuid1, new CRUDTest("Item1", addGuid1)));
+                while (!done) ;
+                disposable.Dispose();
+
+                Assert.Single(fixture.CRUDDictState.Value);
+                Assert.Equal("Item1", fixture.CRUDDictState.Value.Last().Value.Item);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
+
+                disposable = subscribeTest();
+                var addGuid2 = Guid.NewGuid();
+                fixture.CRUDDictCmds.Transform((ServiceFixture.IntDictVP.CMD_DICT.ADD, addGuid2, new CRUDTest("Item2", addGuid2)));
+                while (!done) ;
+                disposable.Dispose();
+
+                Assert.Equal(2, fixture.CRUDDictState.Value.Count());
+                Assert.Equal("Item2", fixture.CRUDDictState.Value.Last().Value.Item);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
+
+                var lastItem = fixture.CRUDDictState.Value.Last().Value;
+                var updateItem = lastItem with { Item = "Item3" };
+
+                disposable = subscribeTest();
+                fixture.CRUDDictCmds.Transform((ServiceFixture.IntDictVP.CMD_DICT.UPDATE, updateItem.Id, updateItem));
+                while (!done) ;
+                disposable.Dispose();
+
+                Assert.Equal(2, fixture.CRUDDictState.Value.Count());
+                Assert.Equal("Item3", fixture.CRUDDictState.Value.Last().Value.Item);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
+
+                disposable = subscribeTest();
+                fixture.CRUDDictCmds.Transform((ServiceFixture.IntDictVP.CMD_DICT.DELETE, updateItem.Id, null));
+                while (!done) ;
+                disposable.Dispose();
+
+                Assert.Single(fixture.CRUDDictState.Value);
+                Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
+
+                disposable = subscribeTest();
+                fixture.CRUDDictCmds.Transform((ServiceFixture.IntDictVP.CMD_DICT.CLEAR, default, null));
+                while (!done) ;
+                disposable.Dispose();
+
+                Assert.Empty(fixture.CRUDDictState.Value);
                 Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
             }
         }

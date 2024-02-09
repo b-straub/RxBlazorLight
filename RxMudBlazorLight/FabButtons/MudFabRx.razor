@@ -20,6 +20,9 @@
     public Color? CancelColor { get; set; }
 
     [Parameter]
+    public Func<bool>? DisabledFactory { get; set; }
+
+    [Parameter]
     public MBIconVariant? IconVariant { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
@@ -27,7 +30,7 @@
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color, null, CancelText, CancelColor);
+        _buttonRx = ButtonRx<T>.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color, null, CancelText, CancelColor, DisabledFactory);
 
         base.OnInitialized();
     }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
-using RxBlazorLightCore;
+﻿using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -71,7 +70,7 @@ namespace RxMudBlazorLightTestBase.Service
         public IStateTransformer<int> AddAsync { get; }
 
         public IServiceStateProvider EqualsTest { get; }
-        public IServiceStateProvider<int> EqualsTestAsync { get; }
+        public IServiceStateTransformer<int> EqualsTestAsync { get; }
         public IStateTransformer<int> Add { get; }
         public IStateProvider<int> IncrementAsync { get; }
   
@@ -94,7 +93,7 @@ namespace RxMudBlazorLightTestBase.Service
         private int _equalTestValue = 0;
         private int _equalTestAsyncValue = 0;
 
-        public TestService(System.IServiceProvider _)
+        public TestService(IServiceProvider _)
         {
             Console.WriteLine("TestService Create");
 

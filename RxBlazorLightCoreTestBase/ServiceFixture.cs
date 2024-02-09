@@ -1,6 +1,5 @@
 ﻿
 using RxBlazorLightCore;
-using static RxBlazorLightCoreTestBase.ServiceFixture.IntListVP;
 
 namespace RxBlazorLightCoreTestBase
 {
@@ -12,14 +11,16 @@ namespace RxBlazorLightCoreTestBase
 
         public IState<int> IntStateAsyncX { get; }
 
-        public IState<IEnumerable<CRUDTest>, IList<CRUDTest>> CRUDListState { get; }
+        public IState<IEnumerable<CRUDTest>, List<CRUDTest>> CRUDListState { get; }
+        public IState<IEnumerable<KeyValuePair<Guid, CRUDTest>>, Dictionary<Guid, CRUDTest>> CRUDDictState { get; }
 
         public IStateProvider<int> Increment { get; }
         public IStateTransformer<int> Add { get; }
-        public IServiceStateProvider<string> ChangeTest { get; }
+        public IServiceStateTransformer<string> ChangeTest { get; }
         public IServiceStateProvider ChangeTestSync { get; }
 
-        public IStateTransformer<(CMD CMD, CRUDTest? ITEM)> CRUDListCmds { get; }
+        public IStateTransformer<(IntListVP.CMD_LIST CMD, CRUDTest? ITEM)> CRUDListCmds { get; }
+        public IStateTransformer<(IntDictVP.CMD_DICT CMD, Guid? ID, CRUDTest? ITEM)> CRUDDictCmds { get; }
 
         public string Test { get; private set; } = string.Empty;
 
@@ -29,8 +30,11 @@ namespace RxBlazorLightCoreTestBase
 
             IntStateAsyncX = this.CreateState(10, s => new AsyncIntX(this, s));
 
-            CRUDListState = this.CreateState<ServiceFixture, IEnumerable<CRUDTest>, IList<CRUDTest>>(new List<CRUDTest>());
+            CRUDListState = this.CreateState<ServiceFixture, IEnumerable<CRUDTest>, List<CRUDTest>>([]);
             CRUDListCmds = new IntListVP(this, CRUDListState);
+
+            CRUDDictState = this.CreateState<ServiceFixture, IEnumerable<KeyValuePair<Guid, CRUDTest>>, Dictionary<Guid, CRUDTest>>([]);
+            CRUDDictCmds = new IntDictVP(this, CRUDDictState);
 
             Increment = new IncremementVP(this, IntState);
             Add = new AddVP(this, IntState);

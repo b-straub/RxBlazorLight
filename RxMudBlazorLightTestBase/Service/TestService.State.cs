@@ -4,7 +4,7 @@ namespace RxMudBlazorLightTestBase.Service
 {
     public sealed partial class TestService
     {
-        public class IncrementStateVP(TestService service, IState<int> state) : StateTransformAsync<TestService, int, int>(service, state)
+        public class IncrementStateVP(TestService service, IState<int> state) : StateTransformerAsync<TestService, int, int>(service, state)
         {
             protected override async Task<int> TransformStateAsync(int value, CancellationToken cancellationToken)
             {
@@ -18,7 +18,7 @@ namespace RxMudBlazorLightTestBase.Service
             public override bool LongRunning => true;
         }
 
-        public class IncrementStateAddVP(TestService service, IState<int> state) : StateTransform<TestService, int, int>(service, state)
+        public class IncrementStateAddVP(TestService service, IState<int> state) : StateTransformer<TestService, int, int>(service, state)
         {
             public override bool CanRun => State.Value > 5;
 
@@ -28,12 +28,12 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddModeVP(TestService service, IState<bool> state) : StateTransformDirect<TestService, bool>(service, state)
+        public class AddModeVP(TestService service, IState<bool> state) : StateTransformerDirect<TestService, bool>(service, state)
         {
             public override bool CanRun => !Service.AddAsync.Changing();
         }
 
-        public class RatingValueVP(TestService service, IState<int> state) : StateTransformDirect<TestService, int>(service, state)
+        public class RatingValueVP(TestService service, IState<int> state) : StateTransformerDirect<TestService, int>(service, state)
         {
             public override bool CanRun => Service.GetRadio().Value?.Color is ColorEnum.GREEN;
         }

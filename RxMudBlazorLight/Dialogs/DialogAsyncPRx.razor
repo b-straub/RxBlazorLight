@@ -11,7 +11,7 @@
             <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">@CancelButton</MudButton>
             <MudButtonPRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
                             T=@TParam StateTransformer=@StateTransformer ValueFactoryAsync=@ValueFactoryAsync
-                            CancelColor=@CancelColor CancelText=@CancelText>
+                              CancelColor=@CancelColor CancelText=@CancelText DisabledFactory=@DisabledFactory>
                 @ConfirmButton
             </MudButtonPRx>
         </DialogActions>

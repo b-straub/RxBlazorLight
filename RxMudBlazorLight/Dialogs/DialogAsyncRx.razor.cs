@@ -32,7 +32,7 @@ namespace RxMudBlazorLight.Dialogs
         public Color? CancelColor { get; set; }
 
         [Parameter]
-        public Func<bool>? DisabledFactory { get; set; }
+        public TParam? Context { get; set; }
 
         private MudButtonRx<TParam>? _buttonRef;
         private IDisposable? _buttonDisposable;
@@ -41,14 +41,14 @@ namespace RxMudBlazorLight.Dialogs
         public static async Task<bool> Show(IDialogService dialogService,
            IStateProvider<TParam> stateProvider, string title,
            string message, string confirmButton, string cancelButton, bool successOnConfirm,
-           string? cancelText = null, Color? cancelColor = null, Func<bool>? disabledFactory = null)
+           string? cancelText = null, Color? cancelColor = null, TParam? context = default)
         {
             var parameters = new DialogParameters
             {
                 ["StateProvider"] = stateProvider,
                 ["CancelColor"] = cancelColor,
                 ["CancelText"] = cancelText,
-                ["DisabledFactory"] = disabledFactory,
+                ["Context"] = context,
                 ["Message"] = message,
                 ["ConfirmButton"] = confirmButton,
                 ["CancelButton"] = cancelButton,

@@ -20,7 +20,7 @@
     public Color? CancelColor { get; set; }
 
     [Parameter]
-    public Func<bool>? DisabledFactory { get; set; }
+    public T? Context { get; set; }
 
     [Parameter]
     public MBIconVariant? IconVariant { get; set; }
@@ -30,7 +30,7 @@
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color, null, CancelText, CancelColor, DisabledFactory);
+        _buttonRx = ButtonRx<T>.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color, null, CancelText, CancelColor, Context);
 
         base.OnInitialized();
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.VisualBasic;
 using MudBlazor;
 using RxBlazorLightCore;
 
@@ -51,7 +52,7 @@ namespace RxMudBlazorLight.Inputs.Radio
                 Value = RxStateGroupBase.Value;
                 ValueChanged = EventCallback.Factory.Create<T>(this, RxStateGroupBase.Transform);
             }
-            Disabled = !RxStateGroupBase.CanRun || RxStateGroupBase.Phase is StateChangePhase.CHANGING;
+            Disabled = !RxStateGroupBase.CanTransform(RxStateGroupBase.Value) || RxStateGroupBase.Phase is StateChangePhase.CHANGING;
 
             base.OnParametersSet();
         }

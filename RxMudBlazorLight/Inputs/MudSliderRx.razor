@@ -29,7 +29,7 @@
             Value = RxState.Value;
         }
 
-        Disabled = !RxState.CanRun || RxState.Phase is StateChangePhase.CHANGING;
+        Disabled = !RxState.CanTransform(RxState.Value) || RxState.Phase is StateChangePhase.CHANGING;
         base.OnParametersSet();
     }
 }

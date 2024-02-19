@@ -11,14 +11,14 @@
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
     [Parameter]
-    public Func<bool>? DisabledFactory { get; set; }
+    public T? Context { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonRx<T>? _buttonRx;
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color.Default, null, null, null, DisabledFactory);
+        _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color.Default, null, null, null, Context);
         base.OnInitialized();
     }
 

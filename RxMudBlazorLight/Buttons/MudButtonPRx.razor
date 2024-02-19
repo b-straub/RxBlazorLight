@@ -17,7 +17,7 @@
     public Color? CancelColor { get; set; }
 
     [Parameter]
-    public Func<bool>? DisabledFactory { get; set; }
+    public T? Context { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonPRx<T>? _buttonPRx;
@@ -25,7 +25,7 @@
 
     protected override void OnInitialized()
     {
-        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.DEFAULT, ValueFactoryAsync, Color, ChildContent, CancelText, CancelColor, DisabledFactory);
+        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.DEFAULT, ValueFactoryAsync, Color, ChildContent, CancelText, CancelColor, Context);
         _buttonColor = Color;
 
         base.OnInitialized();

@@ -14,7 +14,7 @@
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateProvider=@Service.Increment ConfirmExecutionAsync=@ConfirmIncrement>Increment</MudButtonRx>
         <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" ValueFactoryAsync=@DVFA.Factory(5) StateTransformer=@Service.Add>Add 5</MudButtonPRx>
-            <MudButtonRx Color="Color.Secondary" Variant="Variant.Filled" StateProvider=@Service.IncrementAsync DisabledFactory=@(() => Service.IncrementAsync.CanProvide(4))>IncrementAsync</MudButtonRx>
+            <MudButtonRx Color="Color.Secondary" Variant="Variant.Filled" StateProvider=@Service.IncrementAsync Context=@(4)>IncrementAsync</MudButtonRx>
         <MudButtonPRx Color="Color.Secondary" Variant="Variant.Filled" StateTransformer=@Service.AddAsync ValueFactoryAsync=@DoPrepareAddAsync CancelColor=Color.Error CancelText="Cancel Add">
             AddAsync 2
         </MudButtonPRx>
@@ -37,7 +37,7 @@
         <MudFabPRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add" StateTransformer=@Service.AddAsync ValueFactoryAsync=@DoPrepareAddAsync Label="AddAsync 10" />
     </MudStack>
 
-    <RxBLServiceScope TScope=@TestService.SubScope TService=@TestService>
+    <RxBLServiceScope TScope=@TestService.Scope TService=@TestService>
         <IconButtons />
     </RxBLServiceScope>
 
@@ -127,11 +127,11 @@
         if (parameter is null)
         {
             return await DialogAsyncRx<TestService, int>.Show(DialogService, Service.IncrementAsync,
-                "Increment", "Increment counter.", "Increment", "Cancel", false, null, null, () => Service.CountState.Value > 2);
+                "Increment", "Increment counter.", "Increment", "Cancel", false, null, null, 2);
         }
 
         return await DialogAsyncPRx<TestService, int>.Show(DialogService, Service.AddAsync, DVFA.Factory((int)parameter),
-            $"Add {parameter}", $"Add {parameter} to counter?", $"Add {parameter}", "Cancel", true, "Cancel adding!", Color.Error, () => Service.CountState.Value > 3);
+            $"Add {parameter}", $"Add {parameter} to counter?", $"Add {parameter}", "Cancel", true, "Cancel adding!", Color.Error, 3);
     }
 
     private async Task DoPrepareAddRemoveAsync(IStateTransformer<int> st)

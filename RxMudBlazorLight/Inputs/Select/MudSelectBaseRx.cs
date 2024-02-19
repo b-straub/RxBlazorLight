@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.VisualBasic;
 using MudBlazor;
 using RxBlazorLightCore;
 
@@ -24,7 +25,7 @@ namespace RxMudBlazorLight.Inputs.Select
             }
 
             ValueChanged = EventCallback.Factory.Create<T>(this, RxStateGroupBase.Transform);
-            Disabled = !RxStateGroupBase.CanRun;
+            Disabled = !RxStateGroupBase.CanTransform(RxStateGroupBase.Value);
 
             if (ChildContent is null)
             {
@@ -48,7 +49,7 @@ namespace RxMudBlazorLight.Inputs.Select
                 };
             }
 
-            Disabled = !RxStateGroupBase.CanRun || RxStateGroupBase.Phase is StateChangePhase.CHANGING;
+            Disabled = !RxStateGroupBase.CanTransform(RxStateGroupBase.Value) || RxStateGroupBase.Phase is StateChangePhase.CHANGING;
 
             base.OnParametersSet();
         }

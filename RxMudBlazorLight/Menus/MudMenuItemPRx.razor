@@ -11,14 +11,14 @@
     public required Func<IStateTransformer<T>, Task> ValueFactoryAsync { get; init; }
 
     [Parameter]
-    public Func<bool>? DisabledFactory { get; set; }
+    public T? Context { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonPRx<T>? _buttonPRx;
 
     protected override void OnInitialized()
     {
-        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.DEFAULT, ValueFactoryAsync, Color.Default, null, null, null, DisabledFactory);
+        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.DEFAULT, ValueFactoryAsync, Color.Default, null, null, null, Context);
 
         base.OnInitialized();
     }

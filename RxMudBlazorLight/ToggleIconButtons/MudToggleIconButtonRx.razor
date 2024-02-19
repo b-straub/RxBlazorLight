@@ -21,7 +21,7 @@
     {
         Toggled = RxState.Value;
         ToggledChanged = EventCallback.Factory.Create<bool>(this, v => RxState.Transform(v));
-        Disabled = !RxState.CanRun || RxState.Phase is StateChangePhase.CHANGING;
+        Disabled = !RxState.CanTransform(RxState.Value) || RxState.Phase is StateChangePhase.CHANGING;
 
         base.OnParametersSet();
     }

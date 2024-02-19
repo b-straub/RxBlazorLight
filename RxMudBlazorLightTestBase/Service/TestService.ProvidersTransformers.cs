@@ -7,7 +7,10 @@ namespace RxMudBlazorLightTestBase.Service
     {
         public class EqualsTestVP(TestService service) : ServiceStateProvider<TestService>(service)
         {
-            public override bool CanRun => Service._equalTestValue < 1;
+            protected override bool CanProvide()
+            {
+                return Service._equalTestValue < 1;
+            }
 
             protected override void ProvideState()
             {
@@ -17,7 +20,10 @@ namespace RxMudBlazorLightTestBase.Service
 
         public class EqualsTestSPAsync(TestService service) : ServiceStateTransformerAsync<TestService, int>(service)
         {
-            public override bool CanRun => Service._equalTestAsyncValue < 2;
+            public override bool CanTransform(int _)
+            {
+                return Service._equalTestAsyncValue < 2;
+            }
 
             protected override async Task TransformStateAsync(int value, CancellationToken cancellationToken)
             {
@@ -36,8 +42,11 @@ namespace RxMudBlazorLightTestBase.Service
 
         public class IncrementVP(TestService service, IState<int> state) : StateProvider<TestService, int>(service, state)
         {
-            public override bool CanRun => Service._canIncrement;
-     
+            public override bool CanProvide(int _)
+            {
+                return Service._canIncrement;
+            }
+
             protected override int ProvideValue()
             {
                 return State.Value + 1;
@@ -46,8 +55,10 @@ namespace RxMudBlazorLightTestBase.Service
 
         public class AddSP(TestService service, IState<int> state) : StateTransformer<TestService, int, int>(service, state)
         {
-            public override bool CanRun => State.Value > 1;
-
+            public override bool CanTransform(int _)
+            {
+                return State.Value > 1;
+            }
             protected override int TransformState(int value)
             {
                 return State.Value + value;
@@ -56,8 +67,6 @@ namespace RxMudBlazorLightTestBase.Service
 
         public class IncrementVPAsync(TestService service, IState<int> state) : StateProviderAsync<TestService, int>(service, state)
         {
-            public override bool CanRun => Service._canIncrement;
-
             protected override async Task<int> ProvideValueAsync(CancellationToken cancellationToken)
             {
                 await Task.Delay(500, cancellationToken);
@@ -72,7 +81,10 @@ namespace RxMudBlazorLightTestBase.Service
 
         public class AddSPAsync(TestService service, IState<int> state) : StateTransformerAsync<TestService, int, int>(service, state)
         {
-            public override bool CanRun => State.Value > 2;
+            public override bool CanTransform(int _)
+            {
+                return State.Value > 2;
+            }
 
             protected override async Task<int> TransformStateAsync(int value, CancellationToken cancellationToken)
             {
@@ -93,7 +105,10 @@ namespace RxMudBlazorLightTestBase.Service
                 return Service.CountState.Value + val;
             }
 
-            public override bool CanRun => !Service.AddMode.Value || Service.CountState.Value < 30;
+            public override bool CanTransform(int _)
+            {
+                return !Service.AddMode.Value || Service.CountState.Value < 30;
+            }
 
             public override bool CanCancel => true;
             public override bool LongRunning => true;

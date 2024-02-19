@@ -1,4 +1,5 @@
 ﻿using RxBlazorLightCore;
+using static RxMudBlazorLightTestBase.Service.TestService;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -41,20 +42,12 @@ namespace RxMudBlazorLightTestBase.Service
 
     public record StateInfo(string State);
 
-    public sealed partial class TestService : RxBLService
+    public partial class TestServiceBase : RxBLService
     {
         public IState<StateInfo> StateInfoState { get; }
 
-        public IState<int> CountState { get; }
-
-        public IStateProvider<int> Exception { get; }
-
-        public partial class SubScope(TestService service) : IRxBLScope
+        public class BaseScope(TestServiceBase service) : IRxBLScope
         {
-            public IStateProvider<int> Increment = new IncrementVP(service, service.CountState);
-
-            public IStateTransformer<int> AddAsync = new AddSPAsync(service, service.CountState);
-
             public void EnterScope()
             {
                 Console.WriteLine("EnterScope");
@@ -65,6 +58,27 @@ namespace RxMudBlazorLightTestBase.Service
                 Console.WriteLine("EnterScope");
             }
         }
+
+        public TestServiceBase(IServiceProvider _)
+        {
+            Console.WriteLine("TestService Create");
+
+            StateInfoState = this.CreateState((StateInfo?)null);
+        }
+    }
+
+    public partial class TestService : TestServiceBase
+    {
+        public class Scope(TestService service) : BaseScope(service)
+        {
+            public IStateProvider<int> Increment = new IncrementVP(service, service.CountState);
+
+            public IStateTransformer<int> AddAsync = new AddSPAsync(service, service.CountState);
+        }
+
+        public IState<int> CountState { get; }
+
+        public IStateProvider<int> Exception { get; }
 
         public IStateProvider<int> Increment { get; }
         public IStateTransformer<int> AddAsync { get; }
@@ -93,11 +107,10 @@ namespace RxMudBlazorLightTestBase.Service
         private int _equalTestValue = 0;
         private int _equalTestAsyncValue = 0;
 
-        public TestService(IServiceProvider _)
+        public TestService(IServiceProvider sp) : base(sp)
         {
             Console.WriteLine("TestService Create");
 
-            StateInfoState = this.CreateState((StateInfo?)null);
             CountState = this.CreateState(0);
 
             Increment = new IncrementVP(this, CountState);
@@ -128,7 +141,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public override IRxBLScope CreateScope()
         {
-            return new SubScope(this);
+            return new Scope(this);
         }
 
         protected override async ValueTask ContextReadyAsync()

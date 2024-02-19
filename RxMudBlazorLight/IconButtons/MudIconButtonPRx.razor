@@ -17,14 +17,14 @@
     public MBIconVariant? IconVariant { get; set; }
 
     [Parameter]
-    public Func<bool>? DisabledFactory { get; set; }
+    public T? Context { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonPRx<T>? _buttonPRx;
 
     protected override void OnInitialized()
     {
-        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.ICON, ValueFactoryAsync, Color, null, null, null, DisabledFactory);
+        _buttonPRx = ButtonPRx<T>.Create(MBButtonType.ICON, ValueFactoryAsync, Color, null, null, null, Context);
 
         base.OnInitialized();
     }

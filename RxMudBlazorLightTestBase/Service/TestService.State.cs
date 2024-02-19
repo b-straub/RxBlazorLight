@@ -13,15 +13,20 @@ namespace RxMudBlazorLightTestBase.Service
                 return value;
             }
 
-            public override bool CanRun => Service.CanIncrementCheck.Value;
+            public override bool CanTransform(int _)
+            {
+                return Service.CanIncrementCheck.Value;
+            }
             public override bool CanCancel => true;
             public override bool LongRunning => true;
         }
 
         public class IncrementStateAddVP(TestService service, IState<int> state) : StateTransformer<TestService, int, int>(service, state)
         {
-            public override bool CanRun => State.Value > 5;
-
+            public override bool CanTransform(int value)
+            {
+                return State.Value > value;
+            }
             protected override int TransformState(int value)
             {
                 return State.Value + value;
@@ -30,12 +35,18 @@ namespace RxMudBlazorLightTestBase.Service
 
         public class AddModeVP(TestService service, IState<bool> state) : StateTransformerDirect<TestService, bool>(service, state)
         {
-            public override bool CanRun => !Service.AddAsync.Changing();
+            public override bool CanTransform(bool _)
+            {
+                return !Service.AddAsync.Changing();
+            }
         }
 
         public class RatingValueVP(TestService service, IState<int> state) : StateTransformerDirect<TestService, int>(service, state)
         {
-            public override bool CanRun => Service.GetRadio().Value?.Color is ColorEnum.GREEN;
+            public override bool CanTransform(int _)
+            {
+                return Service.GetRadio().Value?.Color is ColorEnum.GREEN;
+            }
         }
 
         public class PizzaSG(TestService service, Pizza value) : StateGroup<TestService, Pizza>(service, value)

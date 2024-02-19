@@ -10,12 +10,11 @@ namespace RxBlazorLightCore
         where TType : TInterface
     {
         public TInterface? Value { get; private set; }
-        public bool CanRun => _valueProvider.CanRun;
         public bool LongRunning => _valueProvider.LongRunning;
         public bool CanCancel => _valueProvider.CanCancel;
-        public virtual bool CanTransform(TType _)
+        public virtual bool CanTransform(TType? value)
         {
-            return _valueProvider.CanRun;
+            return _valueProvider.CanTransform(value);
         }
 
         public StateChangePhase Phase => _valueProvider.Phase;
@@ -146,7 +145,6 @@ namespace RxBlazorLightCore
         where S : RxBLService
         where TType : TInterface
     {
-        public virtual bool CanRun => true;
         public virtual bool CanCancel => false;
         public virtual bool LongRunning => false;
         public StateChangePhase Phase { get; protected set; } = StateChangePhase.NONE;
@@ -249,9 +247,9 @@ namespace RxBlazorLightCore
         where S : RxBLService
         where TType : TInterface
     {
-        public virtual bool CanTransform(TType _)
+        public virtual bool CanTransform(TType? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Transform(TType value)
@@ -264,9 +262,9 @@ namespace RxBlazorLightCore
        StateProvideTransformBase<S, T, T, T>(service, state, true, true), IStateTransformer<T>
        where S : RxBLService
     {
-        public virtual bool CanTransform(T _)
+        public virtual bool CanTransform(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Transform(T value)
@@ -279,9 +277,9 @@ namespace RxBlazorLightCore
        StateProvideTransformBase<S, T, TType, TType>(service, state, true, true), IStateTransformer<T>
        where S : RxBLService
     {
-        public virtual bool CanTransform(T _)
+        public virtual bool CanTransform(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Transform(T value)
@@ -306,9 +304,9 @@ namespace RxBlazorLightCore
      StateProvideTransformBase<S, T, TType, TType>(service, state, true, false), IStateTransformer<T>
      where S : RxBLService
     {
-        public virtual bool CanTransform(T _)
+        public virtual bool CanTransform(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Transform(T value)
@@ -330,9 +328,9 @@ namespace RxBlazorLightCore
        StateProvideTransformBase<S, T, T, T>(service, state, true, true), IStateProvider<T>
        where S : RxBLService
     {
-        public virtual bool CanProvide(T _)
+        public virtual bool CanProvide(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Provide()
@@ -352,9 +350,9 @@ namespace RxBlazorLightCore
       StateProvideTransformBase<S, T, T, T>(service, state, true, false), IStateProvider<T>
       where S : RxBLService
     {
-        public virtual bool CanProvide(T _)
+        public virtual bool CanProvide(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Provide()
@@ -377,9 +375,9 @@ namespace RxBlazorLightCore
          where S : RxBLService
          where TType : class, TInterface
     {
-        public virtual bool CanTransform(T _)
+        public virtual bool CanTransform(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Transform(T value)
@@ -407,9 +405,9 @@ namespace RxBlazorLightCore
          where S : RxBLService
          where TType : class, TInterface
     {
-        public virtual bool CanTransform(T _)
+        public virtual bool CanTransform(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Transform(T value)
@@ -434,9 +432,9 @@ namespace RxBlazorLightCore
        where T : notnull
        where S : RxBLService
     {
-        public virtual bool CanTransform(T _)
+        public virtual bool CanTransform(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Transform(T value)
@@ -463,9 +461,9 @@ namespace RxBlazorLightCore
         where T : notnull
         where S : RxBLService
     {
-        public virtual bool CanTransform(T _)
+        public virtual bool CanTransform(T? _)
         {
-            return CanRun;
+            return true;
         }
 
         public void Transform(T value)
@@ -488,9 +486,14 @@ namespace RxBlazorLightCore
        StateProvideTransformBase<S, object?, object?, object?>(service, null, true, true), IServiceStateProvider
        where S : RxBLService
     {
-        public bool CanProvide(object? _)
+         public bool CanProvide(object? _)
         {
-            return CanRun;
+            return CanProvide();
+        }
+
+        protected virtual bool CanProvide()
+        {
+            return true;
         }
 
         public void Provide()
@@ -516,7 +519,12 @@ namespace RxBlazorLightCore
     {
         public bool CanProvide(object? _)
         {
-            return CanRun;
+            return CanProvide();
+        }
+
+        protected virtual bool CanProvide()
+        {
+            return true;
         }
 
         public void Provide()

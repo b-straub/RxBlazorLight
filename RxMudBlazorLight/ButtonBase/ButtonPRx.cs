@@ -12,20 +12,20 @@ namespace RxMudBlazorLight.ButtonBase
         public EventCallback<TouchEventArgs>? OnTouch { get; private set; }
 
         private readonly Func<IStateTransformer<T>, Task> _valueFactoryAsync;
-        private readonly Func<bool>? _disabledFactory;
+        private readonly T? _context;
 
         private ButtonPRx(MBButtonType type, Func<IStateTransformer<T>, Task> valueFactoryAsync, Color buttonColor,
-            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor, Func<bool>? disabledFactory) :
+            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor, T? context) :
             base(type, buttonColor, buttonChildContent, cancelText, cancelColor)
         {
             _valueFactoryAsync = valueFactoryAsync;
-            _disabledFactory = disabledFactory;
+            _context = context;
         }
 
         public static ButtonPRx<T> Create(MBButtonType type, Func<IStateTransformer<T>, Task> valueFactoryAsync, Color buttonColor,
-            RenderFragment ? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null, Func<bool>? disabledFactory = null)
+            RenderFragment ? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null, T? context = default)
         {
-            return new ButtonPRx<T>(type, valueFactoryAsync, buttonColor, buttonChildContent, cancelText, cancelColor, disabledFactory);
+            return new ButtonPRx<T>(type, valueFactoryAsync, buttonColor, buttonChildContent, cancelText, cancelColor, context);
         }
 
         [MemberNotNull(nameof(OnClick))]
@@ -59,7 +59,7 @@ namespace RxMudBlazorLight.ButtonBase
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteStateProvider(stateTransformer));
                 OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteStateProvider(stateTransformer));
 
-                Disabled = _disabledFactory is null ? !stateTransformer.CanRun : _disabledFactory();
+                Disabled = !stateTransformer.CanTransform(_context);
             }
         }
 

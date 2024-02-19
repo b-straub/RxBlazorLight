@@ -12,20 +12,20 @@ namespace RxMudBlazorLight.ButtonBase
         public EventCallback<TouchEventArgs>? OnTouch { get; private set; }
 
         private readonly Func<Task<bool>>? _confirmExecutionAsync;
-        private readonly Func<bool>? _disabledFactory;
+        private readonly T? _context;
 
         private ButtonRx(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor, 
-            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor, Func<bool>? disabledFactory) :
+            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor, T? context) :
             base(type, buttonColor, buttonChildContent, cancelText, cancelColor)
         {
             _confirmExecutionAsync = confirmExecutionAsync;
-            _disabledFactory = disabledFactory;
+            _context = context;
         }
 
         public static ButtonRx<T> Create(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
-            RenderFragment? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null, Func<bool>? disabledFactory = null)
+            RenderFragment? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null, T? context = default)
         {
-            return new ButtonRx<T>(type, confirmExecutionAsync, buttonColor, buttonChildContent, cancelText, cancelColor, disabledFactory);
+            return new ButtonRx<T>(type, confirmExecutionAsync, buttonColor, buttonChildContent, cancelText, cancelColor, context);
         }
 
         [MemberNotNull(nameof(OnClick))]
@@ -59,7 +59,7 @@ namespace RxMudBlazorLight.ButtonBase
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteStateProvider(stateProvider));
                 OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteStateProvider(stateProvider));
 
-                Disabled = _disabledFactory is null ? !stateProvider.CanRun : _disabledFactory();
+                Disabled = !stateProvider.CanProvide(_context);
             }
         }
 

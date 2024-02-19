@@ -70,7 +70,6 @@ namespace RxBlazorLightCore
     public interface IStateProvideTransformBase
     {
         public StateChangePhase Phase { get; }
-        public bool CanRun { get; }
         public bool LongRunning { get; }
         public bool CanCancel { get; }
         public void Cancel();
@@ -81,14 +80,14 @@ namespace RxBlazorLightCore
     {
         public void Transform(T value);
 
-        public bool CanTransform(T value);
+        public bool CanTransform(T? value);
     }
 
     public interface IStateProvider<T> : IStateProvideTransformBase
     {
         public void Provide();
 
-        public bool CanProvide(T value);
+        public bool CanProvide(T? value);
     }
 
     public interface IServiceStateTransformer<T> : IStateTransformer<T>

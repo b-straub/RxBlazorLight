@@ -20,7 +20,7 @@
 		<PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>..\Nuget</PackageOutputPath>
-		<PackageVersion>0.9.1</PackageVersion>
+		<PackageVersion>0.9.4</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,8 +32,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.1" />
-		<PackageReference Include="MudBlazor" Version="6.12.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.2" />
+		<PackageReference Include="MudBlazor" Version="6.16.0" />
 	</ItemGroup>
 
 	<ItemGroup>

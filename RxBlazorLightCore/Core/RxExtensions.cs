@@ -15,6 +15,11 @@ namespace RxBlazorLightCore
             return State<S, TType>.Create(service, value, valueProviderFactory);
         }
 
+        public static IServiceStateObserver CreateStateObserver<S>(this S service) where S : RxBLService
+        {
+            return new ServiceStateObserver<S>(service);
+        }
+
         public static bool Changing(this IStateProvideTransformBase valueProvider)
         {
             return valueProvider.Phase is StateChangePhase.CHANGING;

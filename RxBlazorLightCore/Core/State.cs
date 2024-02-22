@@ -1,6 +1,8 @@
 ﻿
+using System.Numerics;
 using System.Reactive;
 using System.Reactive.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RxBlazorLightCore
 {
@@ -550,5 +552,44 @@ namespace RxBlazorLightCore
         }
 
         protected abstract void ProvideState();
+    }
+
+    public class ServiceStateObserver<S>(S service) : IServiceStateObserver where S : RxBLService
+    {
+        public Guid ID { get; } = Guid.NewGuid();
+
+        public StateChangePhase Phase { get; private set; } = StateChangePhase.NONE;
+
+        public bool LongRunning => false;
+
+        public bool CanCancel => false;
+
+        public void Cancel()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Provide()
+        {
+            OnNext(Unit.Default);
+        }
+
+        public void OnCompleted()
+        {
+            Phase = StateChangePhase.CANCELED;
+            service.StateHasChanged(ID, ChangeReason.STATE);
+        }
+
+        public void OnError(Exception error)
+        {
+            Phase = StateChangePhase.EXCEPTION;
+            service.StateHasChanged(ID, ChangeReason.EXCEPTION, error);
+        }
+
+        public void OnNext(Unit value)
+        {
+            Phase = StateChangePhase.CHANGED;
+            service.StateHasChanged(ID, ChangeReason.STATE);
+        }
     }
 }

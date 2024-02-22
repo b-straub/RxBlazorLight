@@ -7,6 +7,7 @@ namespace RxBlazorLightCoreTestBase
 
     public partial class ServiceFixture : RxBLService
     {
+        public IServiceStateObserver ServiceStateObserver { get; }
         public IState<int> IntState { get; }
 
         public IState<int> IntStateAsyncX { get; }
@@ -26,6 +27,8 @@ namespace RxBlazorLightCoreTestBase
 
         public ServiceFixture() 
         {
+            ServiceStateObserver = this.CreateStateObserver();
+
             IntState = this.CreateState(-1);
 
             IntStateAsyncX = this.CreateState(10, s => new AsyncIntX(this, s));

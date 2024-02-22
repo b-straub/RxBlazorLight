@@ -1,6 +1,8 @@
 using RxBlazorLightCore;
 using RxBlazorLightCoreTestBase;
 using Xunit.Abstractions;
+using System.Reactive.Linq;
+using System.Reactive;
 
 namespace RxBlazorLightCoreTests
 {
@@ -232,7 +234,7 @@ namespace RxBlazorLightCoreTests
                 {
                     stateChangeCount++;
 
-                    if (fixture.ChangeTest.Phase is StateChangePhase.CANCELED)
+                    if (fixture.ChangeTest.Canceled())
                     {
                         canceled = true;
                     }
@@ -257,6 +259,70 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(string.Empty, fixture.Test);
             Assert.True(canceled);
             Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
+        }
+
+        [Fact]
+        public void TestStateObservable()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool completed = false;
+
+            fixture.Subscribe(sc =>
+            {
+                if (sc.ID == fixture.ServiceStateObserver.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                _output.WriteLine($"Canceled {fixture.ServiceStateObserver.Canceled()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ServiceStateObserver.Phase}, ID {sc.ID}, VPID {fixture.ServiceStateObserver.ID}");
+
+                if (fixture.ServiceStateObserver.Canceled())
+                {
+                    completed = true;
+                }
+            }, 0);
+
+            var changer = Observable.Range(0, 2);
+
+            var disposable = changer.Select(_ => Unit.Default).Subscribe(fixture.ServiceStateObserver);
+
+            while (!completed) ;
+
+            Assert.Equal(3, stateChangeCount);
+        }
+
+        [Fact]
+        public void TestStateObservableException()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool exception = false;
+
+            fixture.Subscribe(sc =>
+            {
+                if (sc.ID == fixture.ServiceStateObserver.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                _output.WriteLine($"Exception {fixture.ServiceStateObserver.Exception()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ServiceStateObserver.Phase}, ID {sc.ID}, VPID {fixture.ServiceStateObserver.ID}");
+
+                if (fixture.ServiceStateObserver.Exception())
+                {
+                    exception = true;
+                }
+            }, 0);
+
+            fixture.ServiceStateObserver.Provide();
+
+            var changer = Observable.Throw<Unit>(new InvalidOperationException("Test"));
+
+            var disposable = changer.Select(_ => Unit.Default).Subscribe(fixture.ServiceStateObserver);
+
+            while (!exception) ;
+
+            Assert.Equal(2, stateChangeCount);
         }
 
         [Fact]

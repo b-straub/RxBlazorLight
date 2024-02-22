@@ -2,6 +2,7 @@
 global using ServiceException = (System.Exception Exception, System.Guid ID);
 
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
 
 namespace RxBlazorLightCore
 {
@@ -96,5 +97,10 @@ namespace RxBlazorLightCore
 
     public interface IServiceStateProvider : IStateProvider<object?>
     {
+    }
+
+    public interface IServiceStateObserver : IObserver<Unit>, IStateProvideTransformBase
+    {
+        public void Provide();
     }
 }

@@ -36,22 +36,41 @@ namespace RxBlazorLightCoreTestBase
             }
         }
 
-        public class ChangeTestSP(ServiceFixture service) : StateProviderAsync<ServiceFixture>(service)
+        public class TransformTestSyncST(ServiceFixture service) : StateTransformer<ServiceFixture, string>(service)
         {
             public override bool CanCancel => true;
 
-            protected override async Task ProvideStateAsync(CancellationToken cancellationToken)
+            protected override void TransformState(string value)
             {
-                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-                Service.Test = "Async";
+                Service.Test = value;
             }
         }
 
-        public class ChangeTestSyncSP(ServiceFixture service) : StateProvider<ServiceFixture>(service)
+        public class TransformTestAsyncST(ServiceFixture service) : StateTransformerAsync<ServiceFixture, string>(service)
+        {
+            public override bool CanCancel => true;
+
+            protected override async Task TransformStateAsync(string value, CancellationToken cancellationToken)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+                Service.Test = value;
+            }
+        }
+
+        public class ProvideTestSyncSP(ServiceFixture service) : StateProvider<ServiceFixture>(service)
         {
             protected override void ProvideState()
             {
                 Service.Test = "Sync";
+            }
+        }
+
+        public class ProvideTestAsyncSP(ServiceFixture service) : StateProviderAsync<ServiceFixture>(service)
+        {
+            protected override async Task ProvideStateAsync(CancellationToken cancellationToken)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                Service.Test = "Async";
             }
         }
 

@@ -1,9 +1,9 @@
 using RxBlazorLightCore;
 using RxBlazorLightCoreTestBase;
 using Xunit.Abstractions;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive;
-using System;
 
 namespace RxBlazorLightCoreTests
 {
@@ -164,14 +164,14 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.ID == fixture.ChangeTestAsync.ID)
+                if (sc.ID == fixture.TransformTestAsync.ID)
                 {
                     stateChangeCount++;
                 }
 
-                _output.WriteLine($"Done {fixture.ChangeTestAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTestAsync.Phase}, ID {sc.ID}, VPID {fixture.ChangeTestAsync.ID}");
+                _output.WriteLine($"Done {fixture.TransformTestAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.TransformTestAsync.Phase}, ID {sc.ID}, VPID {fixture.TransformTestAsync.ID}");
 
-                if (fixture.ChangeTestAsync.Done())
+                if (fixture.TransformTestAsync.Done())
                 {
                     done = true;
                 }
@@ -181,7 +181,7 @@ namespace RxBlazorLightCoreTests
 
             Assert.Equal(string.Empty, fixture.Test);
 
-            fixture.ChangeTestAsync.Provide();
+            fixture.TransformTestAsync.Transform("Async");
             while (!done) ;
 
             Assert.Equal("Async", fixture.Test);
@@ -189,7 +189,7 @@ namespace RxBlazorLightCoreTests
         }
 
         [Fact]
-        public void TestStateSync()
+        public void TransformStateSync()
         {
             ServiceFixture fixture = new();
             var stateChangeCount = 0;
@@ -197,14 +197,14 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.ID == fixture.ChangeTestSync.ID)
+                if (sc.ID == fixture.TransformTestSync.ID)
                 {
                     stateChangeCount++;
                 }
 
-                _output.WriteLine($"Done {fixture.ChangeTestSync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTestSync.Phase}, ID {sc.ID}, VPID {fixture.ChangeTestSync.ID}");
+                _output.WriteLine($"Done {fixture.TransformTestSync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.TransformTestSync.Phase}, ID {sc.ID}, VPID {fixture.TransformTestSync.ID}");
 
-                if (fixture.ChangeTestSync.Done())
+                if (fixture.TransformTestSync.Done())
                 {
                     done = true;
                 }
@@ -214,11 +214,110 @@ namespace RxBlazorLightCoreTests
 
             Assert.Equal(string.Empty, fixture.Test);
 
-            fixture.ChangeTestSync.Provide();
+            fixture.TransformTestSync.Transform("Sync");
+            while (!done) ;
+
+            Assert.Equal("Sync", fixture.Test);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 1);
+        }
+
+        [Fact]
+        public void TransformStateAsync()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                if (sc.ID == fixture.TransformTestAsync.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                _output.WriteLine($"Done {fixture.TransformTestAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.TransformTestAsync.Phase}, ID {sc.ID}, VPID {fixture.TransformTestAsync.ID}");
+
+                if (fixture.TransformTestAsync.Done())
+                {
+                    done = true;
+                }
+            }, 0);
+
+            fixture.ClearTest();
+
+            Assert.Equal(string.Empty, fixture.Test);
+
+            fixture.TransformTestAsync.Transform("Async");
+            while (!done) ;
+
+            Assert.Equal("Async", fixture.Test);
+            Assert.True(stateChangeCount > 0 && stateChangeCount <= 2);
+        }
+
+        [Fact]
+        public void ProvideStateSync()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                if (sc.ID == fixture.ProvideTestSync.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                _output.WriteLine($"Done {fixture.ProvideTestSync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ProvideTestSync.Phase}, ID {sc.ID}, VPID {fixture.ProvideTestSync.ID}");
+
+                if (fixture.ProvideTestSync.Done())
+                {
+                    done = true;
+                }
+            }, 0);
+
+            fixture.ClearTest();
+
+            Assert.Equal(string.Empty, fixture.Test);
+
+            fixture.ProvideTestSync.Provide();
             while (!done) ;
 
             Assert.Equal("Sync", fixture.Test);
             Assert.Equal(1, stateChangeCount);
+        }
+
+        [Fact]
+        public void ProvideStateAsync()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                if (sc.ID == fixture.ProvideTestAsync.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                _output.WriteLine($"Done {fixture.ProvideTestAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ProvideTestAsync.Phase}, ID {sc.ID}, VPID {fixture.ProvideTestAsync.ID}");
+
+                if (fixture.ProvideTestAsync.Done())
+                {
+                    done = true;
+                }
+            }, 0);
+
+            fixture.ClearTest();
+
+            Assert.Equal(string.Empty, fixture.Test);
+
+            fixture.ProvideTestAsync.Provide();
+            while (!done) ;
+
+            Assert.Equal("Async", fixture.Test);
+            Assert.Equal(2, stateChangeCount);
         }
 
         [Fact]
@@ -231,18 +330,18 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.ID == fixture.ChangeTestAsync.ID)
+                if (sc.ID == fixture.TransformTestAsync.ID)
                 {
                     stateChangeCount++;
 
-                    if (fixture.ChangeTestAsync.Canceled())
+                    if (fixture.TransformTestAsync.Canceled())
                     {
                         canceled = true;
                     }
 
-                    _output.WriteLine($"Done {fixture.ChangeTestAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ChangeTestAsync.Phase}, ID {sc.ID}, VPID {fixture.ChangeTestAsync.ID}");
+                    _output.WriteLine($"Done {fixture.TransformTestAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.TransformTestAsync.Phase}, ID {sc.ID}, VPID {fixture.TransformTestAsync.ID}");
 
-                    if (fixture.ChangeTestAsync.Done())
+                    if (fixture.TransformTestAsync.Done())
                     {
                         done = true;
                     }
@@ -252,8 +351,8 @@ namespace RxBlazorLightCoreTests
             fixture.ClearTest();
             Assert.Equal(string.Empty, fixture.Test);
 
-            fixture.ChangeTestAsync.Provide();
-            fixture.ChangeTestAsync.Cancel();
+            fixture.TransformTestAsync.Transform("Async");
+            fixture.TransformTestAsync.Cancel();
 
             while (!done) ;
 
@@ -286,7 +385,10 @@ namespace RxBlazorLightCoreTests
 
             var changer = Observable.Range(0, 2);
 
-            var disposable = changer.Select(_ => Unit.Default).Subscribe(fixture.ObservableStateVoidProvider);
+            var disposable = changer.Select(_ => Unit.Default)
+                .ObserveOn(ImmediateScheduler.Instance)
+                .SubscribeOn(ImmediateScheduler.Instance)
+                .Subscribe(fixture.ObservableStateVoidProvider);
 
             while (!completed) ;
 
@@ -319,7 +421,10 @@ namespace RxBlazorLightCoreTests
 
             var changer = Observable.Throw<Unit>(new InvalidOperationException("Test"));
 
-            var disposable = changer.Select(_ => Unit.Default).Subscribe(fixture.ObservableStateVoidProvider);
+            var disposable = changer
+                .ObserveOn(ImmediateScheduler.Instance)
+                .SubscribeOn(ImmediateScheduler.Instance)
+                .Select(_ => Unit.Default).Subscribe(fixture.ObservableStateVoidProvider);
 
             while (!exception) ;
 

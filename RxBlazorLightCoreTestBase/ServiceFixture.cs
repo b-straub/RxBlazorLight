@@ -20,8 +20,11 @@ namespace RxBlazorLightCoreTestBase
 
         public IStateProvider<int> Increment { get; }
         public IStateTransformer<int> Add { get; }
-        public IStateProvider ChangeTestAsync { get; }
-        public IStateProvider ChangeTestSync { get; }
+        public IStateTransformer<string> TransformTestAsync { get; }
+        public IStateTransformer<string> TransformTestSync { get; }
+
+        public IStateProvider ProvideTestSync { get; }
+        public IStateProvider ProvideTestAsync { get; }
 
         public IStateTransformer<(IntListVP.CMD_LIST CMD, CRUDTest? ITEM)> CRUDListCmds { get; }
         public IStateTransformer<(IntDictVP.CMD_DICT CMD, Guid? ID, CRUDTest? ITEM)> CRUDDictCmds { get; }
@@ -46,8 +49,12 @@ namespace RxBlazorLightCoreTestBase
 
             Increment = new IncremementVP(this, IntState);
             Add = new AddVP(this, IntState);
-            ChangeTestAsync = new ChangeTestSP(this);
-            ChangeTestSync = new ChangeTestSyncSP(this);
+
+            TransformTestSync = new TransformTestSyncST(this);
+            TransformTestAsync = new TransformTestAsyncST(this);
+
+            ProvideTestSync = new ProvideTestSyncSP(this);
+            ProvideTestAsync = new ProvideTestAsyncSP(this);
         }
 
         public void ClearTest()

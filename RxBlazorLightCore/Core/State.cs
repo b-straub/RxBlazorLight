@@ -300,9 +300,37 @@ namespace RxBlazorLightCore
         protected abstract Task<TType> TransformStateAsync(T value, CancellationToken cancellationToken);
     }
 
+    public abstract class StateTransformerAsync<S, T>(S service) :
+      StateProvideTransformBase<S, T, Unit, Unit>(service, null, true, true), IStateTransformer<T>
+      where S : RxBLService
+    {
+        public virtual bool CanTransform(T? _)
+        {
+            return true;
+        }
+
+        public void Transform(T value)
+        {
+            TransformBaseAsync(value);
+        }
+
+        protected override IObservable<Unit> ProvideObervableValueBase(T? value, Unit state)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            return Observable.FromAsync(async ct =>
+            {
+                await TransformStateAsync(value, ct);
+                return IState.Default;
+            });
+        }
+
+        protected abstract Task TransformStateAsync(T value, CancellationToken cancellationToken);
+    }
+
     public abstract class StateTransformer<S, T, TType>(S service, IState<TType> state) :
-     StateProvideTransformBase<S, T, TType, TType>(service, state, true, false), IStateTransformer<T>
-     where S : RxBLService
+        StateProvideTransformBase<S, T, TType, TType>(service, state, true, false), IStateTransformer<T>
+        where S : RxBLService
     {
         public virtual bool CanTransform(T? _)
         {
@@ -322,6 +350,31 @@ namespace RxBlazorLightCore
         }
 
         protected abstract TType? TransformState(T value);
+    }
+
+    public abstract class StateTransformer<S, T>(S service) :
+        StateProvideTransformBase<S, T, Unit, Unit>(service, null, true, false), IStateTransformer<T>
+        where S : RxBLService
+    {
+        public virtual bool CanTransform(T? _)
+        {
+            return true;
+        }
+
+        public void Transform(T value)
+        {
+            try
+            {
+                TransformState(value);
+                TransformBaseSync(IState.Default);
+            }
+            catch (Exception ex)
+            {
+                StateChanged(StateChangePhase.EXCEPTION, ex);
+            }
+        }
+
+        protected abstract void TransformState(T value);
     }
 
     public class ObservableStateProvider<S, T>(S service, IState<T>? state) :

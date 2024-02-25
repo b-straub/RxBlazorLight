@@ -41,9 +41,9 @@ namespace RxBlazorLightCore
 
     public interface IState<TType> : IState<TType, TType>;
 
-    public interface IState : IState<object?, object?>
+    public interface IState : IState<Unit, Unit>
     {
-        public static object? Default { get; } = default;
+        public static Unit Default { get; } = Unit.Default;
     }
 
     public interface IStateGroup<TType> : IState<TType>
@@ -64,6 +64,7 @@ namespace RxBlazorLightCore
         NONE,
         CHANGING,
         CHANGED,
+        COMPLETED,
         CANCELED,
         EXCEPTION
     }
@@ -84,6 +85,16 @@ namespace RxBlazorLightCore
         public bool CanTransform(T? value);
     }
 
+    public interface IObservableStateProvider<T> : IStateProvideTransformBase, IObserver<T>
+    {
+        void Provide(T value);
+    }
+
+    public interface IObservableStateProvider : IObservableStateProvider<Unit>
+    {
+        void Provide();
+    }
+
     public interface IStateProvider<T> : IStateProvideTransformBase
     {
         public void Provide();
@@ -91,16 +102,7 @@ namespace RxBlazorLightCore
         public bool CanProvide(T? value);
     }
 
-    public interface IServiceStateTransformer<T> : IStateTransformer<T>
+    public interface IStateProvider : IStateProvider<Unit>
     {
-    }
-
-    public interface IServiceStateProvider : IStateProvider<object?>
-    {
-    }
-
-    public interface IServiceStateObserver : IObserver<Unit>, IStateProvideTransformBase
-    {
-        public void Provide();
     }
 }

@@ -1,8 +1,6 @@
 ﻿
-using System.Numerics;
 using System.Reactive;
 using System.Reactive.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RxBlazorLightCore
 {
@@ -79,7 +77,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class State<S> : State<S, object?, object?>, IState
+    public class State<S> : State<S, Unit, Unit>, IState
         where S : RxBLService
     {
         private State(S service) : base(service, IState.Default, null) { }
@@ -164,7 +162,7 @@ namespace RxBlazorLightCore
         protected internal StateProvideTransformBase(S service, IState<TInterface, TType>? state, bool setState, bool runAsync)
         {
             Service = service;
-            State = state is null ? (State<S, TInterface, TType>)State<S, object?, object?>.Create(service, IState.Default) : (State<S, TInterface, TType>)state;
+            State = state is null ? (State<S, TInterface, TType>)State<S, Unit, Unit>.Create(service, IState.Default) : (State<S, TInterface, TType>)state;
             _setState = setState;
             _runAsync = runAsync;
             _canceled = false;
@@ -326,6 +324,57 @@ namespace RxBlazorLightCore
         protected abstract TType? TransformState(T value);
     }
 
+    public class ObservableStateProvider<S, T>(S service, IState<T>? state) :
+        StateProvideTransformBase<S, T, T, T>(service, state, true, false), IObservableStateProvider<T>
+        where S : RxBLService
+    {
+        public void OnCompleted()
+        {
+            StateChanged(StateChangePhase.COMPLETED);
+        }
+
+        public void OnError(Exception error)
+        {
+            StateChanged(StateChangePhase.EXCEPTION, error);
+        }
+
+        public void OnNext(T value)
+        {
+            TransformBaseSync(value);
+        }
+
+        public void Provide(T value)
+        {
+            OnNext(value);
+        }
+
+        public static IObservableStateProvider<Unit> Create(S service)
+        {
+            var state = State<S, Unit>.Create(service, Unit.Default);
+            return new ObservableStateProvider<S, Unit>(service, state);
+        }
+
+        public static IObservableStateProvider<T> Create(S service, IState<T> state)
+        {
+            return new ObservableStateProvider<S, T>(service, state);
+        }
+    }
+
+    public class ObservableStateProvider<S>(S service) : ObservableStateProvider<S, Unit>(service, null),
+        IObservableStateProvider
+        where S : RxBLService
+    {
+        public void Provide()
+        {
+            Provide(Unit.Default);
+        }
+
+        public static new IObservableStateProvider Create(S service)
+        {
+            return new ObservableStateProvider<S>(service);
+        }
+    }
+
     public abstract class StateProviderAsync<S, T>(S service, IState<T> state) :
        StateProvideTransformBase<S, T, T, T>(service, state, true, true), IStateProvider<T>
        where S : RxBLService
@@ -429,66 +478,11 @@ namespace RxBlazorLightCore
         protected abstract void TransformState(T value, TType stateRef);
     }
 
-    public abstract class ServiceStateTransformerAsync<S, T>(S service) :
-       StateProvideTransformBase<S, T?, object?, object?>(service, null, true, true), IServiceStateTransformer<T>
-       where T : notnull
+    public abstract class StateProviderAsync<S>(S service) :
+       StateProvideTransformBase<S, Unit, Unit, Unit>(service, null, true, true), IStateProvider
        where S : RxBLService
     {
-        public virtual bool CanTransform(T? _)
-        {
-            return true;
-        }
-
-        public void Transform(T value)
-        {
-            TransformBaseAsync(value);
-        }
-
-        protected override IObservable<object?> ProvideObervableValueBase(T? value, object? state)
-        {
-            ArgumentNullException.ThrowIfNull(value);
-
-            return Observable.FromAsync(async cto =>
-            {
-                await TransformStateAsync(value, cto);
-                return IState.Default;
-            });
-        }
-
-        protected abstract Task TransformStateAsync(T value, CancellationToken cancellationToken);
-    }
-
-    public abstract class ServiceStateTransformer<S, T>(S service) :
-        StateProvideTransformBase<S, T?, object?, object?>(service, null, true, false), IServiceStateTransformer<T>
-        where T : notnull
-        where S : RxBLService
-    {
-        public virtual bool CanTransform(T? _)
-        {
-            return true;
-        }
-
-        public void Transform(T value)
-        {
-            try
-            {
-                TransformState(value);
-                TransformBaseSync(IState.Default);
-            }
-            catch (Exception ex)
-            {
-                StateChanged(StateChangePhase.EXCEPTION, ex);
-            }
-        }
-
-        protected abstract void TransformState(T value);
-    }
-
-    public abstract class ServiceStateProviderAsync<S>(S service) :
-       StateProvideTransformBase<S, object?, object?, object?>(service, null, true, true), IServiceStateProvider
-       where S : RxBLService
-    {
-         public bool CanProvide(object? _)
+         public bool CanProvide(Unit _)
         {
             return CanProvide();
         }
@@ -503,7 +497,7 @@ namespace RxBlazorLightCore
             TransformBaseAsync(IState.Default);
         }
 
-        protected override IObservable<object?> ProvideObervableValueBase(object? value, object? state)
+        protected override IObservable<Unit> ProvideObervableValueBase(Unit value, Unit state)
         {
             return Observable.FromAsync(async cto =>
             {
@@ -515,11 +509,11 @@ namespace RxBlazorLightCore
         protected abstract Task ProvideStateAsync(CancellationToken cancellationToken);
     }
 
-    public abstract class ServiceStateProvider<S>(S service) :
-      StateProvideTransformBase<S, object?, object?, object?>(service, null, false, false), IServiceStateProvider
+    public abstract class StateProvider<S>(S service) :
+      StateProvideTransformBase<S, Unit, Unit, Unit>(service, null, false, false), IStateProvider
       where S : RxBLService
     {
-        public bool CanProvide(object? _)
+        public bool CanProvide(Unit _)
         {
             return CanProvide();
         }
@@ -542,54 +536,11 @@ namespace RxBlazorLightCore
             }
         }
 
-        protected override IObservable<object?> ProvideObervableValueBase(object? value, object? state)
+        protected override IObservable<Unit> ProvideObervableValueBase(Unit value, Unit state)
         {
-            return Observable.Return(Unit.Default).Select(_ =>
-            {
-                ProvideState();
-                return IState.Default;
-            });
+            return Observable.Return(Unit.Default);
         }
 
         protected abstract void ProvideState();
-    }
-
-    public class ServiceStateObserver<S>(S service) : IServiceStateObserver where S : RxBLService
-    {
-        public Guid ID { get; } = Guid.NewGuid();
-
-        public StateChangePhase Phase { get; private set; } = StateChangePhase.NONE;
-
-        public bool LongRunning => false;
-
-        public bool CanCancel => false;
-
-        public void Cancel()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Provide()
-        {
-            OnNext(Unit.Default);
-        }
-
-        public void OnCompleted()
-        {
-            Phase = StateChangePhase.CANCELED;
-            service.StateHasChanged(ID, ChangeReason.STATE);
-        }
-
-        public void OnError(Exception error)
-        {
-            Phase = StateChangePhase.EXCEPTION;
-            service.StateHasChanged(ID, ChangeReason.EXCEPTION, error);
-        }
-
-        public void OnNext(Unit value)
-        {
-            Phase = StateChangePhase.CHANGED;
-            service.StateHasChanged(ID, ChangeReason.STATE);
-        }
     }
 }

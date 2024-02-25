@@ -1,5 +1,6 @@
 ﻿
 using RxBlazorLightCore;
+using System.Reactive;
 
 namespace RxBlazorLightCoreTestBase
 {
@@ -7,9 +8,11 @@ namespace RxBlazorLightCoreTestBase
 
     public partial class ServiceFixture : RxBLService
     {
-        public IServiceStateObserver ServiceStateObserver { get; }
-        public IState<int> IntState { get; }
+        public IObservableStateProvider<Unit> ObservableStateVoidProvider { get; }
+        public IObservableStateProvider<int> ObservableStateIntProvider { get; }
 
+        public IState<int> ObservableIntState { get; }
+        public IState<int> IntState { get; }
         public IState<int> IntStateAsyncX { get; }
 
         public IState<IEnumerable<CRUDTest>, List<CRUDTest>> CRUDListState { get; }
@@ -17,8 +20,8 @@ namespace RxBlazorLightCoreTestBase
 
         public IStateProvider<int> Increment { get; }
         public IStateTransformer<int> Add { get; }
-        public IServiceStateTransformer<string> ChangeTest { get; }
-        public IServiceStateProvider ChangeTestSync { get; }
+        public IStateProvider ChangeTestAsync { get; }
+        public IStateProvider ChangeTestSync { get; }
 
         public IStateTransformer<(IntListVP.CMD_LIST CMD, CRUDTest? ITEM)> CRUDListCmds { get; }
         public IStateTransformer<(IntDictVP.CMD_DICT CMD, Guid? ID, CRUDTest? ITEM)> CRUDDictCmds { get; }
@@ -27,7 +30,9 @@ namespace RxBlazorLightCoreTestBase
 
         public ServiceFixture() 
         {
-            ServiceStateObserver = this.CreateStateObserver();
+            ObservableStateVoidProvider = this.CreateObservableStateProvider();
+            ObservableIntState = this.CreateState(0);
+            ObservableStateIntProvider = this.CreateObservableStateProvider(ObservableIntState);
 
             IntState = this.CreateState(-1);
 
@@ -41,7 +46,7 @@ namespace RxBlazorLightCoreTestBase
 
             Increment = new IncremementVP(this, IntState);
             Add = new AddVP(this, IntState);
-            ChangeTest = new ChangeTestSP(this);
+            ChangeTestAsync = new ChangeTestSP(this);
             ChangeTestSync = new ChangeTestSyncSP(this);
         }
 

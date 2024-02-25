@@ -83,8 +83,8 @@ namespace RxMudBlazorLightTestBase.Service
         public IStateProvider<int> Increment { get; }
         public IStateTransformer<int> AddAsync { get; }
 
-        public IServiceStateProvider EqualsTest { get; }
-        public IServiceStateTransformer<int> EqualsTestAsync { get; }
+        public IStateProvider EqualsTestSync { get; }
+        public IStateProvider EqualsTestAsync { get; }
         public IStateTransformer<int> Add { get; }
         public IStateProvider<int> IncrementAsync { get; }
   
@@ -116,8 +116,8 @@ namespace RxMudBlazorLightTestBase.Service
             Increment = new IncrementVP(this, CountState);
             AddAsync = new AddSPAsync(this, CountState);
 
-            EqualsTest = new EqualsTestVP(this);
-            EqualsTestAsync = new EqualsTestSPAsync(this);
+            EqualsTestSync = new EqualsTestSyncSP(this);
+            EqualsTestAsync = new EqualsTestAsyncSP(this);
 
             Exception = new ExceptionVP(this, CountState);
 

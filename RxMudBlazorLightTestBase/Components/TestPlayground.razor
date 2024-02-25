@@ -13,9 +13,9 @@
     <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateProvider=@Service.Increment>Increment</MudButtonRx>
     <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" ValueFactoryAsync=@DVFA.Factory(5) StateTransformer=@Service.Add>Add 5</MudButtonPRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals executions {_equalsExecutions}")</MudText>
-    <MudButtonRx Color="Color.Error" Variant="Variant.Filled" StateProvider=@Service.EqualsTest>EqualsTest</MudButtonRx>
+    <MudButtonRx Color="Color.Error" Variant="Variant.Filled" StateProvider=@Service.EqualsTestSync>EqualsTest</MudButtonRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
-    <MudButtonPRx Color="Color.Error" Variant="Variant.Filled" ValueFactoryAsync=@DVFA.Factory(1) StateTransformer=@Service.EqualsTestAsync>EqualsTestAsync</MudButtonPRx>
+    <MudButtonRx Color="Color.Error" Variant="Variant.Filled" StateProvider=@Service.EqualsTestAsync>EqualsTestAsync</MudButtonRx>
 
     <MudGrid>
         @if (Service.Exceptions.Any())
@@ -34,7 +34,7 @@
 
     protected override void ServiceStateHasChanged(Guid id, ChangeReason changeReason)
     {
-        if (id == Service.EqualsTest.ID && Service.EqualsTest.Changed())
+        if (id == Service.EqualsTestSync.ID && Service.EqualsTestSync.Changed())
         {
             _equalsExecutions++;
             StateHasChanged();

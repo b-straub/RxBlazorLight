@@ -1,11 +1,13 @@
 ﻿using RxBlazorLightCore;
+using static MudBlazor.Colors;
+using System.Threading;
 using static RxMudBlazorLightTestBase.Service.TimerService;
 
 namespace RxMudBlazorLightTestBase.Service
 {
     public sealed partial class TestService
     {
-        public class EqualsTestVP(TestService service) : ServiceStateProvider<TestService>(service)
+        public class EqualsTestSyncSP(TestService service) : StateProvider<TestService>(service)
         {
             protected override bool CanProvide()
             {
@@ -18,17 +20,17 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class EqualsTestSPAsync(TestService service) : ServiceStateTransformerAsync<TestService, int>(service)
+        public class EqualsTestAsyncSP(TestService service) : StateProviderAsync<TestService>(service)
         {
-            public override bool CanTransform(int _)
+            protected override bool CanProvide()
             {
                 return Service._equalTestAsyncValue < 2;
             }
 
-            protected override async Task TransformStateAsync(int value, CancellationToken cancellationToken)
+            protected override async Task ProvideStateAsync(CancellationToken cancellationToken)
             {
                 await Task.Delay(500, cancellationToken);
-                Service._equalTestAsyncValue += value;
+                Service._equalTestAsyncValue += 10;
             }
         }
 

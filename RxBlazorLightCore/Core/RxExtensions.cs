@@ -1,4 +1,6 @@
 ﻿
+using System.Reactive;
+
 namespace RxBlazorLightCore
 {
     public static class RxExtensions
@@ -15,9 +17,14 @@ namespace RxBlazorLightCore
             return State<S, TType>.Create(service, value, valueProviderFactory);
         }
 
-        public static IServiceStateObserver CreateStateObserver<S>(this S service) where S : RxBLService
+        public static IObservableStateProvider<Unit> CreateObservableStateProvider<S>(this S service) where S : RxBLService
         {
-            return new ServiceStateObserver<S>(service);
+            return ObservableStateProvider<S, Unit>.Create(service);
+        }
+
+        public static IObservableStateProvider<T> CreateObservableStateProvider<S, T>(this S service, IState<T> state) where S : RxBLService
+        {
+            return ObservableStateProvider<S, T>.Create(service, state);
         }
 
         public static bool Changing(this IStateProvideTransformBase valueProvider)
@@ -28,6 +35,11 @@ namespace RxBlazorLightCore
         public static bool Changed(this IStateProvideTransformBase valueProvider)
         {
             return valueProvider.Phase is StateChangePhase.CHANGED;
+        }
+
+        public static bool Completed(this IStateProvideTransformBase valueProvider)
+        {
+            return valueProvider.Phase is StateChangePhase.COMPLETED;
         }
 
         public static bool Canceled(this IStateProvideTransformBase valueProvider)

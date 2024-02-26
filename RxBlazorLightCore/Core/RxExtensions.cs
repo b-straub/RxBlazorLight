@@ -1,5 +1,6 @@
 ﻿
 using System.Reactive;
+using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
@@ -17,9 +18,9 @@ namespace RxBlazorLightCore
             return State<S, TType>.Create(service, value, valueProviderFactory);
         }
 
-        public static IObservableStateProvider<Unit> CreateObservableStateProvider<S>(this S service) where S : RxBLService
+        public static IObservableStateProvider CreateObservableStateProvider<S>(this S service) where S : RxBLService
         {
-            return ObservableStateProvider<S, Unit>.Create(service);
+            return ObservableStateProvider<S>.Create(service);
         }
 
         public static IObservableStateProvider<T> CreateObservableStateProvider<S, T>(this S service, IState<T> state) where S : RxBLService

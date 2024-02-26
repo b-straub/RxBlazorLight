@@ -401,12 +401,6 @@ namespace RxBlazorLightCore
             OnNext(value);
         }
 
-        public static IObservableStateProvider<Unit> Create(S service)
-        {
-            var state = State<S, Unit>.Create(service, Unit.Default);
-            return new ObservableStateProvider<S, Unit>(service, state);
-        }
-
         public static IObservableStateProvider<T> Create(S service, IState<T> state)
         {
             return new ObservableStateProvider<S, T>(service, state);
@@ -422,7 +416,7 @@ namespace RxBlazorLightCore
             Provide(Unit.Default);
         }
 
-        public static new IObservableStateProvider Create(S service)
+        public static IObservableStateProvider Create(S service)
         {
             return new ObservableStateProvider<S>(service);
         }

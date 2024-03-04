@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Reactive.Linq;
 
 namespace RxBlazorLightCore
 {
@@ -52,7 +53,9 @@ namespace RxBlazorLightCore
         private static CascadingValueSource<T> CreateCascadingValueSource<T>(this T service, double sampleMS) where T : IRxBLService
         {
             var source = new CascadingValueSource<T>(service, false);
-            service.Subscribe(_ => source.NotifyChangedAsync(), sampleMS);
+            service
+                .Sample(TimeSpan.FromMilliseconds(sampleMS))
+                .Subscribe(_ => source.NotifyChangedAsync());
             return source;
         }
     }

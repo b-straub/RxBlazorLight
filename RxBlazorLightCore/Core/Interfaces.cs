@@ -19,14 +19,13 @@ namespace RxBlazorLightCore
         public void LeaveScope() { }
     }
 
-    public interface IRxBLService
+    public interface IRxBLService : IObservable<ServiceChangeReason>
     {
         public ValueTask OnContextReadyAsync();
         public bool Initialized { get; }
         public IEnumerable<ServiceException> Exceptions { get; }
         public void ResetExceptions();
         public IRxBLScope CreateScope();
-        public IDisposable Subscribe(Action<ServiceChangeReason> stateHasChanged, double sampleMS);
         public Guid ID { get; }
     }
 

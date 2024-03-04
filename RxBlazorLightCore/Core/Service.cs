@@ -43,11 +43,9 @@ namespace RxBlazorLightCore
             _changedSubject.OnNext((reason, id));
         }
 
-        public IDisposable Subscribe(Action<ServiceChangeReason> stateHasChanged, double sampleMS = 100)
+        public IDisposable Subscribe(IObserver<(ChangeReason Reason, Guid ID)> observer)
         {
-            return _changedObservable
-                .Sample(TimeSpan.FromMilliseconds(sampleMS))
-                .Subscribe(r => stateHasChanged(r));
+            return _changedObservable.Subscribe(observer);
         }
 
         public async ValueTask OnContextReadyAsync()
@@ -69,6 +67,11 @@ namespace RxBlazorLightCore
         public void ResetExceptions()
         {
             _serviceExceptions.Clear();
+        }
+
+        public IDisposable Subscribe(Action<(ChangeReason Reason, Guid ID)> stateHasChanged, double sampleMS)
+        {
+            throw new NotImplementedException();
         }
     }
 }

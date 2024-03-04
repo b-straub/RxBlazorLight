@@ -1,21 +1,23 @@
 ﻿
+using System;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
     public static class RxExtensions
     {
-        public static IState<TInterface, TType> CreateState<S, TInterface, TType>(this S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? valueProviderFactory = null)
+        public static IState<TInterface, TType> CreateState<S, TInterface, TType>(this S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? stateProviderTransformerFactory = null)
             where S : RxBLService
             where TType : class, TInterface
         {
-            return State<S, TInterface, TType>.Create(service, value, valueProviderFactory);
+            return State<S, TInterface, TType>.Create(service, value, stateProviderTransformerFactory);
         }
 
-        public static IState<TType> CreateState<S, TType>(this S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null) where S : RxBLService
+        public static IState<TType> CreateState<S, TType>(this S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? stateProviderTransformerFactory = null) where S : RxBLService
         {
-            return State<S, TType>.Create(service, value, valueProviderFactory);
+            return State<S, TType>.Create(service, value, stateProviderTransformerFactory);
         }
 
         public static IObservableStateProvider CreateObservableStateProvider<S>(this S service) where S : RxBLService
@@ -28,36 +30,44 @@ namespace RxBlazorLightCore
             return ObservableStateProvider<S, T>.Create(service, state);
         }
 
-        public static bool Changing(this IStateProvideTransformBase valueProvider)
+        public static IObservable<Unit> CreateStatePhaseObservable<S>(this S service, IStateProvideTransformBase stateProviderTransformer, 
+            StateChangePhase phase = StateChangePhase.CHANGED) where S : RxBLService
         {
-            return valueProvider.Phase is StateChangePhase.CHANGING;
+            return service
+                .Where(sc => sc.ID == stateProviderTransformer.ID && stateProviderTransformer.Phase == phase)
+                .Select(_ => Unit.Default);
         }
 
-        public static bool Changed(this IStateProvideTransformBase valueProvider)
+        public static bool Changing(this IStateProvideTransformBase stateProviderTransformer)
         {
-            return valueProvider.Phase is StateChangePhase.CHANGED;
+            return stateProviderTransformer.Phase is StateChangePhase.CHANGING;
         }
 
-        public static bool Completed(this IStateProvideTransformBase valueProvider)
+        public static bool Changed(this IStateProvideTransformBase stateProviderTransformer)
         {
-            return valueProvider.Phase is StateChangePhase.COMPLETED;
+            return stateProviderTransformer.Phase is StateChangePhase.CHANGED;
         }
 
-        public static bool Canceled(this IStateProvideTransformBase valueProvider)
+        public static bool Completed(this IStateProvideTransformBase stateProviderTransformer)
         {
-            return valueProvider.Phase is StateChangePhase.CANCELED;
+            return stateProviderTransformer.Phase is StateChangePhase.COMPLETED;
         }
 
-        public static bool Exception(this IStateProvideTransformBase valueProvider)
+        public static bool Canceled(this IStateProvideTransformBase stateProviderTransformer)
         {
-            return valueProvider.Phase is StateChangePhase.EXCEPTION;
+            return stateProviderTransformer.Phase is StateChangePhase.CANCELED;
         }
 
-        public static bool Done(this IStateProvideTransformBase valueProvider)
+        public static bool Exception(this IStateProvideTransformBase stateProviderTransformer)
         {
-            return valueProvider.Phase is StateChangePhase.CHANGED ||
-                valueProvider.Phase is StateChangePhase.CANCELED ||
-                valueProvider.Phase is StateChangePhase.EXCEPTION;
+            return stateProviderTransformer.Phase is StateChangePhase.EXCEPTION;
+        }
+
+        public static bool Done(this IStateProvideTransformBase stateProviderTransformer)
+        {
+            return stateProviderTransformer.Phase is StateChangePhase.CHANGED ||
+                stateProviderTransformer.Phase is StateChangePhase.CANCELED ||
+                stateProviderTransformer.Phase is StateChangePhase.EXCEPTION;
         }
 
         internal static void RunValueTask(this ValueTask valueTask)

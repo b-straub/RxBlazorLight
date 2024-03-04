@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using System.Reactive.Linq;
 
 namespace RxBlazorLightCore;
 
@@ -13,7 +14,9 @@ public class RxBLServiceChangeSubscriber<T> : ComponentBase where T : IRxBLServi
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Service.Subscribe(cr => ServiceStateHasChanged(cr.ID, cr.Reason), SampleRateMS);
+        Service
+            .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Subscribe(cr => ServiceStateHasChanged(cr.ID, cr.Reason));
     }
 
     protected virtual void ServiceStateHasChanged(Guid id, ChangeReason changeReason)

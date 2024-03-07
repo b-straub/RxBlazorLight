@@ -34,7 +34,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class ExceptionVP(TestService service, IState<int> state) : StateProvider<TestService, int>(service, state)
+        public class ExceptionSP(TestService service, IState<int> state) : StateProvider<TestService, int>(service, state)
         {
             protected override int ProvideValue()
             {
@@ -42,7 +42,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class IncrementVP(TestService service, IState<int> state) : StateProvider<TestService, int>(service, state)
+        public class IncrementSP(TestService service, IState<int> state) : StateProvider<TestService, int>(service, state)
         {
             public override bool CanProvide(int _)
             {
@@ -55,7 +55,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddSP(TestService service, IState<int> state) : StateTransformer<TestService, int, int>(service, state)
+        public class AddST(TestService service, IState<int> state) : StateTransformer<TestService, int, int>(service, state)
         {
             public override bool CanTransform(int _)
             {
@@ -67,7 +67,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class IncrementVPAsync(TestService service, IState<int> state) : StateProviderAsync<TestService, int>(service, state)
+        public class IncrementAsyncSP(TestService service, IState<int> state) : StateProviderAsync<TestService, int>(service, state)
         {
             protected override async Task<int> ProvideValueAsync(CancellationToken cancellationToken)
             {
@@ -81,7 +81,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class AddSPAsync(TestService service, IState<int> state) : StateTransformerAsync<TestService, int, int>(service, state)
+        public class AddAsyncST(TestService service, IState<int> state) : StateTransformerAsync<TestService, int, int>(service, state)
         {
             public override bool CanTransform(int _)
             {
@@ -97,7 +97,7 @@ namespace RxMudBlazorLightTestBase.Service
             public override bool LongRunning => true;
         }
 
-        public class AddRemoveAsyncSP(TestService service, IState<int> state) : StateTransformerAsync<TestService, int, int>(service, state)
+        public class AddRemoveAsyncST(TestService service, IState<int> state) : StateTransformerAsync<TestService, int, int>(service, state)
         {
             protected override async Task<int> TransformStateAsync(int value, CancellationToken cancellationToken)
             {
@@ -114,6 +114,20 @@ namespace RxMudBlazorLightTestBase.Service
 
             public override bool CanCancel => true;
             public override bool LongRunning => true;
+        }
+
+        public class PizzaChangeAsyncST(TestService service, IState<Pizza> state) : StateTransformerAsync<TestService, Pizza, Pizza>(service, state)
+        {
+            public override bool CanTransform(Pizza? pizza)
+            {
+                return pizza?.Name != "Diavolo";
+            }
+
+            protected override async Task<Pizza> TransformStateAsync(Pizza value, CancellationToken cancellationToken)
+            {
+                await Task.Delay(1000, cancellationToken);
+                return value;
+            }
         }
     }
 }

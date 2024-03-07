@@ -30,7 +30,7 @@ namespace RxBlazorLightCore
             return ObservableStateProvider<S, T>.Create(service, state);
         }
 
-        public static IObservable<Unit> CreateStatePhaseObservable<S>(this S service, IStateProvideTransformBase stateProviderTransformer, 
+        public static IObservable<Unit> GetStatePhaseObservable<S>(this S service, IStateProvideTransformBase stateProviderTransformer, 
             StateChangePhase phase = StateChangePhase.CHANGED) where S : RxBLService
         {
             return service

@@ -1,39 +1,37 @@
-﻿
-using System.Reactive;
+﻿using System.Reactive;
 using System.Reactive.Linq;
 
 namespace RxBlazorLightCore
 {
-
     public class State<S, TInterface, TType> : IState<TInterface, TType>
         where S : RxBLService
         where TType : TInterface
     {
         public TInterface? Value { get; private set; }
-        public bool LongRunning => _valueProvider.LongRunning;
-        public bool CanCancel => _valueProvider.CanCancel;
+        public bool LongRunning => _stateTransformer.LongRunning;
+        public bool CanCancel => _stateTransformer.CanCancel;
         public virtual bool CanTransform(TType? value)
         {
-            return _valueProvider.CanTransform(value);
+            return _stateTransformer.CanTransform(value);
         }
 
-        public StateChangePhase Phase => _valueProvider.Phase;
-        public Guid ID => _valueProvider.ID;
+        public StateChangePhase Phase => _stateTransformer.Phase;
+        public Guid ID => _stateTransformer.ID;
 
-        private readonly IStateTransformer<TType> _valueProvider;
+        private readonly IStateTransformer<TType> _stateTransformer;
 
-        protected internal State(S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? valueProviderFactory = null)
+        protected internal State(S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? stateTransformerFactory = null)
         {
             Value = value;
-            _valueProvider = valueProviderFactory is null ?
-                new StateTransformerDirect<S, TInterface, TType>(service, this) : valueProviderFactory(this);
+            _stateTransformer = stateTransformerFactory is null ?
+                new StateTransformerDirect<S, TInterface, TType>(service, this) : stateTransformerFactory(this);
         }
 
-        protected internal State(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null)
+        protected internal State(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? stateTransformerFactory = null)
         {
             Value = value;
-            _valueProvider = valueProviderFactory is null ?
-                new StateTransformerDirect<S, TInterface, TType>(service, this) : valueProviderFactory((IState<TType>)this);
+            _stateTransformer = stateTransformerFactory is null ?
+                new StateTransformerDirect<S, TInterface, TType>(service, this) : stateTransformerFactory((IState<TType>)this);
         }
 
         public bool HasValue()
@@ -48,32 +46,32 @@ namespace RxBlazorLightCore
 
         public void Transform(TType value)
         {
-            _valueProvider.Transform(value);
+            _stateTransformer.Transform(value);
         }
 
         public void Cancel()
         {
-            _valueProvider.Cancel();
+            _stateTransformer.Cancel();
         }
 
-        public static IState<TInterface, TType> Create(S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? valueProviderFactory = null)
+        public static IState<TInterface, TType> Create(S service, TType? value, Func<IState<TInterface, TType>, IStateTransformer<TType>>? stateTransformerFactory = null)
         {
-            return new State<S, TInterface, TType>(service, value, valueProviderFactory);
+            return new State<S, TInterface, TType>(service, value, stateTransformerFactory);
         }
     }
 
     public class State<S, TType> : State<S, TType, TType>, IState<TType>
         where S : RxBLService
     {
-        private State(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null) :
-            base(service, value, valueProviderFactory)
+        protected internal State(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? stateTransformerFactory = null) :
+            base(service, value, stateTransformerFactory)
         {
 
         }
 
-        public static IState<TType> Create(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? valueProviderFactory = null)
+        public static IState<TType> Create(S service, TType? value, Func<IState<TType>, IStateTransformer<TType>>? stateTransformerFactory = null)
         {
-            return new State<S, TType>(service, value, valueProviderFactory);
+            return new State<S, TType>(service, value, stateTransformerFactory);
         }
     }
 

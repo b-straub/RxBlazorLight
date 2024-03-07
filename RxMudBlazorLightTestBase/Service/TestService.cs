@@ -1,5 +1,4 @@
 ﻿using RxBlazorLightCore;
-using static RxMudBlazorLightTestBase.Service.TestService;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -71,9 +70,9 @@ namespace RxMudBlazorLightTestBase.Service
     {
         public class Scope(TestService service) : BaseScope(service)
         {
-            public IStateProvider<int> Increment = new IncrementVP(service, service.CountState);
+            public IStateProvider<int> Increment = new IncrementSP(service, service.CountState);
 
-            public IStateTransformer<int> AddAsync = new AddSPAsync(service, service.CountState);
+            public IStateTransformer<int> AddAsync = new AddAsyncST(service, service.CountState);
         }
 
         public IState<int> CountState { get; }
@@ -113,17 +112,17 @@ namespace RxMudBlazorLightTestBase.Service
 
             CountState = this.CreateState(0);
 
-            Increment = new IncrementVP(this, CountState);
-            AddAsync = new AddSPAsync(this, CountState);
+            Increment = new IncrementSP(this, CountState);
+            AddAsync = new AddAsyncST(this, CountState);
 
             EqualsTestSync = new EqualsTestSyncSP(this);
             EqualsTestAsync = new EqualsTestAsyncSP(this);
 
-            Exception = new ExceptionVP(this, CountState);
+            Exception = new ExceptionSP(this, CountState);
 
-            Add = new AddSP(this, CountState);
-            IncrementAsync = new IncrementVPAsync(this, CountState);
-            AddRemoveAsync = new AddRemoveAsyncSP(this, CountState);
+            Add = new AddST(this, CountState);
+            IncrementAsync = new IncrementAsyncSP(this, CountState);
+            AddRemoveAsync = new AddRemoveAsyncST(this, CountState);
 
             AddMode = this.CreateState(false, s => new AddModeVP(this, s));
             IncrementState = this.CreateState(10, s => new IncrementStateVP(this, s));

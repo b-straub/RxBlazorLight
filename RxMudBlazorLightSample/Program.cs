@@ -14,5 +14,6 @@ builder.Services.AddMudServices();
 
 builder.Services.AddRxBLService(sp => new TestService(sp));
 builder.Services.AddRxBLService<TimerService>();
+builder.Services.AddRxBLService<StateService>();
 
 await builder.Build().RunAsync();

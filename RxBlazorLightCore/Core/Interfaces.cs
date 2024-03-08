@@ -29,6 +29,34 @@ namespace RxBlazorLightCore
         public Guid ID { get; }
     }
 
+    public interface IRxObservableStateBase : IObservable<StateChangePhase>
+    {
+        public StateChangePhase Phase { get; }
+        public bool LongRunning { get; }
+        public bool CanCancel { get; }
+        public void Cancel();
+    }
+
+    public interface IRxObservableState : IRxObservableStateBase
+    {
+        public void Set();
+    }
+
+    public interface IRxObservableStateAsync : IRxObservableStateBase
+    {
+        public Task SetAsync();
+    }
+
+    public interface IRxBLService<S> : IRxBLService
+    {
+        public S State { get; }
+        public void SetState(Action<S> action);
+        public IRxObservableState CreateObservableState(Action<S> action);
+        public Task SetStateAsync(Func<S, Task> actionAsync, Action<StateChangePhase>? phaseCB);
+        public IRxObservableStateAsync CreateObservableStateAsync(Func<S, Task> actionAsync);
+        public Task SetStateAsync(Func<S, CancellationToken, Task> actionAsync, CancellationToken cancellationToken, Action<StateChangePhase>? phaseCB);
+    }
+
 
     public interface IState<TInterface, TType> : IStateTransformer<TType> where TType : TInterface
     {

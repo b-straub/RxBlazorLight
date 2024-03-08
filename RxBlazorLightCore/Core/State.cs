@@ -237,7 +237,6 @@ namespace RxBlazorLightCore
             Phase = phase;
             Service.StateHasChanged(ID, Phase is StateChangePhase.EXCEPTION ? ChangeReason.EXCEPTION : ChangeReason.STATE, exception);
         }
-
     }
 
     public class StateTransformerDirect<S, TInterface, TType>(S service, IState<TInterface, TType> state) :

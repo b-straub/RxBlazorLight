@@ -1,0 +1,12 @@
+﻿@inherits RxBLServiceChangeSubscriberS<StateServiceState>
+
+<PageTitle>SimpleState</PageTitle>
+
+<MudStack>
+    <MudText Class="mb-4">Current count: @Service.State.Counter</MudText>
+    <MudSlider @bind-Value:get=@Service.State.Counter @bind-Value:set=@(v => Service.SetState(s => s.Counter = v)) />
+    <MudStack Row=@true AlignItems=@AlignItems.Center>
+        <MudStateButton Service=@Service Disabled=@Service.State.CanAdd Action=StateServiceState.Increment>Increment</MudStateButton>
+        <MudStateButton Service=@Service Disabled=@Service.State.CanAdd ActionAsync=StateServiceState.AddAsync(10)>Add</MudStateButton>
+    </MudStack>
+</MudStack>

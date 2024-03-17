@@ -1,8 +1,8 @@
 ﻿global using ServiceChangeReason = (RxBlazorLightCore.ChangeReason Reason, System.Guid ID);
 global using ServiceException = (System.Exception Exception, System.Guid ID);
 
-using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RxBlazorLightCore
 {
@@ -13,7 +13,7 @@ namespace RxBlazorLightCore
         STATE
     }
 
-    public interface IRxBLScope
+    public interface IRxBLScope 
     {
         public void EnterScope() { }
         public void LeaveScope() { }
@@ -25,111 +25,66 @@ namespace RxBlazorLightCore
         public bool Initialized { get; }
         public IEnumerable<ServiceException> Exceptions { get; }
         public void ResetExceptions();
-        public IRxBLScope CreateScope();
         public Guid ID { get; }
     }
 
-    public interface IRxObservableStateBase : IObservable<StateChangePhase>
+    public enum StatePhase
     {
-        public StateChangePhase Phase { get; }
-        public bool LongRunning { get; }
-        public bool CanCancel { get; }
-        public void Cancel();
-    }
-
-    public interface IRxObservableState : IRxObservableStateBase
-    {
-        public void Set();
-    }
-
-    public interface IRxObservableStateAsync : IRxObservableStateBase
-    {
-        public Task SetAsync();
-    }
-
-    public interface IRxBLService<S> : IRxBLService
-    {
-        public S State { get; }
-        public void SetState(Action<S> action);
-        public IRxObservableState CreateObservableState(Action<S> action);
-        public Task SetStateAsync(Func<S, Task> actionAsync, Action<StateChangePhase>? phaseCB);
-        public IRxObservableStateAsync CreateObservableStateAsync(Func<S, Task> actionAsync);
-        public Task SetStateAsync(Func<S, CancellationToken, Task> actionAsync, CancellationToken cancellationToken, Action<StateChangePhase>? phaseCB);
-    }
-
-
-    public interface IState<TInterface, TType> : IStateTransformer<TType> where TType : TInterface
-    {
-        public TInterface? Value { get; }
-
-        [MemberNotNullWhen(true, nameof(Value))]
-        public bool HasValue();
-    }
-
-    public interface IState<TType> : IState<TType, TType>;
-
-    public interface IState : IState<Unit, Unit>
-    {
-        public static Unit Default { get; } = Unit.Default;
-    }
-
-    public interface IStateGroup<TType> : IState<TType>
-    {
-        public TType[] GetItems();
-        public bool IsItemDisabled(int index);
-    }
-
-    public interface IStateGroup<TInterface, TType> : IState<TInterface, TType>
-        where TType : TInterface
-    {
-        public TInterface[] GetItems();
-        public bool IsItemDisabled(int index);
-    }
-
-    public enum StateChangePhase
-    {
-        NONE,
         CHANGING,
         CHANGED,
-        COMPLETED,
         CANCELED,
         EXCEPTION
     }
 
-    public interface IStateProvideTransformBase
+    public interface IStateBase<T> : IObservable<StatePhase>
     {
-        public StateChangePhase Phase { get; }
-        public bool LongRunning { get; }
-        public bool CanCancel { get; }
-        public void Cancel();
+        public T Value { get; set; }
+
+        [MemberNotNullWhen(true, nameof(Value))]
+        public bool HasValue();
+        public void NotifyChanging();
+        public StatePhase Phase { get; }
         public Guid ID { get; }
     }
 
-    public interface IStateTransformer<T> : IStateProvideTransformBase
+    public interface IState<T> : IStateBase<T>
     {
-        public void Transform(T value);
+        public bool CanChange(Func<IState<T>, bool> canChangeDelegate);
 
-        public bool CanTransform(T? value);
+        public void Change(Action<IState<T>> changeDelegate, bool notify = true);
     }
 
-    public interface IObservableStateProvider<T> : IStateProvideTransformBase, IObserver<T>
+    public interface IStateAsync<T> : IStateBase<T>
     {
-        void Provide(T value);
+        public bool CanChange(Func<IStateAsync<T>, bool> canChangeDelegate);
+        public Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notify = true);
+        public Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notify = true);
+        public bool CanCancel { get; }
+        public void Cancel();
     }
 
-    public interface IObservableStateProvider : IObservableStateProvider<Unit>
+    public interface IState: IState<Unit>
     {
-        void Provide();
+        public bool CanChange(Func<IState, bool> canChangeDelegate);
+        public void Change(Action<IRxBLService> changeDelegate, bool notify = true);
     }
 
-    public interface IStateProvider<T> : IStateProvideTransformBase
+    public interface IStateAsync : IStateAsync<Unit>
     {
-        public void Provide();
-
-        public bool CanProvide(T? value);
+        public bool CanChange(Func<IStateAsync, bool> canChangeDelegate);
+        public Task ChangeAsync(Func<IRxBLService, Task> changeDelegateAsync, bool notify = true);
+        public Task ChangeAsync(Func<IRxBLService, CancellationToken, Task> changeDelegateAsync, bool notify = true);
     }
 
-    public interface IStateProvider : IStateProvider<Unit>
+    public interface IStateGroup<T> : IState<T>
     {
+        public T[] Items { get; }
+        public bool ItemDisabled(int index);
+    }
+
+    public interface IStateGroupAsync<T> : IStateAsync<T>
+    {
+        public T[] Items { get; }
+        public bool ItemDisabled(int index);
     }
 }

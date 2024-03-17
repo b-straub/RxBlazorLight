@@ -5,19 +5,16 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IStateProvider<T> StateProvider { get; init; }
+    public required IState<T> State { get; init; }
+
+    [Parameter, EditorRequired]
+    public required Action<IState<T>> ChangeState { get; init; }
+
+    [Parameter]
+    public Func<IState<T>, bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
-
-    [Parameter]
-    public string? CancelText { get; set; }
-
-    [Parameter]
-    public Color? CancelColor { get; set; }
-
-    [Parameter]
-    public T? Context { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonRx<T>? _buttonRx;
@@ -25,7 +22,7 @@
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, CancelText, CancelColor, Context);
+        _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, false);
         _buttonColor = Color;
 
         base.OnInitialized();
@@ -34,7 +31,7 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(StateProvider);
+        _buttonRx.SetParameter(State, ChangeState, CanChange);
 
         ChildContent = _buttonRx.ChildContent;
         Color = _buttonRx.Color;

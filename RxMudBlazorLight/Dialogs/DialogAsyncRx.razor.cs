@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RxBlazorLightCore;
-using RxMudBlazorLight.Buttons;
+using RxMudBlazorLight.ButtonBase;
 
 namespace RxMudBlazorLight.Dialogs
 {
@@ -23,7 +23,16 @@ namespace RxMudBlazorLight.Dialogs
         public bool SuccessOnConfirm { get; set; } = false;
 
         [Parameter, EditorRequired]
-        public required IStateProvider<TParam> StateProvider { get; init; }
+        public required IStateAsync<TParam> State { get; init; }
+
+        [Parameter]
+        public Func<IStateAsync<TParam>, Task>? ChangeStateAsync { get; init; }
+
+        [Parameter]
+        public Func<IStateAsync<TParam>, CancellationToken, Task>? ChangeStateAsyncCancel { get; init; }
+
+        [Parameter]
+        public Func<IStateBase<TParam>, bool>? CanChange { get; init; }
 
         [Parameter]
         public string? CancelText { get; set; }
@@ -32,23 +41,54 @@ namespace RxMudBlazorLight.Dialogs
         public Color? CancelColor { get; set; }
 
         [Parameter]
-        public TParam? Context { get; set; }
+        public bool HasProgress { get; set; } = true;
 
-        private MudButtonRx<TParam>? _buttonRef;
+        private MudButtonAsyncBaseRx<TParam>? _buttonRef;
         private IDisposable? _buttonDisposable;
         private bool _canceled = false;
 
         public static async Task<bool> Show(IDialogService dialogService,
-           IStateProvider<TParam> stateProvider, string title,
-           string message, string confirmButton, string cancelButton, bool successOnConfirm,
-           string? cancelText = null, Color? cancelColor = null, TParam? context = default)
+           IStateAsync<TParam> state, Func<IStateAsync<TParam>, Task>? changeStateAsync, string title,
+           string message, string confirmButton, string cancelButton, bool successOnConfirm, bool hasProgress = true,
+           Func<IStateAsync<TParam>, bool>? canChange = null)
         {
             var parameters = new DialogParameters
             {
-                ["StateProvider"] = stateProvider,
+                ["State"] = state,
+                ["ChangeStateAsync"] = changeStateAsync,
+                ["CanChange"] = canChange,
+                ["HasProgress"] = hasProgress,
+                ["Message"] = message,
+                ["ConfirmButton"] = confirmButton,
+                ["CancelButton"] = cancelButton,
+                ["SuccessOnConfirm"] = successOnConfirm
+            };
+
+            var dialog = dialogService.Show<DialogAsyncRx<TService, TParam>>(title, parameters);
+
+            var res = await dialog.Result;
+
+            if (res.Canceled)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static async Task<bool> Show(IDialogService dialogService,
+          IStateAsync<TParam> state, Func<IStateAsync<TParam>, CancellationToken, Task>? changeStateAsyncCancel, string title,
+          string message, string confirmButton, string cancelButton, bool successOnConfirm, string cancelText, Color? cancelColor = null, bool hasProgress = true,
+          Func<IStateAsync<TParam>, bool>? canChange = null)
+        {
+            var parameters = new DialogParameters
+            {
+                ["State"] = state,
+                ["ChangeStateAsyncCancel"] = changeStateAsyncCancel,
+                ["CanChange"] = canChange,
                 ["CancelColor"] = cancelColor,
                 ["CancelText"] = cancelText,
-                ["Context"] = context,
+                ["HasProgress"] = hasProgress,
                 ["Message"] = message,
                 ["ConfirmButton"] = confirmButton,
                 ["CancelButton"] = cancelButton,
@@ -69,19 +109,19 @@ namespace RxMudBlazorLight.Dialogs
 
         private bool CanNotCancel()
         {
-            if (_buttonRef?.StateProvider is null)
+            if (_buttonRef?.State is null)
             {
                 return false;
             }
 
-            return _buttonRef.StateProvider.Changing();
+            return _buttonRef.State.Changing();
         }
 
         private void Cancel()
         {
-            ArgumentNullException.ThrowIfNull(_buttonRef?.StateProvider);
+            ArgumentNullException.ThrowIfNull(_buttonRef?.State);
 
-            if (!_buttonRef.StateProvider.Changing())
+            if (!_buttonRef.State.Changing())
             {
                 MudDialog?.Cancel();
             }
@@ -89,11 +129,11 @@ namespace RxMudBlazorLight.Dialogs
 
         protected override void ServiceStateHasChanged(Guid id, ChangeReason changeReason)
         {
-            if (changeReason is ChangeReason.STATE && _buttonRef is not null && id == _buttonRef.StateProvider.ID)
+            if (changeReason is ChangeReason.STATE && _buttonRef is not null && id == _buttonRef.State.ID)
             {
-                if (_buttonRef.StateProvider.Done())
+                if (_buttonRef.State.Done())
                 {
-                    _canceled = StateProvider.Phase is StateChangePhase.CANCELED;
+                    _canceled = State.Canceled();
                     if (!_canceled)
                     {
                         _buttonDisposable?.Dispose();

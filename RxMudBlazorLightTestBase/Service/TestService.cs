@@ -1,4 +1,6 @@
-﻿using RxBlazorLightCore;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RxBlazorLightCore;
+using System.Reflection.Metadata.Ecma335;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -43,7 +45,8 @@ namespace RxMudBlazorLightTestBase.Service
 
     public partial class TestServiceBase : RxBLService
     {
-        public IState<StateInfo> StateInfoState { get; }
+        public IState ServiceState { get; }
+        public StateInfo? StateInfo { get; protected set; }
 
         public class BaseScope(TestServiceBase service) : IRxBLScope
         {
@@ -62,7 +65,7 @@ namespace RxMudBlazorLightTestBase.Service
         {
             Console.WriteLine("TestService Create");
 
-            StateInfoState = this.CreateState((StateInfo?)null);
+            ServiceState = this.CreateState();
         }
     }
 
@@ -70,77 +73,85 @@ namespace RxMudBlazorLightTestBase.Service
     {
         public class Scope(TestService service) : BaseScope(service)
         {
-            public IStateProvider<int> Increment = new IncrementSP(service, service.CountState);
+            public IState<int> CountState = service.CreateState(0);
 
-            public IStateTransformer<int> AddAsync = new AddAsyncST(service, service.CountState);
+            public IStateAsync<int> CountStateAsync = service.CreateStateAsync(0);
+        }
+
+        public class ColorsScope(TestService service) : IRxBLScope
+        {
+            private static readonly TestColor[] Colors =
+            [
+                new(ColorEnum.RED),
+                new(ColorEnum.GREEN),
+                new(ColorEnum.BLUE)
+            ];
+
+            public IStateGroupAsync<TestColor> TestColors = service.CreateStateGroupAsync(Colors, Colors[0]);
+
+            public static Func<IStateAsync<TestColor>, TestColor, Task> ChangeTestColorAsync(int context)
+            {
+                return async (s, p) =>
+                {
+                    var newContext = context;
+                    await Task.Delay(1000);
+                    s.Value = p;
+                };
+            }
+
+            public static Func<IStateAsync<TestColor>, bool> CanChangeTestColor(int context)
+            {
+                return s =>
+                {
+                    return context != 1;
+                };
+            }
         }
 
         public IState<int> CountState { get; }
-
-        public IStateProvider<int> Exception { get; }
-
-        public IStateProvider<int> Increment { get; }
-        public IStateTransformer<int> AddAsync { get; }
-
-        public IStateProvider EqualsTestSync { get; }
-        public IStateProvider EqualsTestAsync { get; }
-        public IStateTransformer<int> Add { get; }
-        public IStateProvider<int> IncrementAsync { get; }
-  
-        public IStateTransformer<int> AddRemoveAsync { get; }
+        public IStateAsync<int> CountStateAsync { get; }
 
         public IState<bool> AddMode { get; }
 
-        public IState<int> IncrementState { get; }
-        public IStateTransformer<int> IncrementStateAdd { get; }
+        public IState<int> NumericState { get; }
 
         public IState<bool> CanIncrementCheck { get; }
         public IState<string> TextValue { get; }
         public IState<int> RatingValue { get; }
 
         private readonly IStateGroup<Pizza> _pizzaState1;
-        private readonly IStateGroup<Pizza> _pizzaState2;
+        private readonly IStateGroupAsync<Pizza> _pizzaState2;
 
         private readonly IStateGroup<TestColor> _radioTestExtended;
         private bool _canIncrement = false;
-        private int _equalTestValue = 0;
-        private int _equalTestAsyncValue = 0;
 
         public TestService(IServiceProvider sp) : base(sp)
         {
             Console.WriteLine("TestService Create");
 
             CountState = this.CreateState(0);
-
-            Increment = new IncrementSP(this, CountState);
-            AddAsync = new AddAsyncST(this, CountState);
-
-            EqualsTestSync = new EqualsTestSyncSP(this);
-            EqualsTestAsync = new EqualsTestAsyncSP(this);
-
-            Exception = new ExceptionSP(this, CountState);
-
-            Add = new AddST(this, CountState);
-            IncrementAsync = new IncrementAsyncSP(this, CountState);
-            AddRemoveAsync = new AddRemoveAsyncST(this, CountState);
-
-            AddMode = this.CreateState(false, s => new AddModeVP(this, s));
-            IncrementState = this.CreateState(10, s => new IncrementStateVP(this, s));
-            IncrementStateAdd = new IncrementStateAddVP(this, IncrementState);
+            CountStateAsync = this.CreateStateAsync(0);
 
             CanIncrementCheck = this.CreateState(false);
+            AddMode = this.CreateState(false);
+            NumericState = this.CreateState(10);
+
             TextValue = this.CreateState("No Text");
-            RatingValue = this.CreateState(0, s => new RatingValueVP(this, s));
+            RatingValue = this.CreateState(0);
 
-            _pizzaState1 = new PizzaSG(this, PizzaSG.Pizzas[0]);
-            _pizzaState2 = new PizzaSG(this, PizzaSG.Pizzas[2]);
-
-            _radioTestExtended = new ColorSG(this);
+            _pizzaState1 = this.CreateStateGroup(Pizzas, Pizzas[0]);
+            _pizzaState2 = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);
+            _radioTestExtended = this.CreateStateGroup(Colors, Colors[0], ColorDisabled);
         }
 
-        public override IRxBLScope CreateScope()
+        public IRxBLScope CreateScope()
         {
             return new Scope(this);
+        }
+
+        public IRxBLScope CreateColorsScope()
+        {
+            return new ColorsScope(this);
         }
 
         protected override async ValueTask ContextReadyAsync()
@@ -148,14 +159,14 @@ namespace RxMudBlazorLightTestBase.Service
             Console.WriteLine("TestService OnContextInitialized");
             await Task.Delay(3000);
             _canIncrement = true;
-            StateInfoState.Transform(new StateInfo("Initialize"));
+            ServiceState.Change(s => StateInfo = new StateInfo("Initialized"));
         }
 
         public void ChangeState(string state)
-        { 
-            if (StateInfoState.HasValue())
+        {
+            if (StateInfo is not null)
             {
-                StateInfoState.Transform(StateInfoState.Value with { State = state });
+                ServiceState.Change(s => StateInfo = StateInfo with { State = state });
             }
         }
 
@@ -164,7 +175,7 @@ namespace RxMudBlazorLightTestBase.Service
             return _pizzaState1;
         }
 
-        public IStateGroup<Pizza> GetPizzas2()
+        public IStateGroupAsync<Pizza> GetPizzas2()
         {
             return _pizzaState2;
         }

@@ -1,6 +1,11 @@
 ﻿
 <RxBLServiceContext />
 
-<RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService>
+<RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
     <TestPlayground></TestPlayground>
 </RxBLServiceScope>
+
+@code {
+    [CascadingParameter]
+    public required TimerService TimerService { get; init; }
+}

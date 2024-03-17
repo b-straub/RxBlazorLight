@@ -1,9 +1,19 @@
-﻿ <MudStack Row=@true AlignItems=@AlignItems.Center>
-    <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" StateProvider=@Service.Increment />
-    <MudIconButtonPRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" ValueFactoryAsync=@DVFA.Factory(5) StateTransformer=@Service.Add />
-    <MudIconButtonRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" StateProvider=@Service.IncrementAsync />
-    <MudIconButtonPRx Color="Color.Secondary" ValueFactoryAsync=@DVFA.Factory(10) Variant=@Variant.Filled Icon="@Icons.Material.Filled.Add" StateTransformer=@Scope.AddAsync />
-    <MudIconButtonPRx Color="Color.Secondary" ValueFactoryAsync=@DVFA.Factory(10) Icon="@Icons.Material.Filled.Add" StateTransformer=@Scope.AddAsync />
+﻿<MudStack Row=@true AlignItems=@AlignItems.Center>
+    <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" State=@Service.CountState ChangeState=@TestService.IncrementCounter />
+    <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" State=@Service.CountState ChangeState=@(TestService.AddToCounter(5)) />
+    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync CanChange=@(TestService.IntStateCanChangeLowerBound(4)) />
+</MudStack>
+
+<MudStack Row=@true>
+    <MudStack>
+        <MudText Class="mb-4">Current count: @Scope.CountState.Value</MudText>
+        <MudText Class="mb-4">Current count Async: @Scope.CountStateAsync.Value</MudText>
+    </MudStack>
+
+    <MudStack Row=@true AlignItems=@AlignItems.Center>
+        <MudIconButtonAsyncRx Color="Color.Secondary" Variant=@Variant.Filled Icon="@Icons.Material.Filled.Add" State=@Scope.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync />
+        <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add" State=@Scope.CountStateAsync ChangeStateAsync=@(TestService.AddToCounterAsync(5)) />
+    </MudStack>
 </MudStack>
 
 @code {

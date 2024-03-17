@@ -1,0 +1,31 @@
+﻿@inherits MudIconButtonAsyncBaseRx<T>
+@typeparam T
+
+<MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetBadgeIcon(State, IconVariant, true, ForceBadge) != string.Empty)
+          Icon=@_buttonRx!.GetBadgeIcon(State, IconVariant, true, ForceBadge) Color=@Color Overlap="true" Bordered="true">
+    @RenderBase()
+</MudBadge>
+
+@code {
+    [Parameter, EditorRequired]
+    public required Func<IStateAsync<T>, CancellationToken, Task> ChangeStateAsync { get; init; }
+
+    [Parameter]
+    public Color? CancelColor { get; set; }
+
+    [Parameter]
+    public bool HasProgress { get; set; } = true;
+
+    [Parameter]
+    public bool ForceBadge { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        _changeStateAsyncCancel = ChangeStateAsync;
+        _cancelColor = CancelColor;
+        _hasProgress = HasProgress;
+        _forceBadge = ForceBadge;
+
+        base.OnInitialized();
+    }
+}

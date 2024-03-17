@@ -12,39 +12,58 @@ namespace RxMudBlazorLight.ButtonBase
         public EventCallback<TouchEventArgs>? OnTouch { get; private set; }
 
         private readonly Func<Task<bool>>? _confirmExecutionAsync;
-        private readonly T? _context;
 
-        private ButtonRx(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor, 
-            RenderFragment? buttonChildContent, string? cancelText, Color? cancelColor, T? context) :
-            base(type, buttonColor, buttonChildContent, cancelText, cancelColor)
+        private ButtonRx(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
+            RenderFragment? buttonChildContent, bool hasProgress, string? cancelText, Color? cancelColor) :
+            base(type, buttonColor, buttonChildContent, hasProgress, cancelText, cancelColor)
         {
             _confirmExecutionAsync = confirmExecutionAsync;
-            _context = context;
         }
 
         public static ButtonRx<T> Create(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
-            RenderFragment? buttonChildContent = null, string? cancelText = null, Color? cancelColor = null, T? context = default)
+            RenderFragment? buttonChildContent = null, bool hasProgress = false, string? cancelText = null, Color? cancelColor = null)
         {
-            return new ButtonRx<T>(type, confirmExecutionAsync, buttonColor, buttonChildContent, cancelText, cancelColor, context);
+            return new ButtonRx<T>(type, confirmExecutionAsync, buttonColor, buttonChildContent, hasProgress, cancelText, cancelColor);
         }
 
         [MemberNotNull(nameof(OnClick))]
         [MemberNotNull(nameof(OnTouch))]
-        public void SetParameter(IStateProvider<T> stateProvider)
+        public void SetParameter(IState<T> state, Action<IState<T>> changeState, Func<IState<T>, bool>? canChange)
         {
-            VerifyCancelArguments(stateProvider.CanCancel);
+            VerifyButtonParameters();
+            
+            Color = _buttonColor;
+            if (_buttonType is not MBButtonType.FAB)
+            {
+                ChildContent = state.Changing() && _hasProgress ? RenderProgress() : _buttonChildContent;
+            }
 
-            if (stateProvider.Changing() && stateProvider.CanCancel)
+            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteState(state, changeState));
+            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteState(state, changeState));
+
+            Disabled = canChange is not null && !state.CanChange(canChange);
+        }
+
+        [MemberNotNull(nameof(OnClick))]
+        [MemberNotNull(nameof(OnTouch))]
+        public void SetParameter(IStateAsync<T> state,
+            Func<IStateAsync<T>, Task>? changeStateAsync,
+            Func<IStateAsync<T>, CancellationToken, Task>? changeStateAsyncCancel,
+            Func<IStateAsync<T>, bool>? canChange, bool deferredNotification)
+        {
+            VerifyButtonParametersAsync(changeStateAsync, changeStateAsyncCancel);
+
+            if (state.Changing() && state.CanCancel && changeStateAsyncCancel is not null)
             {
                 Color = _cancelColor ?? Color.Warning;
-;
+
                 if (_buttonType is not MBButtonType.FAB)
                 {
                     ChildContent = RenderCancel();
                 }
 
-                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => stateProvider.Cancel());
-                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => stateProvider.Cancel());
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => state.Cancel());
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => state.Cancel());
 
                 Disabled = false;
             }
@@ -53,21 +72,40 @@ namespace RxMudBlazorLight.ButtonBase
                 Color = _buttonColor;
                 if (_buttonType is not MBButtonType.FAB)
                 {
-                    ChildContent = stateProvider.Changing() && stateProvider.LongRunning ? RenderProgress() : _buttonChildContent;
+                    ChildContent = state.Changing() && _hasProgress ? RenderProgress() : _buttonChildContent;
                 }
 
-                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteStateProvider(stateProvider));
-                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteStateProvider(stateProvider));
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => 
+                        ExecuteStateAsync(state, changeStateAsync, changeStateAsyncCancel, deferredNotification));
+                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () =>
+                        ExecuteStateAsync(state, changeStateAsync, changeStateAsyncCancel, deferredNotification));
 
-                Disabled = !stateProvider.CanProvide(_context);
+                Disabled = canChange is not null && !state.CanChange(canChange);
             }
         }
 
-        private async Task ExecuteStateProvider(IStateProvider<T> stateProvider)
+        private async Task ExecuteState(IState<T> state, Action<IState<T>> changeState)
         {
             if (_confirmExecutionAsync is null || await _confirmExecutionAsync())
             {
-                stateProvider.Provide();
+                state.Change(changeState);
+            }
+        }
+
+        private async Task ExecuteStateAsync(IStateAsync<T> state, Func<IStateAsync<T>, Task>? changeStateAsync,
+            Func<IStateAsync<T>, CancellationToken, Task>? changeStateAsyncCancel, bool deferredNotification)
+        {
+            if (_confirmExecutionAsync is null || await _confirmExecutionAsync())
+            { 
+                if (changeStateAsync is not null)
+                {   
+                    await state.ChangeAsync(changeStateAsync, !deferredNotification);
+                }
+
+                if (changeStateAsyncCancel is not null)
+                {
+                    await state.ChangeAsync(changeStateAsyncCancel, !deferredNotification);
+                }
             }
         }
     }

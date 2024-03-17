@@ -1,44 +1,54 @@
 ﻿<PageTitle>Debug</PageTitle>
 
-<MudStack>
-    <MudText Class="mb-4">Current count: @Service.CountState.Value</MudText>
+<MudStack AlignItems=@AlignItems.Start>
+    <MudText Class="mb-4">Current count Async: @Service.CountStateAsync.Value</MudText>
 
-    <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateProvider=@Service.Increment>Increment</MudButtonRx>
-        <MudButtonPRx Color="Color.Secondary" Variant="Variant.Filled" StateTransformer=@Service.AddAsync ValueFactoryAsync=@DoPrepareAddAsync CancelColor=Color.Error CancelText="Cancel Add">
-            AddAsync 10
-        </MudButtonPRx>
-        <MudFabPRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add" StateTransformer=@Service.AddAsync ValueFactoryAsync=@DoPrepareAddAsync Label="AddAsync 10" />
-    </MudStack>
+    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
+                          State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync
+                          HasProgress=@false />
+
+    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
+                          State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync
+                          HasProgress=@true />
+
+    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
+                          State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync
+                          HasProgress=@true ForceBadge=@true />
+
+    <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
+                                State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10)
+                                CancelColor=Color.Error HasProgress=@false />
+
+    <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
+                                State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10)
+                                CancelColor=Color.Error HasProgress=@false ForceBadge=@true />
+
+    <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
+                                State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10)
+                                CancelColor=Color.Error HasProgress=@true />
+
+    <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
+                                State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10)
+                                CancelColor=Color.Error HasProgress=@true ForceBadge=@true />
+
+    <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
+                   State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync />
+
+    <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
+                   State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync HasProgress=@true />
+
+    <MudFabAsyncCancelRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
+                         State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10) />
+
+    <MudFabAsyncCancelRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
+                         State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10) HasProgress=@false />
+
+    <MudBadge Content="100" Color="Color.Primary" Overlap="true" Class="mx-6 my-4">
+        <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
+    </MudBadge>
 </MudStack>
 
 @code {
     [CascadingParameter]
     public required TestService Service { get; init; }
-
-    [Inject]
-    public required IDialogService DialogService { get; init; }
-
-    private async Task DoPrepareAddAsync(IStateTransformer<int> st)
-    {
-        ArgumentNullException.ThrowIfNull(DialogService);
-        var value = 10;
-
-        var parameters = new DialogParameters
-            {
-                ["Message"] = $"Add {value} to counter?",
-                ["ConfirmButton"] = "Add"
-            };
-
-        var dialog = DialogService.Show<ConfirmDialog>("Counter", parameters);
-
-        var res = await dialog.Result;
-
-        if (res.Canceled)
-        {
-            return;
-        }
-
-        st.Transform(value);
-    }
 }

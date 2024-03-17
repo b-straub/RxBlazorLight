@@ -4,34 +4,38 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IState<int> RxState { get; init; }
+    public required IState<int> State { get; init; }
+
+    [Parameter]
+    public Func<IStateBase<int>, bool>? CanChange { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        if (RxState.HasValue())
+        if (State.HasValue())
         {
-            SelectedValue = RxState.Value;
+            SelectedValue = State.Value;
         }
         SelectedValueChanged = EventCallback.Factory.Create<int>(this, v =>
         {
-            if (!v.Equals(RxState.Value))
+            if (!v.Equals(State.Value))
             {
-                RxState.Transform(v);
+                State.Change(s => s.Value = v);
             }
         });
     }
 
     protected override void OnParametersSet()
     {
-        if (RxState.Done() && RxState.HasValue())
+        if (State.Done() && State.HasValue())
         {
-            SelectedValue = RxState.Value;
+            SelectedValue = State.Value;
         }
 
-        Disabled = !RxState.CanTransform(RxState.Value) || RxState.Phase is StateChangePhase.CHANGING;
+        Disabled = (CanChange is not null && !State.CanChange(CanChange)) || State.Changing();
+
         base.OnParametersSet();
     }
 }

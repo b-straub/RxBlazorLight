@@ -5,161 +5,146 @@ namespace RxBlazorLightCoreTestBase
 {
     public partial class ServiceFixture
     {
-        public class IncremementVP(ServiceFixture service, IState<int> state) : StateProviderAsync<ServiceFixture, int>(service, state)
+        public static Func<IStateBase<int>, bool> CanChangeNotZero => s => s.Value > 0;
+        public static Func<IStateBase<int>, bool> CanChangeBelow(int upperBound) => s => s.Value < upperBound;
+
+        public static Action<IState<int>> Increment => s => s.Value++;
+
+        public static Action<IState<int>> Add(int value)
         {
-            protected override Task<int> ProvideValueAsync(CancellationToken cancellationToken)
-            {
-                return Task.FromResult(State.Value + 1);
-            }
+            return s => s.Value += value;
         }
 
-        public class AddVP(ServiceFixture service, IState<int> state) : StateTransformerAsync<ServiceFixture, int, int>(service, state)
+        public static Func<IStateAsync<int>, Task> AddAsync(int value)
         {
-            protected override async Task<int> TransformStateAsync(int value, CancellationToken cancellationToken)
+            return async s =>
             {
-                if (State.Value > 0)
+                if (s.Value > 0)
                 {
-                    throw new InvalidOperationException("AddVP");
+                    throw new InvalidOperationException("AddAsync");
                 }
 
-                await Task.Delay(5, cancellationToken);
-                return State.Value + value;
-            }
+                await Task.Delay(1000);
+                s.Value += value;
+            };
         }
 
-        public class AsyncIntX(ServiceFixture service, IState<int> state) : StateTransformerAsync<ServiceFixture, int, int>(service, state)
+        public static Func<IStateAsync<int>, CancellationToken, Task> MultiplyAsync(int value)
         {
-            protected override async Task<int> TransformStateAsync(int value, CancellationToken cancellationToken)
+            return async (s, ct) =>
             {
-                await Task.Delay(1000, cancellationToken);
-                return State.Value * value;
-            }
+                await Task.Delay(1000, ct);
+                s.Value *= value;
+            };
         }
 
-        public class TransformTestSyncST(ServiceFixture service) : StateTransformer<ServiceFixture, string>(service)
-        {
-            public override bool CanCancel => true;
+        public static readonly Action<IRxBLService> SetTestStringDirect = s => ((ServiceFixture)s).Test = "Sync";
 
-            protected override void TransformState(string value)
-            {
-                Service.Test = value;
-            }
+        public static readonly Func<IRxBLService, Task> SetTestStringAsyncDirect = async s =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            ((ServiceFixture)s).Test = "Async";
+        };
+
+        public static Action<IRxBLService> SetTestString(string value)
+        {
+            return s => ((ServiceFixture)s).Test = value;
         }
 
-        public class TransformTestAsyncST(ServiceFixture service) : StateTransformerAsync<ServiceFixture, string>(service)
+        public static Func<IRxBLService, Task> SetTestStringAsync(string value)
         {
-            public override bool CanCancel => true;
-
-            protected override async Task TransformStateAsync(string value, CancellationToken cancellationToken)
+            return async s =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-                Service.Test = value;
-            }
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                ((ServiceFixture)s).Test = value;
+            };
         }
 
-        public class ProvideTestSyncSP(ServiceFixture service) : StateProvider<ServiceFixture>(service)
+        public static Func<IRxBLService, CancellationToken, Task> SetTestStringAsyncLR(string value)
         {
-            protected override void ProvideState()
+            return async (s, ct) =>
             {
-                Service.Test = "Sync";
-            }
+                await Task.Delay(TimeSpan.FromSeconds(2), ct);
+                ((ServiceFixture)s).Test = value;
+            };
         }
 
-        public class ProvideTestAsyncSP(ServiceFixture service) : StateProviderAsync<ServiceFixture>(service)
+        public enum CMD_CRUD
         {
-            protected override async Task ProvideStateAsync(CancellationToken cancellationToken)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-                Service.Test = "Async";
-            }
+            ADD,
+            UPDATE,
+            DELETE,
+            CLEAR
         }
 
-        public class IntListVP(ServiceFixture service, IState<IEnumerable<CRUDTest>, List<CRUDTest>> state) :
-            StateRefTransformerAsync<ServiceFixture, (IntListVP.CMD_LIST CMD, CRUDTest? ITEM), IEnumerable<CRUDTest>, List<CRUDTest>>(service, state)
+        public static Func<IStateAsync<IList<CRUDTest>>, CancellationToken, Task> ChangeCrudListAsync((CMD_CRUD CMD, CRUDTest? ITEM) value)
         {
-            public enum CMD_LIST
+            return async (s, ct) =>
             {
-                ADD,
-                UPDATE,
-                DELETE,
-                CLEAR
-            }
-
-            protected override async Task TransformStateAsync((CMD_LIST CMD, CRUDTest? ITEM) value, List<CRUDTest> stateRef, CancellationToken cancellationToken)
-            {
-                if (value.CMD is CMD_LIST.ADD)
+                if (value.CMD is CMD_CRUD.ADD)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
-                    stateRef.Add(value.ITEM);
+                    s.Value.Add(value.ITEM);
                 }
-                else if (value.CMD is CMD_LIST.UPDATE)
+                else if (value.CMD is CMD_CRUD.UPDATE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
-                    var item = stateRef.Where(i => i.Id == value.ITEM.Id).FirstOrDefault();
+                    var item = s.Value.Where(i => i.Id == value.ITEM.Id).FirstOrDefault();
                     ArgumentNullException.ThrowIfNull(item);
 
-                    stateRef.Remove(item);
-                    stateRef.Add(value.ITEM);
+                    s.Value.Remove(item);
+                    s.Value.Add(value.ITEM);
                 }
-                else if (value.CMD is CMD_LIST.DELETE)
+                else if (value.CMD is CMD_CRUD.DELETE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
-                    stateRef.Remove(value.ITEM);
+                    s.Value.Remove(value.ITEM);
                 }
-                else if (value.CMD is CMD_LIST.CLEAR)
+                else if (value.CMD is CMD_CRUD.CLEAR)
                 {
-                    stateRef.Clear();
+                    s.Value.Clear();
                 }
                 else
                 {
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                await Task.Delay(5, cancellationToken);
-            }
+                await Task.Delay(5, ct);
+            };
         }
 
-        public class IntDictVP(ServiceFixture service, IState<IEnumerable<KeyValuePair<Guid, CRUDTest>>, Dictionary<Guid, CRUDTest>> state) :
-            StateRefTransformerAsync<ServiceFixture, (IntDictVP.CMD_DICT CMD, Guid? ID, CRUDTest? ITEM), IEnumerable<KeyValuePair<Guid, CRUDTest>>, Dictionary<Guid, CRUDTest>>(service, state)
+        public static Func<IStateAsync<IDictionary<Guid, CRUDTest>>, CancellationToken, Task> ChangeCrudDictAsync((CMD_CRUD CMD, Guid? ID, CRUDTest? ITEM) value)
         {
-            public enum CMD_DICT
+            return async (s, ct) =>
             {
-                ADD,
-                UPDATE,
-                DELETE,
-                CLEAR
-            }
-
-            protected override async Task TransformStateAsync((CMD_DICT CMD, Guid? ID, CRUDTest? ITEM) value, Dictionary<Guid, CRUDTest> stateRef, CancellationToken cancellationToken)
-            {
-                if (value.CMD is CMD_DICT.ADD)
+                if (value.CMD is CMD_CRUD.ADD)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
                     ArgumentNullException.ThrowIfNull(value.ID);
-                    stateRef.Add(value.ID.Value, value.ITEM);
+                    s.Value.Add(value.ID.Value, value.ITEM);
                 }
-                else if (value.CMD is CMD_DICT.UPDATE)
+                else if (value.CMD is CMD_CRUD.UPDATE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
                     ArgumentNullException.ThrowIfNull(value.ID);
-                    stateRef[value.ID.Value] = value.ITEM;
+                    s.Value[value.ID.Value] = value.ITEM;
                 }
-                else if (value.CMD is CMD_DICT.DELETE)
+                else if (value.CMD is CMD_CRUD.DELETE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ID);
-                    stateRef.Remove(value.ID.Value);
+                    s.Value.Remove(value.ID.Value);
                 }
-                else if (value.CMD is CMD_DICT.CLEAR)
+                else if (value.CMD is CMD_CRUD.CLEAR)
                 {
-                    stateRef.Clear();
+                    s.Value.Clear();
                 }
                 else
                 {
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                await Task.Delay(5, cancellationToken);
-            }
+                await Task.Delay(5, ct);
+            };
         }
     }
 }

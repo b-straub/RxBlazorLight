@@ -4,7 +4,10 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IState<bool> RxState { get; init; }
+    public required IState<bool> State { get; init; }
+
+    [Parameter]
+    public Func<IStateBase<bool>, bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
@@ -19,9 +22,10 @@
 
     protected override void OnParametersSet()
     {
-        Toggled = RxState.Value;
-        ToggledChanged = EventCallback.Factory.Create<bool>(this, v => RxState.Transform(v));
-        Disabled = !RxState.CanTransform(RxState.Value) || RxState.Phase is StateChangePhase.CHANGING;
+        Toggled = State.Value;
+        ToggledChanged = EventCallback.Factory.Create<bool>(this, v => State.Change(s => s.Value = v));
+
+        Disabled = (CanChange is not null && !State.CanChange(CanChange)) || State.Changing();
 
         base.OnParametersSet();
     }

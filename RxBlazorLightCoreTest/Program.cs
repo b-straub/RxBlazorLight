@@ -1,48 +1,48 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using RxBlazorLightCore;
 using RxBlazorLightCoreTest;
-using RxBlazorLightCoreTestBase;
 using System.Reactive.Linq;
 
 var done = false;
 
 TestService testService = new();
 
-var obs = testService.CreateObservableStateAsync(async (s, ct) =>
-{
-    await Task.Delay(1000, ct);
-    s.Counter += 2;
-});
-
-obs.Subscribe(p =>
+testService.CounterAsync.Subscribe(p =>
 {
     Console.WriteLine(p.ToString());
-    if (p is StateChangePhase.CHANGING)
+    if (p is StatePhase.CHANGING)
     {
-        obs.Cancel();
+        testService.CounterAsync.Cancel();
     }
 });
 
 testService.Subscribe(cr =>
 {
-    if (testService.State.Counter == 24)
+    Console.WriteLine(cr.ID);
+
+    if (testService.CounterAsync.Phase is StatePhase.CANCELED)
     {
         done = true;
     }
 });
 
-await obs.SetAsync();
+testService.Counter.Change(TestService.Increment);
+testService.Counter.Change(TestService.Increment);
 
-testService.SetState(TestServiceState.Increment);
+testService.Counter.Change(TestService.Add(10));
+testService.StringList.Change(TestService.AddString("Test"));
+testService.NullString.Change(s => s.Value = "TestNotNull");
 
-testService.SetState(TestServiceState.AddDirect(10));
+await testService.CounterAsync.ChangeAsync(TestService.AddAsync(10));
 
-await testService.SetStateAsync(TestServiceState.IncrementAsync, p =>
-{
-    Console.WriteLine(p.ToString());
-});
+await testService.CounterAsync.ChangeAsync(TestService.IncrementAsync);
 
-await testService.SetStateAsync(TestServiceState.AddAsync);
+await testService.CounterAsync.ChangeAsync(TestService.AddAsyncLR(10));
+
+var ccCounter = testService.Counter.CanChange(TestService.CanChangeT(1));
+ccCounter = testService.Counter.CanChange(TestService.CanChangeT(100));
+var ccCounterAsync = testService.CounterAsync.CanChange(TestService.CanChangeNV);
+var ccNullString = testService.NullString.CanChange(TestService.CanChangeS("TestNotNull"));
 
 /*ServiceFixture fixture = new();
 

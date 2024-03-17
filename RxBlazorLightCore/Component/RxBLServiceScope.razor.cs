@@ -9,6 +9,9 @@ namespace RxBlazorLightCore
         [CascadingParameter]
         public required TService Service { get; init; }
 
+        [Parameter, EditorRequired]
+        public required Func<IRxBLScope> ScopeFactory { get; init; }
+
         [Parameter]
         public required RenderFragment ChildContent { get; init; }
 
@@ -18,7 +21,7 @@ namespace RxBlazorLightCore
         protected override void OnInitialized()
         {
             ArgumentNullException.ThrowIfNull(Service);
-            Scope = (TScope)Service.CreateScope();
+            Scope = (TScope)ScopeFactory();
             Scope.EnterScope();
             ArgumentNullException.ThrowIfNull(Scope);
             base.OnInitialized();

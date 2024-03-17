@@ -5,13 +5,13 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IStateGroup<T> StateGroup { get; init; }
+    public required IStateGroupAsync<T> StateGroupAsync { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action<IState<T>, T> SelectionChanged { get; init; }
+    public required Func<IStateAsync<T>, T, Task> SelectionChangedAsync { get; init; }
 
     [Parameter]
-    public Func<IState<T>, bool>? CanChange { get; init; }
+    public Func<IStateAsync<T>, bool>? CanChange { get; init; }
 
     [Parameter]
     public bool HideDisabled { get; set; } = false;
@@ -22,27 +22,27 @@
 
     protected override void OnInitialized()
     {
-        if (StateGroup.HasValue())
+        if (StateGroupAsync.HasValue())
         {
-            Value = StateGroup.Value;
+            Value = StateGroupAsync.Value;
             Text = Value.ToString();
         }
 
-        ValueChanged = EventCallback.Factory.Create<T>(this, () => StateGroup.Change(s =>
-            {
-                SelectionChanged(s, Value);
-                s.Value = Value;
-            }));
+        ValueChanged = EventCallback.Factory.Create<T>(this, () => StateGroupAsync.ChangeAsync(async s =>
+        {
+            await SelectionChangedAsync(s, Value);
+            s.Value = Value;
+        }));
 
         if (ChildContent is null)
         {
-            var values = StateGroup.Items;
+            var values = StateGroupAsync.Items;
 
             ChildContent = builder =>
             {
                 for (var i = 0; i < values.Length; i++)
                 {
-                    if (HideDisabled && StateGroup.ItemDisabled(i))
+                    if (HideDisabled && StateGroupAsync.ItemDisabled(i))
                     {
                         continue;
                     }
@@ -50,7 +50,7 @@
                     builder.OpenComponent(0, typeof(MudSelectItemRx<T>));
                     builder.AddAttribute(1, "Index", i);
                     builder.AddAttribute(2, "Values", values);
-                    builder.AddAttribute(3, "Disabled", StateGroup.ItemDisabled(i));
+                    builder.AddAttribute(3, "Disabled", StateGroupAsync.ItemDisabled(i));
                     builder.CloseComponent();
                 }
             };
@@ -61,13 +61,13 @@
 
     protected override void OnParametersSet()
     {
-        if (StateGroup.Done() && StateGroup.HasValue())
+        if (StateGroupAsync.Done() && StateGroupAsync.HasValue())
         {
-            Value = StateGroup.Value;
+            Value = StateGroupAsync.Value;
             Text = Value.ToString();
         }
 
-        Disabled = (CanChange is not null && !StateGroup.CanChange(CanChange)) || StateGroup.Changing();
+        Disabled = (CanChange is not null && !StateGroupAsync.CanChange(CanChange)) || StateGroupAsync.Changing();
 
         base.OnParametersSet();
     }

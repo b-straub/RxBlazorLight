@@ -1,16 +1,7 @@
 ﻿using MudBlazor;
-using RxBlazorLightCore;
 
 namespace RxMudBlazorLight.Extensions
 {
-    public static class DVFA
-    {
-        public static Func<IStateTransformer<T>, Task> Factory<T>(T value)
-        {
-            return (st) => { st.Transform(value); return Task.CompletedTask; };
-        }
-    }
-
     internal static class RxMudBlazorLightExtensionsIntern
     {
         public static string GetCancelIcon(this MBIconVariant? iconVariant)

@@ -5,17 +5,14 @@
 <MudStack AlignItems="AlignItems.Center">
     <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
     <TimerComponent Name="Gobal" />
-    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService>
+    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
         <TimerComponent Name="TestPlayground" />
     </RxBLServiceScope>
     <MudText id="result" Class="mb-4">Current count: @Service.CountState.Value</MudText>
-    <MudRadioGroupRx id="radio" RxStateGroup=@Service.GetPizzas1() />
-    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateProvider=@Service.Increment>Increment</MudButtonRx>
-    <MudButtonPRx id="button2" Color="Color.Primary" Variant="Variant.Filled" ValueFactoryAsync=@DVFA.Factory(5) StateTransformer=@Service.Add>Add 5</MudButtonPRx>
-    <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals executions {_equalsExecutions}")</MudText>
-    <MudButtonRx Color="Color.Error" Variant="Variant.Filled" StateProvider=@Service.EqualsTestSync>EqualsTest</MudButtonRx>
-    <MudText Typo="Typo.h5" GutterBottom="true">@($"Equals async executions {_equalsAsyncExecutions}")</MudText>
-    <MudButtonRx Color="Color.Error" Variant="Variant.Filled" StateProvider=@Service.EqualsTestAsync>EqualsTestAsync</MudButtonRx>
+    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() SelectionChangedAsync=@TestService.ChangePizzaAsync />
+    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@TestService.IncrementCounter>Increment</MudButtonRx>
+    <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@(TestService.AddToCounter(5))>Add 5</MudButtonRx>
+    <MudText Typo="Typo.h5" GutterBottom="true">@($"Count State Changes {_countStateChanges}")</MudText>
 
     <MudGrid>
         @if (Service.Exceptions.Any())
@@ -29,27 +26,18 @@
 </MudStack>
 
 @code {
-    private long _equalsExecutions = 0;
-    private long _equalsAsyncExecutions = 0;
+    [CascadingParameter]
+    public required TimerService TimerService { get; init; }
+
+    private long _countStateChanges = 0;
 
     protected override void ServiceStateHasChanged(Guid id, ChangeReason changeReason)
     {
-        if (id == Service.EqualsTestSync.ID && Service.EqualsTestSync.Changed())
+        if (id == Service.CountState.ID && Service.CountState.Changed())
         {
-            _equalsExecutions++;
-            StateHasChanged();
+            _countStateChanges++;
+            InvokeAsync(StateHasChanged);
         }
-
-        if (id == Service.EqualsTestAsync.ID && Service.EqualsTestAsync.Changed())
-        {
-            _equalsAsyncExecutions++;
-            StateHasChanged();
-        }
-    }
-
-    private int GetEqualsParameter()
-    {
-        return _equalsExecutions == 0 ? 1 : 2;
     }
 
     private string GetExceptions()

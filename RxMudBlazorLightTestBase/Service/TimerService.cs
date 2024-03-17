@@ -11,7 +11,7 @@ namespace RxMudBlazorLightTestBase.Service
             OVER20
         }
 
-        public override IRxBLScope CreateScope()
+        public IRxBLScope CreateScope()
         {
             return new TimerScope(this);
         }
@@ -33,11 +33,11 @@ namespace RxMudBlazorLightTestBase.Service
                   {
                       if (!Suspended.Value)
                       {
-                          ComponentTimer.Transform(ComponentTimer.Value + 1);
+                          ComponentTimer.Change(s => s.Value++);
 
                           if (ComponentTimer.Value > 20 && TimerState.Value is State.STARTED)
                           {
-                              TimerState.Transform(State.OVER20);
+                              TimerState.Change(s => s.Value = State.OVER20);
                           }
                       }
                   });

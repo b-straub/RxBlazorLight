@@ -5,13 +5,13 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IStateGroup<T> StateGroup { get; init; }
+    public required IStateGroupAsync<T> StateGroupAsync { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action<IState<T>, T> SelectionChanged { get; init; }
+    public required Func<IStateAsync<T>, T, Task> SelectionChangedAsync { get; init; }
 
     [Parameter]
-    public Func<IState<T>, bool>? CanChange { get; init; }
+    public Func<IStateAsync<T>, bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<T, bool> DenseCallback { get; set; } = _ => false;
@@ -29,18 +29,18 @@
 
     protected override void OnInitialized()
     {
-        ValueChanged = EventCallback.Factory.Create<T>(this, () => StateGroup.Change(s =>
+        ValueChanged = EventCallback.Factory.Create<T>(this, () => StateGroupAsync.ChangeAsync(async s =>
             {
                 if (Value is not null)
                 {
-                    SelectionChanged(s, Value);
+                    await SelectionChangedAsync(s, Value);
                     s.Value = Value;
                 }
             }));
 
         if (ChildContent is null)
         {
-            var values = StateGroup.Items;
+            var values = StateGroupAsync.Items;
 
             ChildContent = builder =>
             {
@@ -53,8 +53,8 @@
                     builder.AddAttribute(4, "Size", SizeCallback(values[i]));
                     builder.AddAttribute(5, "Color", ColorCallback(values[i]));
                     builder.AddAttribute(6, "Placement", PlacementCallback(values[i]));
-                    builder.AddAttribute(7, "Disabled", StateGroup.ItemDisabled(i));
-                    builder.AddAttribute(8, "InitialSelection", StateGroup.Value);
+                    builder.AddAttribute(7, "Disabled", StateGroupAsync.ItemDisabled(i));
+                    builder.AddAttribute(8, "InitialSelection", StateGroupAsync.Value);
                     builder.CloseComponent();
                 }
             };
@@ -65,12 +65,12 @@
 
     protected override void OnParametersSet()
     {
-        if (StateGroup.Done() && StateGroup.HasValue())
+        if (StateGroupAsync.Done() && StateGroupAsync.HasValue())
         {
-            Value = StateGroup.Value;
+            Value = StateGroupAsync.Value;
         }
 
-        Disabled = (CanChange is not null && !StateGroup.CanChange(CanChange)) || StateGroup.Changing();
+        Disabled = (CanChange is not null && !StateGroupAsync.CanChange(CanChange)) || StateGroupAsync.Changing();
 
         base.OnParametersSet();
     }

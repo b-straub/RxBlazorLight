@@ -5,50 +5,60 @@
 <MudStack AlignItems="AlignItems.Center">
     <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
     <TimerComponent Name="Gobal" />
-    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService>
+    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
         <TimerComponent Name="InputTest" />
     </RxBLServiceScope>
+
     <MudText Class="mb-4">Current count: @Service.CountState.Value</MudText>
-    <MudButton Disabled=@(!Service.IncrementState.Changing()) Color="Color.Error" Variant="Variant.Filled" OnClick=@(() => Service.IncrementState.Cancel())>Cancel Increment Change</MudButton>
+    <MudText Class="mb-4">Current count Async: @Service.CountStateAsync.Value</MudText>
 
     <MudImage @bind-Src=@_imageSrc Height="50" />
 
-    <MudRadioGroupRx RxStateGroup=@Service.GetRadio() DenseCallback=@DenseCallback ColorCallback=@ColorCallback SizeCallback=@(_ => Size.Large) PlacementCallback=@(_ => Placement.Start) />
-    <MudSelectRx RxStateGroup=@Service.GetRadio() />
+    <MudRadioGroupRx StateGroup=@Service.GetRadio() SelectionChanged=@TestService.ChangeTestColor DenseCallback=@DenseCallback ColorCallback=@ColorCallback SizeCallback=@(_ => Size.Large) PlacementCallback=@(_ => Placement.Start) />
+    <MudSelectRx StateGroup=@Service.GetRadio() SelectionChanged=@TestService.ChangeTestColor HideDisabled=@true />
 
-    <MudSelectRx RxStateGroup=@Service.GetRadio() Variant="Variant.Outlined">
-        <MudSelectItem Value=@Service.GetRadio().GetItems()[0]>
+    <MudSelectRx StateGroup=@Service.GetRadio() SelectionChanged=@TestService.ChangeTestColor Variant ="Variant.Outlined">
+        <MudSelectItem Value=@Service.GetRadio().Items[0]>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Solid_red.svg/1024px-Solid_red.svg.png?20150316143248" height="14" class="mr-1" /> Red
         </MudSelectItem>
-        <MudSelectItem Value=@Service.GetRadio().GetItems()[1]>
+        <MudSelectItem Value=@Service.GetRadio().Items[1]>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Solid_green.svg/1024px-Solid_green.svg.png?20150316143636" height="14" class="mr-1" /> Green
         </MudSelectItem>
-        <MudSelectItem Value=@Service.GetRadio().GetItems()[2]>
+        <MudSelectItem Value=@Service.GetRadio().Items[2]>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Solid_blue.svg/1024px-Solid_blue.svg.png?20150316143734" height="14" class="mr-1" /> Blue
         </MudSelectItem>
     </MudSelectRx>
 
-    <MudRadioGroupRx RxStateGroup=@Service.GetPizzas1() />
-    <MudSelectRx RxStateGroup=@Service.GetPizzas1() HideDisabled=@true />
+    <MudRadioGroupRx StateGroup=@Service.GetPizzas1() SelectionChanged=@(TestService.ChangePizza("Radio")) />
+    <MudSelectRx StateGroup=@Service.GetPizzas1() SelectionChanged=@(TestService.ChangePizza("Select")) HideDisabled=@true />
 
-    <MudRadioGroupRx RxStateGroup=@Service.GetPizzas2() />
-    <MudSelectRx RxStateGroup=@Service.GetPizzas2() HideDisabled=@true />
+    <MudRadioGroupAsyncRx StateGroupAsync=@Service.GetPizzas2() SelectionChangedAsync=@TestService.ChangePizzaAsync />
+    <MudSelectAsyncRx StateGroupAsync=@Service.GetPizzas2() SelectionChangedAsync=@TestService.ChangePizzaAsync HideDisabled=@true />
 
-    <MudRatingRx RxState=@Service.RatingValue />
-    <MudRatingRx RxState=@Service.RatingValue />
-    <MudSwitchRx RxState=@Service.CanIncrementCheck Label="Allow Increment" />
-    <MudCheckBoxRx RxState=@Service.CanIncrementCheck Label="Allow Increment" />
-    <MudToggleIconButtonRx RxState=@Service.CanIncrementCheck Icon="@Icons.Material.Outlined.Circle" Color="@Color.Error" Title="Off"
-                            ToggledIcon="@Icons.Material.Outlined.CheckCircle" ToggledColor="@Color.Success" ToggledTitle="On" />
+    <MudRatingRx State=@Service.RatingValue />
+    <MudRatingRx State=@Service.RatingValue />
+    <MudSwitchRx State=@Service.CanIncrementCheck Label="Allow Increment" />
+    <MudCheckBoxRx State=@Service.CanIncrementCheck Label="Allow Increment" />
+    <MudToggleIconButtonRx State=@Service.CanIncrementCheck Icon="@Icons.Material.Outlined.Circle" Color="@Color.Error" Title="Off"
+              ToggledIcon="@Icons.Material.Outlined.CheckCircle" ToggledColor="@Color.Success" ToggledTitle="On" />
     <span>CanIncrementCheck is @(Service.CanIncrementCheck.Value ? "On" : "Off")</span>
-    <MudNumericFieldRx RxState=@Service.IncrementState Label="" Variant="Variant.Text" Min="0" Max="50" />
-    <MudSliderRx RxState=@Service.IncrementState Variant="Variant.Text" Min="0" Max="50" Immediate=@false>IncrementValue</MudSliderRx>
-    <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateProvider=@Service.Increment>Add Direct</MudButtonRx>
-    <MudButtonPRx Color="Color.Primary" Variant="Variant.Filled" ValueFactoryAsync=@DVFA.Factory(Service.IncrementState.Value) StateTransformer=@Service.Add>Add</MudButtonPRx>
+    <MudNumericFieldRx State=@Service.NumericState Label="" Variant="Variant.Text" Min="0" Max="50" />
+    <MudSliderRx State=@Service.NumericState Variant="Variant.Text" Min="0" Max="50" Immediate=@false CanChange=@TestService.IntStateCanChangeLowerBound(10)>IncrementValue</MudSliderRx>
+    <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@(TestService.AddToCounter(5))>Add 5</MudButtonRx>
+    <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@(TestService.AddToCounter(Service.CountState.Value))>Add Count</MudButtonRx>
 
-    <MudTextFieldRx RxState=@Service.TextValue Label="Text Test" Immediate=@true />
-    <MudTextFieldRx RxState=@Service.TextValue Label="Text Test clone" Immediate=@true />
-    <MudAutocompleteRx RxState=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
+    <MudTextFieldRx State=@Service.TextValue Label="Text Test" Immediate=@true />
+    <MudTextFieldRx State=@Service.TextValue Label="Text Test clone" Immediate=@true />
+    <MudAutocompleteRx State=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
+
+    <RxBLServiceScope TScope=@TestService.ColorsScope TService=@TestService ScopeFactory=@Service.CreateColorsScope>
+        <ColorsScopedGroup Context=1 />
+    </RxBLServiceScope>
+
+    <RxBLServiceScope TScope=@TestService.ColorsScope TService=@TestService ScopeFactory=@Service.CreateColorsScope>
+        <ColorsScopedGroup Context=0 />
+        <ColorsScopedGroup Context=1 />
+    </RxBLServiceScope>
 
     <MudGrid>
         @if (Service.Exceptions.Any())
@@ -62,6 +72,9 @@
 </MudStack>
 
 @code {
+    [CascadingParameter]
+    public required TimerService TimerService { get; init; }
+
     private string _imageSrc = "https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_Austria.svg";
 
     protected override void OnInitialized()

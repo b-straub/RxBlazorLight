@@ -6,7 +6,7 @@
 <RxBLServiceContext />
 
 <MudLayout>
-    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService>
+    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
         <MudAppBar Elevation="0">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
             <MudSpacer />
@@ -27,6 +27,9 @@
 </MudLayout>
 
 @code {
+    [CascadingParameter]
+    public required TimerService TimerService { get; init; }
+
     bool _drawerOpen = true;
 
     void DrawerToggle()

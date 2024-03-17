@@ -5,13 +5,13 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IState<T> State { get; init; }
+    public required IStateAsync<T> State { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action<IState<T>> ChangeState { get; init; }
+    public required Func<IStateAsync<T>, Task> ChangeStateAsync { get; init; }
 
     [Parameter]
-    public Func<IState<T>, bool>? CanChange { get; init; }
+    public Func<IStateAsync<T>, bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
@@ -28,7 +28,7 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(State, ChangeState, CanChange);
+        _buttonRx.SetParameter(State, ChangeStateAsync, null, CanChange, false);
 
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         OnTouch = (EventCallback<TouchEventArgs>)_buttonRx.OnTouch;

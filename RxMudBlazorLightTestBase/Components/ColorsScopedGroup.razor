@@ -1,0 +1,11 @@
+﻿
+<MudSelectAsyncRx StateGroupAsync=@Scope.TestColors SelectionChangedAsync=@TestService.ColorsScope.ChangeTestColorAsync(Context)
+                  CanChange=@TestService.ColorsScope.CanChangeTestColor(Context) />
+
+@code {
+    [CascadingParameter]
+    public required TestService.ColorsScope Scope { get; init; }
+
+    [Parameter]
+    public required int Context { get; init; }
+}

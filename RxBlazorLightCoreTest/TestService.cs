@@ -3,33 +3,59 @@ using RxBlazorLightCore;
 
 namespace RxBlazorLightCoreTest
 {
-    internal class TestServiceState
+    internal class TestService : RxBLService
     {
-        public int Counter { get; set; } = 0;
+        public IState<int> Counter { get; }
+        public IStateAsync<int> CounterAsync { get; }
+        public IState<IList<string>> StringList { get; }
+        public IState<string?> NullString { get; }
 
-        public static Action<TestServiceState> Increment => s => s.Counter++;
-
-        public static Action<TestServiceState> AddDirect(int value)
+        public TestService()
         {
-            return s => s.Counter += value;
+            Counter = this.CreateState(0);
+            CounterAsync = this.CreateStateAsync(10);
+            StringList = this.CreateState<IList<string>>([]);
+            NullString = this.CreateState<string?>(null);
         }
 
-        public static Action<TestServiceState, int> Add => (s, p) => s.Counter += p;
+        public static Func<IStateBase<int>, bool> CanChangeNV => s => s.Value < 20;
+        public static Func<IStateBase<int>, bool> CanChangeT(int treshold) => s => s.Value < treshold;
+        public static Func<IStateBase<string?>, bool> CanChangeS(string compare) => s => compare != s.Value;
 
-        public static Func<TestServiceState, Task> IncrementAsync => async s =>
+        public static Action<IState<int>> Increment => s => s.Value++;
+
+        public static Action<IState<IList<string>>> AddString(string value)
+        {
+            return s => s.Value.Add(value);
+        }
+
+        public static Action<IState<int>> Add(int value)
+        {
+            return s => s.Value += value;
+        }
+
+        public static Func<IStateAsync<int>, Task> IncrementAsync => async s =>
         {
             await Task.Delay(1000);
-            s.Counter++;
+            s.Value++;
         };
 
-        public static Func<TestServiceState, int, Task> AddAsync => async (s, p) =>
+        public static Func<IStateAsync<int>, Task> AddAsync(int value)
         {
-            await Task.Delay(1000);
-            s.Counter += p;
-        };
-    }
+            return async s =>
+            {
+                await Task.Delay(1000);
+                s.Value += value;
+            };
+        }
 
-    internal class TestService : RxBLService<TestServiceState>
-    {
+        public static Func<IStateAsync<int>, CancellationToken, Task> AddAsyncLR(int value)
+        {
+            return async (s, ct) =>
+            {
+                await Task.Delay(1000, ct);
+                s.Value += value;
+            };
+        }
     }
 }

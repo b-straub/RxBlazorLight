@@ -5,7 +5,7 @@ using RxMudBlazorLight.Buttons;
 
 namespace RxMudBlazorLight.Dialogs
 {
-    public partial class DialogAsyncPRx<TService, TParam> : RxBLServiceChangeSubscriber<TService> where TService : IRxBLService
+    public partial class DialogRx<TService, TParam> : RxBLServiceChangeSubscriber<TService> where TService : IRxBLService
     {
         [CascadingParameter]
         MudDialogInstance? MudDialog { get; set; }
@@ -23,43 +23,41 @@ namespace RxMudBlazorLight.Dialogs
         public bool SuccessOnConfirm { get; set; } = false;
 
         [Parameter, EditorRequired]
-        public required IStateTransformer<TParam> StateTransformer { get; init; }
-
-        [Parameter, EditorRequired]
-        public required Func<IStateTransformer<TParam>, Task> ValueFactoryAsync { get; init; }
+        public required IState<TParam> State { get; init; }
 
         [Parameter]
-        public string? CancelText { get; set; }
+        public Func<IState<TParam>, Task>? ChangeStateAsync { get; init; }
 
         [Parameter]
-        public Color? CancelColor { get; set; }
+        public Action<IState<TParam>>? ChangeState { get; init; }
 
         [Parameter]
-        public TParam? Context { get; set; }
+        public Func<IState<TParam>, bool>? CanChange { get; init; }
 
-        private MudButtonPRx<TParam>? _buttonRef;
+        [Parameter]
+        public bool HasProgress { get; set; } = false;
+
+        private MudButtonRx<TParam>? _buttonRef;
         private IDisposable? _buttonDisposable;
         private bool _canceled = false;
 
         public static async Task<bool> Show(IDialogService dialogService,
-            IStateTransformer<TParam> stateTransformer, Func<IStateTransformer<TParam>, Task> valueFactoryAsync, string title,
-            string message, string confirmButton, string cancelButton, bool successOnConfirm,
-            string? cancelText = null, Color? cancelColor = null, TParam? context = default)
+           IState<TParam> state, Action<IState<TParam>> changeState, string title,
+           string message, string confirmButton, string cancelButton, bool successOnConfirm,
+           Func<IState<TParam>, bool>? canChange = null)
         {
             var parameters = new DialogParameters
             {
-                ["StateTransformer"] = stateTransformer,
-                ["ValueFactoryAsync"] = valueFactoryAsync,
-                ["CancelText"] = cancelText,
-                ["CancelColor"] = cancelColor,
-                ["Context"] = context,
+                ["State"] = state,
+                ["ChangeState"] = changeState,
+                ["CanChange"] = canChange,
                 ["Message"] = message,
                 ["ConfirmButton"] = confirmButton,
                 ["CancelButton"] = cancelButton,
                 ["SuccessOnConfirm"] = successOnConfirm
             };
 
-            var dialog = dialogService.Show<DialogAsyncPRx<TService, TParam>>(title, parameters);
+            var dialog = dialogService.Show<DialogRx<TService, TParam>>(title, parameters);
 
             var res = await dialog.Result;
 
@@ -73,19 +71,19 @@ namespace RxMudBlazorLight.Dialogs
 
         private bool CanNotCancel()
         {
-            if (_buttonRef?.StateTransformer is null)
+            if (_buttonRef?.State is null)
             {
                 return false;
             }
 
-            return _buttonRef.StateTransformer.Changing();
+            return _buttonRef.State.Changing();
         }
 
         private void Cancel()
         {
-            ArgumentNullException.ThrowIfNull(_buttonRef?.StateTransformer);
+            ArgumentNullException.ThrowIfNull(_buttonRef?.State);
 
-            if (!_buttonRef.StateTransformer.Changing())
+            if (!_buttonRef.State.Changing())
             {
                 MudDialog?.Cancel();
             }
@@ -93,11 +91,11 @@ namespace RxMudBlazorLight.Dialogs
 
         protected override void ServiceStateHasChanged(Guid id, ChangeReason changeReason)
         {
-            if (changeReason is ChangeReason.STATE && _buttonRef is not null && id == _buttonRef.StateTransformer.ID)
+            if (changeReason is ChangeReason.STATE && _buttonRef is not null && id == _buttonRef.State.ID)
             {
-                if (_buttonRef.StateTransformer.Done() )
+                if (_buttonRef.State.Done())
                 {
-                    _canceled = StateTransformer.Phase is StateChangePhase.CANCELED;
+                    _canceled = State.Canceled();
                     if (!_canceled)
                     {
                         _buttonDisposable?.Dispose();

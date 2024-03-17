@@ -1,26 +1,20 @@
 ﻿@inherits MudFab
 @typeparam T
 
-<MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetFabProgressIcon(StateProvider, IconVariant) != string.Empty)
-          Icon=@_buttonRx?.GetFabProgressIcon(StateProvider, IconVariant) Color=@Color Overlap="true" Bordered="true">
-    @RenderBase()
-</MudBadge>
+@RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required IStateProvider<T> StateProvider { get; init; }
+    public required IState<T> State { get; init; }
+
+    [Parameter, EditorRequired]
+    public required Action<IState<T>> ChangeState { get; init; }
+
+    [Parameter]
+    public Func<IState<T>, bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
-
-    [Parameter]
-    public string? CancelText { get; set; }
-
-    [Parameter]
-    public Color? CancelColor { get; set; }
-
-    [Parameter]
-    public T? Context { get; set; }
 
     [Parameter]
     public MBIconVariant? IconVariant { get; set; }
@@ -30,7 +24,7 @@
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color, null, CancelText, CancelColor, Context);
+        _buttonRx = ButtonRx<T>.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color);
 
         base.OnInitialized();
     }
@@ -38,9 +32,9 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(StateProvider);
+        _buttonRx.SetParameter(State, ChangeState, CanChange);
 
-        var parameters = _buttonRx.GetFabParameters(StateProvider, StartIcon, EndIcon, Label, IconVariant);
+        var parameters = _buttonRx.GetFabParameters(State, StartIcon, EndIcon, Label, IconVariant, false);
         StartIcon = parameters.StartIcon;
         EndIcon = parameters.EndIcon;
         Label = parameters.Label;

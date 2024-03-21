@@ -2,7 +2,6 @@
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using static RxBlazorLightCore.State;
 
 namespace RxBlazorLightCore
 {
@@ -18,9 +17,9 @@ namespace RxBlazorLightCore
             return canChangeDelegate(this);
         }
 
-        public void Change(Action<IRxBLService> changeDelegate, bool notify = true)
+        public void Change(Action changeDelegate, bool notify = true)
         {
-            base.Change(_ => changeDelegate(_service), notify);
+            base.Change(_ => changeDelegate(), notify);
         }
 
         public static IState Create(RxBLService service)
@@ -41,14 +40,14 @@ namespace RxBlazorLightCore
             return canChangeDelegate(this);
         }
 
-        public async Task ChangeAsync(Func<IRxBLService, Task> changeDelegateAsync, bool notify = true)
+        public async Task ChangeAsync(Func<Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null)
         {
-            await base.ChangeAsync(async _ => await changeDelegateAsync(_service), notify);
+            await base.ChangeAsync(async _ => await changeDelegateAsync(), notify, changeCallerID);
         }
 
-        public async Task ChangeAsync(Func<IRxBLService, CancellationToken, Task> changeDelegateAsync, bool notify = true)
+        public async Task ChangeAsync(Func<CancellationToken, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null)
         {
-            await base.ChangeAsync(async (_, ct) => await changeDelegateAsync(_service, ct), notify);
+            await base.ChangeAsync(async (_, ct) => await changeDelegateAsync(ct), notify, changeCallerID);
         }
 
         public static IStateAsync Create(RxBLService service)
@@ -62,6 +61,7 @@ namespace RxBlazorLightCore
         public T Value { get; set; }
         public StatePhase Phase => _changedSubject.Value;
         public Guid ID { get; } = Guid.NewGuid();
+        public Guid? ChangeCallerID { get; protected set; }
 
         protected readonly RxBLService _service;
         private readonly BehaviorSubject<StatePhase> _changedSubject = new(StatePhase.CHANGED);
@@ -124,7 +124,7 @@ namespace RxBlazorLightCore
 
             if (notify || _notify || exception is not null)
             {
-                _service.StateHasChanged(ID, changePhase is StatePhase.EXCEPTION ? ChangeReason.EXCEPTION : ChangeReason.STATE, exception);
+                _service.StateHasChanged(ID, exception);
                 _notify = notify;
             }
         }
@@ -172,27 +172,35 @@ namespace RxBlazorLightCore
             return canChangeDelegate(this);
         }
 
-        public async Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notify = true)
+        public async Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null)
         {
             try
             {
+                ChangeCallerID = changeCallerID;
+
                 ResetCancellationToken();
                 CanCancel = true;
                 PhaseChanged(false, notify);
                 await changeDelegateAsync(this, _cancellationTokenSource.Token);
-                CanCancel = false;
                 PhaseChanged(true, notify);
             }
             catch (Exception ex)
             {
                 PhaseChanged(true, true, ex);
             }
+            finally
+            {
+                CanCancel = false;
+                ChangeCallerID = null;
+            }
         }
 
-        public async Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notify = true)
+        public async Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null)
         {
             try
             {
+                ChangeCallerID = changeCallerID;
+
                 ResetCancellationToken();
                 PhaseChanged(false, notify);
                 await changeDelegateAsync(this);
@@ -201,6 +209,10 @@ namespace RxBlazorLightCore
             catch (Exception ex)
             {
                 PhaseChanged(true, true, ex);
+            }
+            finally
+            {
+                ChangeCallerID = null;
             }
         }
 

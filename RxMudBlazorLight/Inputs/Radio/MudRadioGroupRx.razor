@@ -7,8 +7,8 @@
     [Parameter, EditorRequired]
     public required IStateGroup<T> StateGroup { get; init; }
 
-    [Parameter, EditorRequired]
-    public required Action<IState<T>, T> SelectionChanged { get; init; }
+    [Parameter]
+    public Action<IState<T>, T>? SelectionChanged { get; init; }
 
     [Parameter]
     public Func<IState<T>, bool>? CanChange { get; init; }
@@ -29,14 +29,17 @@
 
     protected override void OnInitialized()
     {
-        ValueChanged = EventCallback.Factory.Create<T>(this, () => StateGroup.Change(s =>
+        ValueChanged = EventCallback.Factory.Create<T>(this, v =>
+        {
+            StateGroup.Change(s =>
             {
-                if (Value is not null)
+                if (SelectionChanged is not null)
                 {
-                    SelectionChanged(s, Value);
-                    s.Value = Value;
+                    SelectionChanged(s, v);
                 }
-            }));
+                s.Value = v;
+            });
+        });
 
         if (ChildContent is null)
         {
@@ -65,12 +68,8 @@
 
     protected override void OnParametersSet()
     {
-        if (StateGroup.Done() && StateGroup.HasValue())
-        {
-            Value = StateGroup.Value;
-        }
-
-        Disabled = (CanChange is not null && !StateGroup.CanChange(CanChange)) || StateGroup.Changing();
+        Disabled = (CanChange is not null && !StateGroup.CanChange(CanChange));
+        Value = StateGroup.Value;
 
         base.OnParametersSet();
     }

@@ -1,4 +1,4 @@
-﻿@inherits RxBLServiceChangeSubscriber<TestService>
+﻿@inherits RxBLServiceSubscriber<TestService>
 
 <PageTitle>TestPlayground</PageTitle>
 
@@ -26,17 +26,16 @@
 </MudStack>
 
 @code {
-    [CascadingParameter]
+    [Inject]
     public required TimerService TimerService { get; init; }
 
     private long _countStateChanges = 0;
 
-    protected override void ServiceStateHasChanged(Guid id, ChangeReason changeReason)
+    protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
     {
-        if (id == Service.CountState.ID && Service.CountState.Changed())
+        if (cr.StateID == Service.CountState.ID && Service.CountState.Changed())
         {
             _countStateChanges++;
-            InvokeAsync(StateHasChanged);
         }
     }
 

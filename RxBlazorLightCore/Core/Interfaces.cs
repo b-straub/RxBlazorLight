@@ -1,7 +1,4 @@
-﻿global using ServiceChangeReason = (RxBlazorLightCore.ChangeReason Reason, System.Guid ID);
-global using ServiceException = (System.Exception Exception, System.Guid ID);
-
-using System.Reactive;
+﻿using System.Reactive;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RxBlazorLightCore
@@ -9,14 +6,15 @@ namespace RxBlazorLightCore
     public enum ChangeReason
     {
         EXCEPTION,
-        SERVICE,
         STATE
     }
 
-    public interface IRxBLScope 
+    public readonly record struct ServiceChangeReason(Guid ServiceID, Guid StateID, ChangeReason Reason);
+    public readonly record struct ServiceException(Exception Exception, Guid ID);
+
+    public interface IRxBLScope : IDisposable, IObservable<ServiceChangeReason>
     {
-        public void EnterScope() { }
-        public void LeaveScope() { }
+        public ValueTask OnContextReadyAsync();
     }
 
     public interface IRxBLService : IObservable<ServiceChangeReason>
@@ -45,6 +43,8 @@ namespace RxBlazorLightCore
         public void NotifyChanging();
         public StatePhase Phase { get; }
         public Guid ID { get; }
+
+        public Guid? ChangeCallerID { get; }
     }
 
     public interface IState<T> : IStateBase<T>
@@ -57,8 +57,8 @@ namespace RxBlazorLightCore
     public interface IStateAsync<T> : IStateBase<T>
     {
         public bool CanChange(Func<IStateAsync<T>, bool> canChangeDelegate);
-        public Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notify = true);
-        public Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notify = true);
+        public Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null);
+        public Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null);
         public bool CanCancel { get; }
         public void Cancel();
     }
@@ -66,14 +66,14 @@ namespace RxBlazorLightCore
     public interface IState: IState<Unit>
     {
         public bool CanChange(Func<IState, bool> canChangeDelegate);
-        public void Change(Action<IRxBLService> changeDelegate, bool notify = true);
+        public void Change(Action changeDelegate, bool notify = true);
     }
 
     public interface IStateAsync : IStateAsync<Unit>
     {
         public bool CanChange(Func<IStateAsync, bool> canChangeDelegate);
-        public Task ChangeAsync(Func<IRxBLService, Task> changeDelegateAsync, bool notify = true);
-        public Task ChangeAsync(Func<IRxBLService, CancellationToken, Task> changeDelegateAsync, bool notify = true);
+        public Task ChangeAsync(Func<Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null);
+        public Task ChangeAsync(Func<CancellationToken, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null);
     }
 
     public interface IStateGroup<T> : IState<T>

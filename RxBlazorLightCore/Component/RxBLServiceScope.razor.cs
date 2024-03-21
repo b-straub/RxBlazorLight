@@ -3,10 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace RxBlazorLightCore
 {
-    public sealed partial class RxBLServiceScope<TScope, TService> : ComponentBase, IDisposable where TService : IRxBLService
-        where TScope : IRxBLScope
+    public sealed partial class RxBLServiceScope<TScope, TService> : ComponentBase, IDisposable
     {
-        [CascadingParameter]
+        [Inject]
         public required TService Service { get; init; }
 
         [Parameter, EditorRequired]
@@ -22,14 +21,22 @@ namespace RxBlazorLightCore
         {
             ArgumentNullException.ThrowIfNull(Service);
             Scope = (TScope)ScopeFactory();
-            Scope.EnterScope();
             ArgumentNullException.ThrowIfNull(Scope);
             base.OnInitialized();
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await Scope.OnContextReadyAsync();
+            }
+            await base.OnAfterRenderAsync(firstRender);
+        }
+
         public void Dispose()
         {
-            Scope.LeaveScope();
+            Scope.Dispose();
         }
     }
 }

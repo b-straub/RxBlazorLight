@@ -2,7 +2,7 @@
 @typeparam T
 
 <MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetBadgeIcon(State, IconVariant, true, ForceBadge) != string.Empty)
-          Icon=@_buttonRx!.GetBadgeIcon(State, IconVariant, true, ForceBadge) Color=@Color Overlap="true" Bordered="true">
+          Icon=@_buttonRx!.GetBadgeIcon(State, IconVariant, true, ForceBadge) Color=@(_buttonRx.Disabled ? Color.Default : Color) Overlap="true" Bordered="true">
     @RenderBase()
 </MudBadge>
 

@@ -19,7 +19,7 @@ namespace RxBlazorLightCoreTest
         }
 
         public static Func<IStateBase<int>, bool> CanChangeNV => s => s.Value < 20;
-        public static Func<IStateBase<int>, bool> CanChangeT(int treshold) => s => s.Value < treshold;
+        public static Func<IStateBase<int>, bool> CanChangeT(int threshold) => s => s.Value < threshold;
         public static Func<IStateBase<string?>, bool> CanChangeS(string compare) => s => compare != s.Value;
 
         public static Action<IState<int>> Increment => s => s.Value++;

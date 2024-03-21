@@ -7,8 +7,8 @@
     [Parameter, EditorRequired]
     public required IStateGroupAsync<T> StateGroupAsync { get; init; }
 
-    [Parameter, EditorRequired]
-    public required Func<IStateAsync<T>, T, Task> SelectionChangedAsync { get; init; }
+    [Parameter]
+    public Func<IStateAsync<T>, T, Task>? SelectionChangedAsync { get; init; }
 
     [Parameter]
     public Func<IStateAsync<T>, bool>? CanChange { get; init; }
@@ -18,21 +18,19 @@
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
-    //private bool _initialized = false;
-
     protected override void OnInitialized()
     {
-        if (StateGroupAsync.HasValue())
+        ValueChanged = EventCallback.Factory.Create<T>(this, async v =>
         {
-            Value = StateGroupAsync.Value;
-            Text = Value.ToString();
-        }
-
-        ValueChanged = EventCallback.Factory.Create<T>(this, () => StateGroupAsync.ChangeAsync(async s =>
-        {
-            await SelectionChangedAsync(s, Value);
-            s.Value = Value;
-        }));
+            await StateGroupAsync.ChangeAsync(async s =>
+            {
+                if (SelectionChangedAsync is not null)
+                {
+                    await SelectionChangedAsync(s, v);
+                }
+                s.Value = v;
+            });
+        });
 
         if (ChildContent is null)
         {
@@ -61,26 +59,13 @@
 
     protected override void OnParametersSet()
     {
+        Disabled = (CanChange is not null && !StateGroupAsync.CanChange(CanChange)) || StateGroupAsync.Changing();
         if (StateGroupAsync.Done() && StateGroupAsync.HasValue())
         {
             Value = StateGroupAsync.Value;
             Text = Value.ToString();
         }
 
-        Disabled = (CanChange is not null && !StateGroupAsync.CanChange(CanChange)) || StateGroupAsync.Changing();
-
         base.OnParametersSet();
     }
-
-    /*protected override void OnAfterRender(bool firstRender)
-        {
-        if (!_initialized && firstRender && StateGroup.HasValue())
-            {
-            _initialized = true;
-            Value = StateGroup.Value;
-            Text = Value.ToString();
-        }
-
-        base.OnAfterRender(firstRender);
-    }*/
 }

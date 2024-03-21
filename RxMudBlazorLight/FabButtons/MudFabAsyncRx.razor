@@ -1,8 +1,8 @@
 ﻿@inherits MudFabAsyncBaseRx<T>
 @typeparam T
 
-<MudBadge Visible=@(_buttonRx is not null && _useProgressIcon && _buttonRx.GetBadgeIcon(State, IconVariant, false) != string.Empty)
-          Icon=@_buttonRx!.GetBadgeIcon(State, IconVariant, false) Color=@Color Overlap="true" Bordered="true">
+<MudBadge Visible=@(_buttonRx is not null && _useProgressIcon && _buttonRx.GetBadgeIcon(State, IconVariant, false, ForceBadge) != string.Empty)
+          Icon=@_buttonRx!.GetBadgeIcon(State, IconVariant, false, ForceBadge) Color=@(_buttonRx.Disabled ? Color.Default : Color) Overlap="true" Bordered="true">
     @RenderBase()
 </MudBadge>
 
@@ -13,13 +13,17 @@
     [Parameter]
     public bool HasProgress { get; set; } = false;
 
+    [Parameter]
+    public bool ForceBadge { get; set; } = false;
+
     private bool _useProgressIcon;
 
     protected override void OnInitialized()
     {
         _changeStateAsync = ChangeStateAsync;
         _hasProgress = HasProgress;
-        _useProgressIcon = _hasProgress && (StartIcon is not null && EndIcon is not null);
+        _forceBadge = ForceBadge;
+        _useProgressIcon = _hasProgress && ((StartIcon is not null && EndIcon is not null) || _forceBadge);
 
         base.OnInitialized();
     }

@@ -27,7 +27,7 @@
 </MudLayout>
 
 @code {
-    [CascadingParameter]
+    [Inject]
     public required TimerService TimerService { get; init; }
 
     bool _drawerOpen = true;

@@ -3,6 +3,32 @@ using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
+    public class RxBLScope<T>(T service) : IRxBLScope where T : IRxBLService
+    {
+        protected T Service => service;
+
+        public virtual ValueTask OnContextReadyAsync()
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
+        public IDisposable Subscribe(IObserver<ServiceChangeReason> observer)
+        {
+            return Service.Subscribe(observer);
+        }
+    }
+
     public class RxBLService : IRxBLService
     {
         public bool Initialized { get; private set; }
@@ -22,23 +48,20 @@ namespace RxBlazorLightCore
             ID = Guid.NewGuid();
         }
 
-        internal void StateHasChanged(Guid id, ChangeReason reason = ChangeReason.SERVICE, Exception? exception = null)
+        internal void StateHasChanged(Guid stateID, Exception? exception = null)
         {
-            if (exception is null && reason is ChangeReason.EXCEPTION ||
-                exception is not null && reason is not ChangeReason.EXCEPTION)
+            if (exception is not null)
             {
-                throw new ArgumentException(reason.ToString());
+                _serviceExceptions.Add(new(exception, stateID));
+                _changedSubject.OnNext(new(ID, stateID, ChangeReason.EXCEPTION));
             }
-
-            if (reason is ChangeReason.EXCEPTION && exception is not null)
+            else
             {
-                _serviceExceptions.Add((exception, id));
+                _changedSubject.OnNext(new(ID, stateID, ChangeReason.STATE));
             }
-
-            _changedSubject.OnNext((reason, id));
         }
 
-        public IDisposable Subscribe(IObserver<(ChangeReason Reason, Guid ID)> observer)
+        public IDisposable Subscribe(IObserver<ServiceChangeReason> observer)
         {
             return _changedObservable.Subscribe(observer);
         }
@@ -49,8 +72,8 @@ namespace RxBlazorLightCore
             {
                 throw new InvalidOperationException("Nested RxBLService context not allowed!");
             }
-            Initialized = true;
             await ContextReadyAsync();
+            Initialized = true;
             StateHasChanged(ID);
         }
 

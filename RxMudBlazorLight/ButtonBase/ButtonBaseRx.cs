@@ -2,7 +2,6 @@
 using MudBlazor;
 using RxBlazorLightCore;
 using RxMudBlazorLight.Extensions;
-using static MudBlazor.CategoryTypes;
 
 namespace RxMudBlazorLight.ButtonBase
 {
@@ -19,6 +18,7 @@ namespace RxMudBlazorLight.ButtonBase
         protected readonly Color? _cancelColor;
         protected readonly string? _cancelText;
         protected readonly bool _hasProgress;
+        protected readonly Guid _id = Guid.NewGuid();
 
         private enum IconForState
         {
@@ -104,7 +104,7 @@ namespace RxMudBlazorLight.ButtonBase
             }
         };
 
-        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateBase<T> stateBase, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool canCancel)
+        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateBase<T> stateBase, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool canCancel, bool forceBadge = false)
         {
             if (_iconForState is IconForState.None)
             {
@@ -125,7 +125,7 @@ namespace RxMudBlazorLight.ButtonBase
                 _buttonLabel = label;
             }
 
-            if (!stateBase.Changing())
+            if (!stateBase.Changing() || stateBase.ChangeCallerID != _id)
             {
                 if (_iconForState is IconForState.Start)
                 {
@@ -158,7 +158,7 @@ namespace RxMudBlazorLight.ButtonBase
                     }
                 }
 
-                if (_hasProgress && (_cancelText is not null || !canCancel))
+                if (_hasProgress && !forceBadge && (_cancelText is not null || !canCancel))
                 {
                     var progressIcon = iconVariant.GetProgressIcon();
 
@@ -184,7 +184,7 @@ namespace RxMudBlazorLight.ButtonBase
 
         public string GetIconButtonParameters(IStateBase<T> state, string icon, MBIconVariant? iconVariant, bool canCancel, bool forceBadge = false)
         {
-            if (!state.Changing())
+            if (!state.Changing() || state.ChangeCallerID != _id)
             {
                 if (_iconForState is IconForState.None)
                 {
@@ -215,7 +215,7 @@ namespace RxMudBlazorLight.ButtonBase
 
         public string GetBadgeIcon(IStateBase<T> state, MBIconVariant? iconVariant, bool canCancel, bool forceBadge = false)
         {
-            if (state.Changing())
+            if (state.Changing() && state.ChangeCallerID == _id)
             {
                 if (canCancel && _hasProgress)
                 {

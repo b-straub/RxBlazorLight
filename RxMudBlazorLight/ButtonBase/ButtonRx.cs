@@ -53,28 +53,44 @@ namespace RxMudBlazorLight.ButtonBase
         {
             VerifyButtonParametersAsync(changeStateAsync, changeStateAsyncCancel);
 
-            if (state.Changing() && state.CanCancel && changeStateAsyncCancel is not null)
+            if (state.Changing())
             {
-                Color = _cancelColor ?? Color.Warning;
-
-                if (_buttonType is not MBButtonType.FAB)
+                if (state.ChangeCallerID == _id)
                 {
-                    ChildContent = RenderCancel();
+                    if (state.CanCancel && changeStateAsyncCancel is not null)
+                    {
+                        Color = _cancelColor ?? Color.Warning;
+
+                        if (_buttonType is not MBButtonType.FAB)
+                        {
+                            ChildContent = RenderCancel();
+                        }
+
+                        OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, state.Cancel);
+                        OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, state.Cancel);
+
+                        Disabled = false;
+                    }
+                    else
+                    {
+                        if (_buttonType is not MBButtonType.FAB && _hasProgress)
+                        {
+                            ChildContent = RenderProgress();
+                        }
+
+                        Disabled = true;
+                    }
                 }
-
-                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => state.Cancel());
-                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => state.Cancel());
-
-                Disabled = false;
+                else
+                {
+                    Disabled = true;
+                }
             }
             else
             {
+                ChildContent = _buttonChildContent;
                 Color = _buttonColor;
-                if (_buttonType is not MBButtonType.FAB)
-                {
-                    ChildContent = state.Changing() && _hasProgress ? RenderProgress() : _buttonChildContent;
-                }
-
+              
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => 
                         ExecuteStateAsync(state, changeStateAsync, changeStateAsyncCancel, deferredNotification));
                 OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () =>
@@ -82,6 +98,9 @@ namespace RxMudBlazorLight.ButtonBase
 
                 Disabled = canChange is not null && !state.CanChange(canChange);
             }
+
+            OnClick ??= EventCallback.Factory.Create<MouseEventArgs>(this, _ => { });
+            OnTouch ??= EventCallback.Factory.Create<TouchEventArgs>(this, _ => { });
         }
 
         private async Task ExecuteState(IState<T> state, Action<IState<T>> changeState)
@@ -99,12 +118,12 @@ namespace RxMudBlazorLight.ButtonBase
             { 
                 if (changeStateAsync is not null)
                 {   
-                    await state.ChangeAsync(changeStateAsync, !deferredNotification);
+                    await state.ChangeAsync(changeStateAsync, !deferredNotification, _id);
                 }
 
                 if (changeStateAsyncCancel is not null)
                 {
-                    await state.ChangeAsync(changeStateAsyncCancel, !deferredNotification);
+                    await state.ChangeAsync(changeStateAsyncCancel, !deferredNotification, _id);
                 }
             }
         }

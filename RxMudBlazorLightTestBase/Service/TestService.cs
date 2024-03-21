@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RxBlazorLightCore;
-using System.Reflection.Metadata.Ecma335;
+﻿using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -48,19 +46,6 @@ namespace RxMudBlazorLightTestBase.Service
         public IState ServiceState { get; }
         public StateInfo? StateInfo { get; protected set; }
 
-        public class BaseScope(TestServiceBase service) : IRxBLScope
-        {
-            public void EnterScope()
-            {
-                Console.WriteLine("EnterScope");
-            }
-
-            public void LiveScope()
-            {
-                Console.WriteLine("EnterScope");
-            }
-        }
-
         public TestServiceBase(IServiceProvider _)
         {
             Console.WriteLine("TestService Create");
@@ -71,14 +56,28 @@ namespace RxMudBlazorLightTestBase.Service
 
     public partial class TestService : TestServiceBase
     {
-        public class Scope(TestService service) : BaseScope(service)
+        public sealed class Scope(TestService service) : RxBLScope<TestService>(service)
         {
             public IState<int> CountState = service.CreateState(0);
 
             public IStateAsync<int> CountStateAsync = service.CreateStateAsync(0);
+
+            public override ValueTask OnContextReadyAsync()
+            {
+                Console.WriteLine("Scope ContextReady");
+                return ValueTask.CompletedTask;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    Console.WriteLine("Scope Disposed");
+                }
+            }
         }
 
-        public class ColorsScope(TestService service) : IRxBLScope
+        public class ColorsScope(TestService service) : RxBLScope<TestService>(service)
         {
             private static readonly TestColor[] Colors =
             [

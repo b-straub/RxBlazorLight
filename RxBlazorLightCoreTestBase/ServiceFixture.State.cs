@@ -38,34 +38,37 @@ namespace RxBlazorLightCoreTestBase
             };
         }
 
-        public static readonly Action<IRxBLService> SetTestStringDirect = s => ((ServiceFixture)s).Test = "Sync";
-
-        public static readonly Func<IRxBLService, Task> SetTestStringAsyncDirect = async s =>
+        public void SetTestStringDirect()
         {
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            ((ServiceFixture)s).Test = "Async";
-        };
-
-        public static Action<IRxBLService> SetTestString(string value)
-        {
-            return s => ((ServiceFixture)s).Test = value;
+            Test = "Sync";
         }
 
-        public static Func<IRxBLService, Task> SetTestStringAsync(string value)
+        public async Task SetTestStringAsyncDirect()
         {
-            return async s =>
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            Test = "Async";
+        }
+
+        public Action SetTestString(string value)
+        {
+            return () => Test = value;
+        }
+
+        public Func<Task> SetTestStringAsync(string value)
+        {
+            return async () =>
             {
                 await Task.Delay(TimeSpan.FromSeconds(2));
-                ((ServiceFixture)s).Test = value;
+                Test = value;
             };
         }
 
-        public static Func<IRxBLService, CancellationToken, Task> SetTestStringAsyncLR(string value)
+        public Func<CancellationToken, Task> SetTestStringAsyncLR(string value)
         {
-            return async (s, ct) =>
+            return async (ct) =>
             {
                 await Task.Delay(TimeSpan.FromSeconds(2), ct);
-                ((ServiceFixture)s).Test = value;
+                Test = value;
             };
         }
 

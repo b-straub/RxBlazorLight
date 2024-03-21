@@ -11,8 +11,9 @@ namespace RxMudBlazorLightTests.Context
         {
             Services.AddMudServices();
 
-            Services.AddRxBLService(sp => new TestService(sp));
-            Services.AddRxBLService<TimerService>();
+            var collector = Services.AddRxBLServiceCollector();
+            Services.AddRxBLService(collector, sp => new TestService(sp));
+            Services.AddRxBLService<TimerService>(collector);
 
             JSInterop.Mode = JSRuntimeMode.Loose;
         }

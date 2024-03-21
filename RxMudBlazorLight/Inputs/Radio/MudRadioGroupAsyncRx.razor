@@ -7,8 +7,8 @@
     [Parameter, EditorRequired]
     public required IStateGroupAsync<T> StateGroupAsync { get; init; }
 
-    [Parameter, EditorRequired]
-    public required Func<IStateAsync<T>, T, Task> SelectionChangedAsync { get; init; }
+    [Parameter]
+    public Func<IStateAsync<T>, T, Task>? SelectionChangedAsync { get; init; }
 
     [Parameter]
     public Func<IStateAsync<T>, bool>? CanChange { get; init; }
@@ -29,14 +29,17 @@
 
     protected override void OnInitialized()
     {
-        ValueChanged = EventCallback.Factory.Create<T>(this, () => StateGroupAsync.ChangeAsync(async s =>
+        ValueChanged = EventCallback.Factory.Create<T>(this, async v =>
+        {
+            await StateGroupAsync.ChangeAsync(async s =>
             {
-                if (Value is not null)
+                if (SelectionChangedAsync is not null)
                 {
-                    await SelectionChangedAsync(s, Value);
-                    s.Value = Value;
+                    await SelectionChangedAsync(s, v);
                 }
-            }));
+                s.Value = v;
+            });
+        });
 
         if (ChildContent is null)
         {
@@ -65,12 +68,11 @@
 
     protected override void OnParametersSet()
     {
+        Disabled = (CanChange is not null && !StateGroupAsync.CanChange(CanChange)) || StateGroupAsync.Changing();
         if (StateGroupAsync.Done() && StateGroupAsync.HasValue())
         {
             Value = StateGroupAsync.Value;
         }
-
-        Disabled = (CanChange is not null && !StateGroupAsync.CanChange(CanChange)) || StateGroupAsync.Changing();
 
         base.OnParametersSet();
     }

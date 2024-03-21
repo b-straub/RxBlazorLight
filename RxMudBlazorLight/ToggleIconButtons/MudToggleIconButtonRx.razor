@@ -20,12 +20,20 @@
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
+    protected override void OnInitialized()
+    {
+        ToggledChanged = EventCallback.Factory.Create<bool>(this, v =>
+        {
+            State.Change(s => s.Value = v);
+        });
+
+        base.OnInitialized();
+    }
+
     protected override void OnParametersSet()
     {
+        Disabled = (CanChange is not null && !State.CanChange(CanChange));
         Toggled = State.Value;
-        ToggledChanged = EventCallback.Factory.Create<bool>(this, v => State.Change(s => s.Value = v));
-
-        Disabled = (CanChange is not null && !State.CanChange(CanChange)) || State.Changing();
 
         base.OnParametersSet();
     }

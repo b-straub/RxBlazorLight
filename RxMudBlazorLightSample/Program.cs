@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -12,8 +13,10 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddMudServices();
 
-builder.Services.AddRxBLService(sp => new TestService(sp));
-builder.Services.AddRxBLService<TimerService>();
-builder.Services.AddRxBLService<StateService>();
+var collector = builder.Services.AddRxBLServiceCollector();
+builder.Services.AddRxBLService(collector, sp => new TestService(sp));
+builder.Services.AddRxBLService<TimerService>(collector);
+builder.Services.AddRxBLService<StateService>(collector);
+builder.Services.AddRxBLService<CrudService>(collector);
 
 await builder.Build().RunAsync();

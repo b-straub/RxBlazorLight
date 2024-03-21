@@ -12,51 +12,51 @@ namespace RxBlazorLightCore
 
         private readonly List<IRxBLService> _services = [];
 
+        public IEnumerable<Type> ServiceTypes => _serviceTypes;
+
+        private readonly List<Type> _serviceTypes = [];
+
         public void AddService<T>(T service) where T : IRxBLService
         {
             _services.Add(service);
+        }
+
+        public void AddServiceType(Type type)
+        {
+            _serviceTypes.Add(type);
         }
     }
 
     public static class ServiceExtensions
     {
-        public static IServiceCollection AddRxBLService<T>(this IServiceCollection services, double sampleMS = 100) where T : RxBLService, new()
+        public static RxServiceCollector AddRxBLServiceCollector(this IServiceCollection services)
         {
-            services.TryAddSingleton<RxServiceCollector>();
+            var collector = new RxServiceCollector();
+            services.AddSingleton(collector);
+            return collector;
+        }
 
-            services.AddCascadingValue(sp =>
-            {
-                var collector = sp.GetRequiredService<RxServiceCollector>();
-                var service = new T();
-                collector.AddService(service);
-                return service.CreateCascadingValueSource(sampleMS);
-            });
+        public static IServiceCollection AddRxBLService<T>(this IServiceCollection services, RxServiceCollector collector) where T : RxBLService, new()
+        {
+            var service = new T();
+            services.AddSingleton(service);
+            collector.AddService(service);
 
             return services;
         }
 
-        public static IServiceCollection AddRxBLService<T>(this IServiceCollection services, Func<IServiceProvider, T> serviceFactory, double sampleMS = 100) where T : RxBLService
+        public static IServiceCollection AddRxBLService<T>(this IServiceCollection services, RxServiceCollector collector, Func<IServiceProvider, T> serviceFactory) where T : RxBLService
         {
-            services.TryAddSingleton<RxServiceCollector>();
+            collector.AddServiceType(typeof(T));
 
-            services.AddCascadingValue(sp =>
+            services.AddSingleton(sp =>
             {
-                var collector = sp.GetRequiredService<RxServiceCollector>();
                 var service = serviceFactory(sp);
                 collector.AddService(service);
-                return service.CreateCascadingValueSource(sampleMS);
+                return service;
             });
 
             return services;
-        }
-
-        private static CascadingValueSource<T> CreateCascadingValueSource<T>(this T service, double sampleMS) where T : IRxBLService
-        {
-            var source = new CascadingValueSource<T>(service, false);
-            service
-                .Sample(TimeSpan.FromMilliseconds(sampleMS))
-                .Subscribe(_ => source.NotifyChangedAsync());
-            return source;
         }
     }
 }

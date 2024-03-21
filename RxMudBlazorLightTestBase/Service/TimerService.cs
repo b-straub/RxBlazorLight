@@ -16,7 +16,7 @@ namespace RxMudBlazorLightTestBase.Service
             return new TimerScope(this);
         }
 
-        public sealed partial class TimerScope(TimerService service) : IRxBLScope
+        public sealed partial class TimerScope(TimerService service) : RxBLScope<TimerService>(service)
         {
             public IState<long> ComponentTimer { get; } = service.CreateState(0L);
             public IState<bool> Suspended { get; } = service.CreateState(false);
@@ -25,7 +25,7 @@ namespace RxMudBlazorLightTestBase.Service
 
             private IDisposable? _timerDisposable;
 
-            public void EnterScope()
+            public override ValueTask OnContextReadyAsync()
             {
                 _timerDisposable = Observable.Interval(TimeSpan.FromSeconds(1))
                   .StartWith(0)
@@ -42,13 +42,18 @@ namespace RxMudBlazorLightTestBase.Service
                       }
                   });
 
-                Console.WriteLine("TimerScope Entered");
+                Console.WriteLine("TimerScope ContextReady");
+
+                return base.OnContextReadyAsync();
             }
 
-            public void LeaveScope()
+            protected override void Dispose(bool disposing)
             {
-                _timerDisposable?.Dispose();
-                Console.WriteLine("TimerScope Left");
+                if (disposing)
+                {
+                    _timerDisposable?.Dispose();
+                    Console.WriteLine("TimerScope Disposed");
+                }
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿<PageTitle>Debug</PageTitle>
+﻿@inherits RxBLServiceSubscriber<TestService>
+
+<PageTitle>Debug</PageTitle>
 
 <MudStack AlignItems=@AlignItems.Start>
     <MudText Class="mb-4">Current count Async: @Service.CountStateAsync.Value</MudText>
@@ -37,6 +39,9 @@
     <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
                    State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync HasProgress=@true />
 
+    <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
+                   State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync HasProgress=@true ForceBadge=@true />
+
     <MudFabAsyncCancelRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
                          State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10) />
 
@@ -47,8 +52,3 @@
         <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
     </MudBadge>
 </MudStack>
-
-@code {
-    [CascadingParameter]
-    public required TestService Service { get; init; }
-}

@@ -5,7 +5,7 @@ using RxMudBlazorLight.Buttons;
 
 namespace RxMudBlazorLight.Dialogs
 {
-    public partial class DialogRx<TService, TParam> : RxBLServiceChangeSubscriber<TService> where TService : IRxBLService
+    public partial class DialogRx<TService, TParam> : RxBLServiceSubscriber<TService> where TService : IRxBLService
     {
         [CascadingParameter]
         MudDialogInstance? MudDialog { get; set; }
@@ -89,9 +89,9 @@ namespace RxMudBlazorLight.Dialogs
             }
         }
 
-        protected override void ServiceStateHasChanged(Guid id, ChangeReason changeReason)
+        protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
         {
-            if (changeReason is ChangeReason.STATE && _buttonRef is not null && id == _buttonRef.State.ID)
+            if (cr.Reason is ChangeReason.STATE && _buttonRef is not null && cr.StateID == _buttonRef.State.ID)
             {
                 if (_buttonRef.State.Done())
                 {

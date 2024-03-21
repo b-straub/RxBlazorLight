@@ -14,31 +14,19 @@
 
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-        if (State.HasValue())
-        {
-            Value = State.Value;
-            Text = State.Value.ToString();
-        }
-
         ValueChanged = EventCallback.Factory.Create<T>(this, v =>
         {
-            if (v is not null && !v.Equals(State.Value))
-            {
-                State.Change(s => s.Value = v);
-            }
+            State.Change(s => s.Value = v);
         });
+
+        base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
-        if (State.Done() && State.HasValue())
-        {
-            Value = State.Value;
-            Text = State.Value.ToString();
-        }
-
-        Disabled = (CanChange is not null && !State.CanChange(CanChange)) || State.Changing();
+        Disabled = (CanChange is not null && !State.CanChange(CanChange));
+        Value = State.Value;
+        Text = Value?.ToString();
 
         base.OnParametersSet();
     }

@@ -17,7 +17,7 @@ namespace RxMudBlazorLight.ButtonBase
         public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
         [Parameter]
-        public bool DeferredNotification { get; set; } = false;
+        public bool DeferredNotification { get; set; }
 
         protected Func<IStateAsync<T>, Task>? _changeStateAsync;
         protected Func<IStateAsync<T>, CancellationToken, Task>? _changeStateAsyncCancel;

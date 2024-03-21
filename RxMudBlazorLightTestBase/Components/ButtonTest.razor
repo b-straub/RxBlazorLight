@@ -1,4 +1,6 @@
-﻿<PageTitle>ButtonTest</PageTitle>
+﻿@inherits RxBLServiceSubscriber<TestService>
+
+<PageTitle>ButtonTest</PageTitle>
 
 <MudStack>
     <MudText Typo="Typo.h3" GutterBottom="true">Counter</MudText>
@@ -18,7 +20,7 @@
         <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync CanChange=@Service.IncrementStateCanChange>IncrementAsync</MudButtonAsyncRx>
         <MudButtonAsyncCancelRx Color="Color.Secondary" Variant="Variant.Filled" State=@Service.CountStateAsync ChangeStateAsync=@(TestService.AddToCounterAsync(2)) CanChange=@(TestService.IntStateCanChangeLowerBound(4)) CancelText="Cancel Increment">Add Async 2</MudButtonAsyncCancelRx>
         <MudButtonAsyncCancelRx Color="Color.Secondary" Variant="Variant.Filled" State=@Service.CountStateAsync ChangeStateAsync=@DoPrepareAddAsync DeferredNotification=@true CancelColor=Color.Error CancelText="Cancel Add">
-            AddWithConfirmAsync 2
+            AddWithConfirmAsync 10
         </MudButtonAsyncCancelRx>
     </MudStack>
 
@@ -73,10 +75,7 @@
 </MudStack>
 
 @code {
-    [CascadingParameter]
-    public required TestService Service { get; init; }
-
-    [CascadingParameter]
+    [Inject]
     public required TimerService TimerService { get; init; }
 
     [Inject]

@@ -14,25 +14,18 @@
 
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-        Value = State.Value;
         ValueChanged = EventCallback.Factory.Create<T>(this, v =>
         {
-            if (v is not null && !v.Equals(State.Value))
-            {
-                State.Change(s => s.Value = v);
-            }
+            State.Change(s => s.Value = v);
         });
+
+        base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
-        if (State.Done())
-        {
-            Value = State.Value;
-        }
-
-        Disabled = (CanChange is not null && !State.CanChange(CanChange)) || State.Changing();
+        Disabled = (CanChange is not null && !State.CanChange(CanChange));
+        Value = State.Value;
 
         base.OnParametersSet();
     }

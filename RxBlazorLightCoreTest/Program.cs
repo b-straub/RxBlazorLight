@@ -18,7 +18,7 @@ testService.CounterAsync.Subscribe(p =>
 
 testService.Subscribe(cr =>
 {
-    Console.WriteLine(cr.ID);
+    Console.WriteLine(cr.StateID);
 
     if (testService.CounterAsync.Phase is StatePhase.CANCELED)
     {

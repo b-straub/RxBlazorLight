@@ -1,0 +1,133 @@
+﻿@inherits RxBLServiceSubscriber<CrudService>
+
+<MudCard Class="ma-8" Elevation="0" Outlined="true">
+    <MudCardHeader>
+        <CardHeaderAvatar>
+            <MudAvatar Color="Color.Primary">
+                <MudIcon Icon="@Icons.Material.Filled.MoreTime" />
+            </MudAvatar>
+        </CardHeaderAvatar>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6" GutterBottom="true">ToDo</MudText>
+            @if (Service.Exceptions.Any())
+            {
+                <MudText Class="mt-4" Color="Color.Error">Error: @Service.Exceptions.First().Exception.Message</MudText>
+            }
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudStack Row=@true>
+                <MudSelectRx StateGroup=@Service.CRUDDBRoleGroup CanChange=Service.CanChangeRole FullWidth=@false />
+                <CRUDItemAddOrUpdate AddMode=@true Item=@null />
+                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.AutoDelete" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.Completed))
+                               State=@Service.CRUDItemDB HasProgress=@true CanChange=@Service.CanRemoveCompletedCRUDItems ChangeStateAsync=@(CrudService.RemoveCompletedCRUDItems()) />
+                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.All))
+                               State=@Service.CRUDItemDB HasProgress=@true CanChange=@CrudService.CanRemoveAllCRUDItems ChangeStateAsync=@(CrudService.RemoveAllCRUDItems()) />
+            </MudStack>
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTable T="CRUDToDoItem" Items=@Service.CRUDItemDB.Value.Values Dense="true">
+            <ColGroup>
+                <col style="width:55%;" />
+                <col style="width:30%;" />
+                <col style="width:5%;" />
+                <col style="width:5%;" />
+                <col style="width:5%;" />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh>ToDo</MudTh>
+                <MudTh>
+                    <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy=@Sort() SortDirectionChanged=@(d => _sortDirection = d)>
+                        DueDate
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh Style="text-align:center">
+                    <MudIcon Icon="@Icons.Material.Filled.Check" />
+                </MudTh>
+                <MudTh Style="text-align:center">
+                    <MudIcon Icon="@Icons.Material.Filled.Edit" />
+                </MudTh>
+                <MudTh Style="text-align:center">
+                    <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Delete" />
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ToDo"><MudText Style=@ColorForItem(context)>@context.Text</MudText></MudTd>
+                <MudTd DataLabel="DueDate"><MudText Style=@ColorForItem(context)>@DateTimeForItem(context)</MudText></MudTd>
+                <MudTd DataLabel="Completed" Style="text-align:center">
+                    <MudIconButtonAsyncRx Icon=@(context.Completed ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank) State=@Service.CRUDItemDB CanChange=@Service.CanToggleCRUDItemCompleted ChangeStateAsync=@(CrudService.ToggleCRUDItemCompletedAsync(context)) />
+                </MudTd>
+                <MudTd DataLabel="Edit" Style="text-align:center">
+                    <CRUDItemAddOrUpdate AddMode=@false Item=@context />
+                </MudTd>
+                <MudTd DataLabel="DeleteItem" Style="text-align:center">
+                    <MudIconButtonAsyncRx Color="Color.Error" Icon=@Icons.Material.Filled.Delete State=@Service.CRUDItemDB HasProgress=@true ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.One)) ChangeStateAsync=@(CrudService.RemoveCRUDItem(context)) />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Inject]
+    public required IDialogService DialogService { get; init; }
+
+    private List<CRUDToDoItem> _items = [];
+    private SortDirection _sortDirection = SortDirection.Ascending;
+
+    private enum DeleteType
+    {
+        All,
+        Completed,
+        One
+    }
+
+    private static string ColorForItem(CRUDToDoItem item)
+    {
+        return item.Completed ? $"color:{Colors.Grey.Default}" : "color:black";
+    }
+
+    private static string DateTimeForItem(CRUDToDoItem item)
+    {
+        return item.DueDate == new DateTime(item.DueDate.Year, item.DueDate.Month, item.DueDate.Day) ?
+            item.DueDate.ToShortDateString() : item.DueDate.ToShortDateString() + " - " + item.DueDate.ToShortTimeString();
+    }
+
+    private Func<CRUDToDoItem, object> Sort()
+    {
+        return new Func<CRUDToDoItem, object>(x =>
+        {
+            var completed = x.Completed;
+
+            if (_sortDirection is SortDirection.Descending)
+            {
+                completed = !completed;
+            }
+
+            return x.Completed ? x.DueDate.Ticks : -(long.MaxValue - x.DueDate.Ticks);
+        });
+    }
+
+    private async Task<bool> ConfirmDelete(DeleteType type)
+    {
+        var message = type switch
+        {
+            DeleteType.All => "Delete all items?",
+            DeleteType.Completed => "Delete completed items?",
+            DeleteType.One => "Delete item?",
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
+
+        var parameters = new DialogParameters { ["Message"] = message };
+        var dialog = DialogService.Show<ConfirmDialog>("ToDoItem", parameters);
+
+        var res = await dialog.Result;
+
+        if (res.Canceled)
+        {
+            return false;
+        }
+
+        return true;
+    }
+}

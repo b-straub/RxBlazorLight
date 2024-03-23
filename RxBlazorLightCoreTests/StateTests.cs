@@ -4,6 +4,7 @@ using Xunit.Abstractions;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
+using System.Reactive;
 
 namespace RxBlazorLightCoreTests
 {
@@ -191,7 +192,7 @@ namespace RxBlazorLightCoreTests
             await fixture.IntStateAsync.ChangeAsync(ServiceFixture.AddAsync(10));
             while (!done) ;
             Assert.Equal(10, fixture.IntStateAsync.Value);
-            Assert.Equal(2, stateChangeCount);
+            Assert.Equal(1, stateChangeCount);
 
             done = false;
             stateChangeCount = 0;
@@ -200,7 +201,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
 
             Assert.True(exception);
-            Assert.Equal(2, stateChangeCount);
+            Assert.Equal(1, stateChangeCount);
         }
 
         [Fact]
@@ -266,7 +267,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
 
             Assert.Equal("TestStringAsync", fixture.Test);
-            Assert.Equal(2, stateChangeCount);
+            Assert.Equal(1, stateChangeCount);
         }
 
         [Fact]
@@ -332,7 +333,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
 
             Assert.Equal("Async", fixture.Test);
-            Assert.Equal(2, stateChangeCount);
+            Assert.Equal(1, stateChangeCount);
         }
 
         [Fact]
@@ -414,6 +415,55 @@ namespace RxBlazorLightCoreTests
             while (!completed) ;
 
             Assert.Equal(9, phaseChangeCount);
+        }
+
+        [Fact]
+        public void TestStateObservableDirect()
+        {
+            ServiceFixture fixture = new();
+            var phaseChangeCount = 0;
+            bool completed = false;
+            int completedCount = 3;
+
+            fixture.Subscribe(p =>
+            {
+                phaseChangeCount++;
+
+                _output.WriteLine($"PCC {phaseChangeCount} Phase {p}");
+                 
+                completed = !completed && phaseChangeCount == completedCount;
+            });
+
+
+            var changer = Observable.Range(0, 3).Select(_ => Unit.Default);
+
+            fixture.RegisterChangeObservables(changer);
+
+            while (!completed) ;
+
+            Assert.Equal(3, phaseChangeCount);
+
+            phaseChangeCount = 0;
+            completed = false;
+            completedCount = 6;
+
+            fixture.RegisterChangeObservables(changer);
+
+            while (!completed) ;
+
+            Assert.Equal(6, phaseChangeCount);
+
+            phaseChangeCount = 0;
+            completed = false;
+            completedCount = 3;
+
+            fixture.ClearChangeObservables();
+            fixture.RegisterChangeObservables(changer);
+
+            while (!completed) ;
+
+            Assert.Equal(3, phaseChangeCount);
+
         }
 
         [Fact]

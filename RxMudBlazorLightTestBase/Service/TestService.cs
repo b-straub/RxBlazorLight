@@ -56,7 +56,7 @@ namespace RxMudBlazorLightTestBase.Service
 
     public partial class TestService : TestServiceBase
     {
-        public sealed class Scope(TestService service) : RxBLScope<TestService>(service)
+        public sealed class Scope(TestService service) : RxBLStateScope<TestService>(service)
         {
             public IState<int> CountState = service.CreateState(0);
 
@@ -77,7 +77,7 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class ColorsScope(TestService service) : RxBLScope<TestService>(service)
+        public class ColorsStateScope(TestService service) : RxBLStateScope<TestService>(service)
         {
             private static readonly TestColor[] Colors =
             [
@@ -143,14 +143,14 @@ namespace RxMudBlazorLightTestBase.Service
             _radioTestExtended = this.CreateStateGroup(Colors, Colors[0], ColorDisabled);
         }
 
-        public IRxBLScope CreateScope()
+        public IRxBLStateScope CreateScope()
         {
             return new Scope(this);
         }
 
-        public IRxBLScope CreateColorsScope()
+        public IRxBLStateScope CreateColorsScope()
         {
-            return new ColorsScope(this);
+            return new ColorsStateScope(this);
         }
 
         protected override async ValueTask ContextReadyAsync()

@@ -5,9 +5,9 @@
 <MudStack AlignItems="AlignItems.Center">
     <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
     <TimerComponent Name="Gobal" />
-    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
+    <RxBLStateScope TScope=@TimerService.TimerStateScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
         <TimerComponent Name="InputTest" />
-    </RxBLServiceScope>
+    </RxBLStateScope>
 
     <MudText Class="mb-4">Current count: @Service.CountState.Value</MudText>
     <MudText Class="mb-4">Current count Async: @Service.CountStateAsync.Value</MudText>
@@ -51,14 +51,14 @@
     <MudTextFieldRx State=@Service.TextValue Label="Text Test clone" Immediate=@true />
     <MudAutocompleteRx State=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
 
-    <RxBLServiceScope TScope=@TestService.ColorsScope TService=@TestService ScopeFactory=@Service.CreateColorsScope>
+    <RxBLStateScope TScope=@TestService.ColorsStateScope TService=@TestService ScopeFactory=@Service.CreateColorsScope>
         <ColorsScopedGroup Context=1 />
-    </RxBLServiceScope>
+    </RxBLStateScope>
 
-    <RxBLServiceScope TScope=@TestService.ColorsScope TService=@TestService ScopeFactory=@Service.CreateColorsScope>
+    <RxBLStateScope TScope=@TestService.ColorsStateScope TService=@TestService ScopeFactory=@Service.CreateColorsScope>
         <ColorsScopedGroup Context=0 />
         <ColorsScopedGroup Context=1 />
-    </RxBLServiceScope>
+    </RxBLStateScope>
 
     <MudGrid>
         @if (Service.Exceptions.Any())

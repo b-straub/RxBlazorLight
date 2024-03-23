@@ -18,7 +18,7 @@ namespace RxMudBlazorLight.ButtonBase
         protected readonly Color? _cancelColor;
         protected readonly string? _cancelText;
         protected readonly bool _hasProgress;
-        protected readonly Guid _id = Guid.NewGuid();
+        internal readonly Guid _id = Guid.NewGuid();
 
         private enum IconForState
         {

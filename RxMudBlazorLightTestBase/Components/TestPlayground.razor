@@ -5,9 +5,9 @@
 <MudStack AlignItems="AlignItems.Center">
     <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
     <TimerComponent Name="Gobal" />
-    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
+    <RxBLStateScope TScope=@TimerService.TimerStateScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
         <TimerComponent Name="TestPlayground" />
-    </RxBLServiceScope>
+    </RxBLStateScope>
     <MudText id="result" Class="mb-4">Current count: @Service.CountState.Value</MudText>
     <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() SelectionChangedAsync=@TestService.ChangePizzaAsync />
     <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@TestService.IncrementCounter>Increment</MudButtonRx>

@@ -27,7 +27,7 @@ else
 
         if (!result.Canceled)
         {
-            var scope = (CrudService.CrudItemScope)result.Data;
+            var scope = (CrudService.CrudItemInput)result.Data;
             await scope.SubmitAsync();
         }
     }

@@ -6,7 +6,7 @@
     <MudText Class="mb-4">Current count: @Service.Counter.Value</MudText>
     <MudText Class="mb-4">Current count Async: @Service.CounterAsync.Value</MudText>
 
-    <MudSlider @bind-Value:get=@Service.Counter.Value @bind-Value:set=@(v => Service.Counter.Change(s => s.Value = v)) />
+    <MudSlider @bind-Value=@Service.Counter.Value />
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudButtonRx State=@Service.Counter ChangeState=StateService.Increment CanChange=@StateService.CounterCanChange>Increment</MudButtonRx>
         <MudButtonAsyncCancelRx State=@Service.CounterAsync ChangeStateAsync=StateService.AddAsync(10) CanChange=@StateService.CounterAsyncCanChange CancelText="Cancel Add">Add</MudButtonAsyncCancelRx>

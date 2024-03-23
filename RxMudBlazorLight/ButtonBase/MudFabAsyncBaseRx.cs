@@ -43,7 +43,7 @@ namespace RxMudBlazorLight.ButtonBase
         {
             ArgumentNullException.ThrowIfNull(_buttonRx);
             _buttonRx.SetParameter(State, _changeStateAsync, _changeStateAsyncCancel, CanChange, DeferredNotification);
-
+                            
             var parameters = _buttonRx.GetFabParameters(State, StartIcon, EndIcon, Label, IconVariant, _changeStateAsyncCancel is not null, _forceBadge);
 
             StartIcon = parameters.StartIcon;
@@ -52,6 +52,7 @@ namespace RxMudBlazorLight.ButtonBase
 
             Color = _buttonRx.Color;
             OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
+
             Disabled = _buttonRx.Disabled;
 
             base.OnParametersSet();

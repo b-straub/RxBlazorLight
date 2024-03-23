@@ -202,7 +202,7 @@ namespace RxBlazorLightCore
                 ChangeCallerID = changeCallerID;
 
                 ResetCancellationToken();
-                PhaseChanged(false, notify);
+                PhaseChanged(false, false);
                 await changeDelegateAsync(this);
                 PhaseChanged(true, notify);
             }

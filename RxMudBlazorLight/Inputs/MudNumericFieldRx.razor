@@ -27,6 +27,13 @@
         Disabled = (CanChange is not null && !State.CanChange(CanChange));
         Value = State.Value;
         Text = Value?.ToString();
+        if (Validation is not null)
+        {
+            var validate = (Func<IState<T>, StateValidation>)Validation;
+            var validation = validate(State);
+            ErrorText = validation.Message;
+            Error = validation.Error;
+        }
 
         base.OnParametersSet();
     }

@@ -69,9 +69,16 @@
     protected override void OnParametersSet()
     {
         Disabled = (CanChange is not null && !StateGroupAsync.CanChange(CanChange)) || StateGroupAsync.Changing();
-        if (StateGroupAsync.Done() && StateGroupAsync.HasValue())
+        if (StateGroupAsync.Done())
         {
             Value = StateGroupAsync.Value;
+            if (Validation is not null)
+            {
+                var validate = (Func<IStateAsync<T>, StateValidation>)Validation;
+                var validation = validate(StateGroupAsync);
+                ErrorText = validation.Message;
+                Error = validation.Error;
+            }
         }
 
         base.OnParametersSet();

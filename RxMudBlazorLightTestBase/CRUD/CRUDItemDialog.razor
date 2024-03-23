@@ -1,18 +1,18 @@
 ﻿@inherits RxBLServiceSubscriber<CrudService>
 
-<MudDialog>
+<MudDialog ContentStyle="width: 400px; height: 400px">
     <DialogContent>
         <EditForm Model=@_scope OnValidSubmit="OnValidSubmit">
-        <MudCard>
-            <MudCardContent>
-                <MudTextFieldRx State=@_scope.Text AutoFocus="true" Immediate="true" Label="ToDo" />
-                    <MudDatePickerRx State=@_scope.DueDateDate CanChange=@_scope.CanUpdateDueDate Label="Due Date" Editable="true" />
-                <MudTimePickerRx State=@_scope.DueDateTime CanChange=@_scope.CanUpdateTime PickerVariant="PickerVariant.Dialog" />
-            </MudCardContent>
-            <MudCardActions>
+            <MudCard>
+                <MudCardContent>
+                    <MudTextFieldRx State=@_scope.Text Validation=@CrudService.CrudItemInput.ValidateText AutoFocus="true" Immediate="true" Label="ToDo" />
+                    <MudDatePickerRx State=@_scope.DueDateDate Validation=@CrudService.CrudItemInput.ValidateDueDate CanChange=@_scope.CanUpdateDueDate Label="Due Date" Editable="true" />
+                    <MudTimePickerRx PickerVariant=@PickerVariant.Dialog State=@_scope.DueDateTime Validation=@_scope.ValidateDueDateTime CanChange=@_scope.CanUpdateTime />
+                </MudCardContent>
+                <MudCardActions>
                     <MudButton Disabled=@(!_scope.CanSubmit()) ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color=@Color.Success Class="ml-auto">Save</MudButton>
-            </MudCardActions>
-        </MudCard>
+                </MudCardActions>
+            </MudCard>
         </EditForm>
     </DialogContent>
 </MudDialog>
@@ -28,11 +28,11 @@
     void Cancel() => MudDialog?.Cancel();
 
     [NotNull]
-    private CrudService.CrudItemScope? _scope { get; set; }
+    private CrudService.CrudItemInput? _scope { get; set; }
 
     protected override void OnInitialized()
     {
-        _scope = Service.CreateItemScope(Item);
+        _scope = Service.CreateItemInput(Item);
         ArgumentNullException.ThrowIfNull(_scope);
 
         MudDialog.Options.CloseButton = true;

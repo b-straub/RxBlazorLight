@@ -7,9 +7,9 @@
     <MudText Typo="Typo.h3" GutterBottom="true">@Service.StateInfo?.State</MudText>
 
     <TimerComponent Name="Gobal" />
-    <RxBLServiceScope TScope=@TimerService.TimerScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
+    <RxBLStateScope TScope=@TimerService.TimerStateScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
         <TimerComponent Name="ButtonTest" />
-    </RxBLServiceScope>
+    </RxBLStateScope>
 
     <MudText Class="mb-4">Current count: @Service.CountState.Value</MudText>
     <MudText Class="mb-4">Current count Async: @Service.CountStateAsync.Value</MudText>
@@ -43,9 +43,9 @@
         <MudFabAsyncCancelRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add" State=@Service.CountStateAsync ChangeStateAsync=@DoPrepareAddAsync DeferredNotification=@true CancelText="Cancel Add" CancelColor=@Color.Error Label="AddAsync 2" />
     </MudStack>
 
-    <RxBLServiceScope TScope=@TestService.Scope TService=@TestService ScopeFactory=@Service.CreateScope>
+    <RxBLStateScope TScope=@TestService.Scope TService=@TestService ScopeFactory=@Service.CreateScope>
         <IconButtons />
-    </RxBLServiceScope>
+    </RxBLStateScope>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudSwitchRx State=@Service.AddMode CanChange=@Service.AddModeCanChange Label="Switch to Add mode" />

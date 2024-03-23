@@ -28,6 +28,13 @@
     {
         Disabled = (CanChange is not null && !State.CanChange(CanChange));
         Date = State.Value;
+        if (Validation is not null)
+        {
+            var validate = (Func<IState<DateTime>, StateValidation>)Validation;
+            var validation = validate(State);
+            ErrorText = validation.Message;
+            Error = validation.Error;
+        }
 
         base.OnParametersSet();
     }

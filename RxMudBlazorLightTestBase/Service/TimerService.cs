@@ -11,12 +11,12 @@ namespace RxMudBlazorLightTestBase.Service
             OVER20
         }
 
-        public IRxBLScope CreateScope()
+        public IRxBLStateScope CreateScope()
         {
-            return new TimerScope(this);
+            return new TimerStateScope(this);
         }
 
-        public sealed partial class TimerScope(TimerService service) : RxBLScope<TimerService>(service)
+        public sealed partial class TimerStateScope(TimerService service) : RxBLStateScope<TimerService>(service)
         {
             public IState<long> ComponentTimer { get; } = service.CreateState(0L);
             public IState<bool> Suspended { get; } = service.CreateState(false);

@@ -3,13 +3,13 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace RxBlazorLightCore
 {
-    public sealed partial class RxBLServiceScope<TScope, TService> : ComponentBase, IDisposable
+    public sealed partial class RxBLStateScope<TScope, TService> : ComponentBase, IDisposable
     {
         [Inject]
         public required TService Service { get; init; }
 
         [Parameter, EditorRequired]
-        public required Func<IRxBLScope> ScopeFactory { get; init; }
+        public required Func<IRxBLStateScope> ScopeFactory { get; init; }
 
         [Parameter]
         public required RenderFragment ChildContent { get; init; }

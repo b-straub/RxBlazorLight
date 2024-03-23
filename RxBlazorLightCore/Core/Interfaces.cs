@@ -11,8 +11,9 @@ namespace RxBlazorLightCore
 
     public readonly record struct ServiceChangeReason(Guid ServiceID, Guid StateID, ChangeReason Reason);
     public readonly record struct ServiceException(Exception Exception, Guid ID);
+    public readonly record struct StateValidation(string Message, bool Error);
 
-    public interface IRxBLScope : IDisposable, IObservable<ServiceChangeReason>
+    public interface IRxBLStateScope : IDisposable
     {
         public ValueTask OnContextReadyAsync();
     }

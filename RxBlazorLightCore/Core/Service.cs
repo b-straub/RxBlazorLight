@@ -3,7 +3,7 @@ using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
-    public class RxBLScope<T>(T service) : IRxBLScope where T : IRxBLService
+    public class RxBLStateScope<T>(T service) : IRxBLStateScope where T : IRxBLService
     {
         protected T Service => service;
 
@@ -21,11 +21,6 @@ namespace RxBlazorLightCore
 
         protected virtual void Dispose(bool disposing)
         {
-        }
-
-        public IDisposable Subscribe(IObserver<ServiceChangeReason> observer)
-        {
-            return Service.Subscribe(observer);
         }
     }
 

@@ -35,7 +35,7 @@ namespace RxBlazorLightCore
         EXCEPTION
     }
 
-    public interface IStateBase<T> : IObservable<StatePhase>
+    public interface IStateBase<T>
     {
         public T Value { get; set; }
 
@@ -52,29 +52,15 @@ namespace RxBlazorLightCore
     {
         public bool CanChange(Func<IState<T>, bool> canChangeDelegate);
 
-        public void Change(Action<IState<T>> changeDelegate, bool notify = true);
+        public void Change(Action<IState<T>> changeDelegate);
     }
 
     public interface IStateAsync<T> : IStateBase<T>
     {
         public bool CanChange(Func<IStateAsync<T>, bool> canChangeDelegate);
-        public Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null);
-        public Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null);
-        public bool CanCancel { get; }
+        public Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notifyChanging = false, Guid? changeCallerID = null);
+        public Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notifyChanging = true, Guid? changeCallerID = null);
         public void Cancel();
-    }
-
-    public interface IState: IState<Unit>
-    {
-        public bool CanChange(Func<IState, bool> canChangeDelegate);
-        public void Change(Action changeDelegate, bool notify = true);
-    }
-
-    public interface IStateAsync : IStateAsync<Unit>
-    {
-        public bool CanChange(Func<IStateAsync, bool> canChangeDelegate);
-        public Task ChangeAsync(Func<Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null);
-        public Task ChangeAsync(Func<CancellationToken, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null);
     }
 
     public interface IStateGroup<T> : IState<T>

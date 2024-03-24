@@ -8,20 +8,20 @@ namespace RxBlazorLightCore
 {
     public class RxServiceCollector
     {
-        public IEnumerable<IRxBLService> Services => _services;
+        internal IEnumerable<IRxBLService> Services => _services;
 
         private readonly List<IRxBLService> _services = [];
 
-        public IEnumerable<Type> ServiceTypes => _serviceTypes;
+        internal IEnumerable<Type> ServiceTypes => _serviceTypes;
 
         private readonly List<Type> _serviceTypes = [];
 
-        public void AddService<T>(T service) where T : IRxBLService
+        internal void AddService<T>(T service) where T : IRxBLService
         {
             _services.Add(service);
         }
 
-        public void AddServiceType(Type type)
+        internal void AddServiceType(Type type)
         {
             _serviceTypes.Add(type);
         }

@@ -1,78 +1,21 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace RxBlazorLightCore
 {
-    public class State : State<Unit>, IState
-    {
-        protected State(RxBLService service) :
-            base(service, Unit.Default)
-        {
-        }
-
-        public bool CanChange(Func<IState, bool> canChangeDelegate)
-        {
-            return canChangeDelegate(this);
-        }
-
-        public void Change(Action changeDelegate, bool notify = true)
-        {
-            base.Change(_ => changeDelegate(), notify);
-        }
-
-        public static IState Create(RxBLService service)
-        {
-            return new State(service);
-        }
-    }
-
-    public class StateAsync : StateAsync<Unit>, IStateAsync
-    {
-        protected StateAsync(RxBLService service) :
-            base(service, Unit.Default)
-        {
-        }
-
-        public bool CanChange(Func<IStateAsync, bool> canChangeDelegate)
-        {
-            return canChangeDelegate(this);
-        }
-
-        public async Task ChangeAsync(Func<Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null)
-        {
-            await base.ChangeAsync(async _ => await changeDelegateAsync(), notify, changeCallerID);
-        }
-
-        public async Task ChangeAsync(Func<CancellationToken, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null)
-        {
-            await base.ChangeAsync(async (_, ct) => await changeDelegateAsync(ct), notify, changeCallerID);
-        }
-
-        public static IStateAsync Create(RxBLService service)
-        {
-            return new StateAsync(service);
-        }
-    }
-
     public class StateBase<T> : IStateBase<T>
     {
         public T Value { get; set; }
-        public StatePhase Phase => _changedSubject.Value;
+        public StatePhase Phase { get; private set; } = StatePhase.CHANGED;
         public Guid ID { get; } = Guid.NewGuid();
         public Guid? ChangeCallerID { get; protected set; }
 
         protected readonly RxBLService _service;
-        private readonly BehaviorSubject<StatePhase> _changedSubject = new(StatePhase.CHANGED);
-        private readonly IObservable<StatePhase> _changedObservable;
-        private bool _notify = true;
+        private bool _notifyChanging = true;
 
         protected StateBase(RxBLService service, T value)
         {
             Value = value;
             _service = service;
-            _changedObservable = _changedSubject.Publish().RefCount();
         }
 
         [MemberNotNullWhen(true, nameof(Value))]
@@ -83,28 +26,23 @@ namespace RxBlazorLightCore
 
         public void NotifyChanging()
         {
-            if (!_notify)
+            if (!_notifyChanging)
             {
-                _notify = true;
-                if (_changedSubject.Value is StatePhase.CHANGING)
+                _notifyChanging = true;
+                if (Phase is StatePhase.CHANGING)
                 {
-                    PhaseChanged(false, true);
+                    PhaseChanged(false);
                 }
             }
         }
 
-        public IDisposable Subscribe(IObserver<StatePhase> observer)
-        {
-            return _changedObservable.Subscribe(observer);
-        }
-
-        protected void PhaseChanged(bool changed, bool notify, Exception? exception = null)
+        protected void PhaseChanged(bool changed, bool notify = true, Exception? exception = null)
         {
             var changePhase = changed ? StatePhase.CHANGED : StatePhase.CHANGING;
 
             if (!changed && !notify)
             {
-                _notify = false;
+                _notifyChanging = false;
             }
 
             if (exception is not null)
@@ -120,12 +58,12 @@ namespace RxBlazorLightCore
                 }
             }
 
-            _changedSubject.OnNext(changePhase);
+            Phase = changePhase;
 
-            if (notify || _notify || exception is not null)
+            if (notify || _notifyChanging || exception is not null)
             {
                 _service.StateHasChanged(ID, exception);
-                _notify = notify;
+                _notifyChanging = notify;
             }
         }
     }
@@ -139,13 +77,13 @@ namespace RxBlazorLightCore
             return canChangeDelegate(this);
         }
 
-        public void Change(Action<IState<T>> changeDelegate, bool notify = true)
+        public void Change(Action<IState<T>> changeDelegate)
         {
             try
             {
-                PhaseChanged(false, notify);
+                PhaseChanged(false);
                 changeDelegate(this);
-                PhaseChanged(true, notify);
+                PhaseChanged(true);
             }
             catch (Exception ex)
             {
@@ -165,24 +103,24 @@ namespace RxBlazorLightCore
 
         protected StateAsync(RxBLService service, T value) : base(service, value) { }
 
-        public bool CanCancel { get; private set; }
+        private bool _canCancel;
 
         public bool CanChange(Func<IStateAsync<T>, bool> canChangeDelegate)
         {
             return canChangeDelegate(this);
         }
 
-        public async Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null)
+        public async Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notifyChanging, Guid? changeCallerID = null)
         {
             try
             {
                 ChangeCallerID = changeCallerID;
 
                 ResetCancellationToken();
-                CanCancel = true;
-                PhaseChanged(false, notify);
+                _canCancel = true;
+                PhaseChanged(false, notifyChanging);
                 await changeDelegateAsync(this, _cancellationTokenSource.Token);
-                PhaseChanged(true, notify);
+                PhaseChanged(true);
             }
             catch (Exception ex)
             {
@@ -190,21 +128,21 @@ namespace RxBlazorLightCore
             }
             finally
             {
-                CanCancel = false;
+                _canCancel = false;
                 ChangeCallerID = null;
             }
         }
 
-        public async Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notify = true, Guid? changeCallerID = null)
+        public async Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notifyChanging, Guid? changeCallerID = null)
         {
             try
             {
                 ChangeCallerID = changeCallerID;
 
                 ResetCancellationToken();
-                PhaseChanged(false, false);
+                PhaseChanged(false, notifyChanging);
                 await changeDelegateAsync(this);
-                PhaseChanged(true, notify);
+                PhaseChanged(true);
             }
             catch (Exception ex)
             {
@@ -218,7 +156,7 @@ namespace RxBlazorLightCore
 
         public void Cancel()
         {
-            if (CanCancel)
+            if (_canCancel)
             {
                 _cancellationTokenSource.Cancel();
             }

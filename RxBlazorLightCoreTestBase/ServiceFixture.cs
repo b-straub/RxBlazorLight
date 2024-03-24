@@ -24,12 +24,9 @@ namespace RxBlazorLightCoreTestBase
         public IStateGroup<TestEnum> EnumStateGroup { get; }
         public IStateGroupAsync<TestEnum> EnumStateGroupLR { get; }
 
-        public IState ServiceState { get; }
-        public IStateAsync ServiceStateLR { get; }
-
         public string Test { get; private set; } = string.Empty;
 
-        public ServiceFixture() 
+        public ServiceFixture()
         {
             ObservableIntState = this.CreateState(0);
             IntState = this.CreateState(-1);
@@ -39,9 +36,6 @@ namespace RxBlazorLightCoreTestBase
             CRUDDictState = this.CreateStateAsync<IDictionary<Guid, CRUDTest>>(new Dictionary<Guid, CRUDTest>());
             EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
             EnumStateGroupLR = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
-
-            ServiceState = this.CreateState();
-            ServiceStateLR = this.CreateStateAsync();
         }
 
         public void ClearTest()

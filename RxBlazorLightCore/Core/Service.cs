@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reactive;
+﻿using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -36,14 +35,11 @@ namespace RxBlazorLightCore
         private readonly Subject<ServiceChangeReason> _changedSubject = new();
         private readonly IObservable<ServiceChangeReason> _changedObservable;
         private readonly List<ServiceException> _serviceExceptions;
-        private List<IObservable<Unit>> _changeObservables;
-        private IDisposable? _changeObservablesDisposable;
 
         public RxBLService()
         {
             _changedObservable = _changedSubject.Publish().RefCount();
             _serviceExceptions = [];
-            _changeObservables = [];
             Initialized = false;
             ID = Guid.NewGuid();
         }
@@ -63,18 +59,7 @@ namespace RxBlazorLightCore
 
         public void RegisterChangeObservables(params IObservable<Unit>[] observables)
         {
-            _changeObservables.AddRange(observables);
-            _changeObservablesDisposable?.Dispose();
-
-            _changeObservablesDisposable = Observable.Merge(_changeObservables)
-                .Subscribe(_ => _changedSubject.OnNext(new(ID, ID, ChangeReason.STATE)));
-        }
-
-        public void ClearChangeObservables()
-        {
-            _changeObservablesDisposable?.Dispose();
-            _changeObservablesDisposable = null;
-            _changeObservables.Clear();
+            Observable.Merge(observables).Subscribe(_ => _changedSubject.OnNext(new(ID, ID, ChangeReason.STATE)));
         }
 
         public IDisposable Subscribe(IObserver<ServiceChangeReason> observer)

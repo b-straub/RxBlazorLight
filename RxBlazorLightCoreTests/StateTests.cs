@@ -205,182 +205,6 @@ namespace RxBlazorLightCoreTests
         }
 
         [Fact]
-        public void TestStateSyncValue()
-        {
-            ServiceFixture fixture = new();
-            var stateChangeCount = 0;
-            bool done = false;
-
-            fixture.Subscribe(sc =>
-            {
-                if (sc.StateID == fixture.ServiceState.ID)
-                {
-                    stateChangeCount++;
-                }
-
-                _output.WriteLine($"Done {fixture.ServiceState.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ServiceState.Phase}, ID {sc.StateID}, VPID {fixture.ServiceState.ID}");
-
-                if (fixture.ServiceState.Done())
-                {
-                    done = true;
-                }
-            });
-
-            fixture.ClearTest();
-
-            Assert.Equal(string.Empty, fixture.Test);
-
-            fixture.ServiceState.Change(fixture.SetTestString("TestString"));
-            while (!done) ;
-
-            Assert.Equal("TestString", fixture.Test);
-            Assert.Equal(2, stateChangeCount);
-        }
-
-        [Fact]
-        public async Task TestStateAsyncSyncValue()
-        {
-            ServiceFixture fixture = new();
-            var stateChangeCount = 0;
-            bool done = false;
-
-            fixture.Subscribe(sc =>
-            {
-                if (sc.StateID == fixture.ServiceStateLR.ID)
-                {
-                    stateChangeCount++;
-                }
-
-                _output.WriteLine($"Done {fixture.ServiceStateLR.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ServiceStateLR.Phase}, ID {sc.StateID}, VPID {fixture.ServiceStateLR.ID}");
-
-                if (fixture.ServiceStateLR.Done())
-                {
-                    done = true;
-                }
-            });
-
-            fixture.ClearTest();
-
-            Assert.Equal(string.Empty, fixture.Test);
-
-            await fixture.ServiceStateLR.ChangeAsync(fixture.SetTestStringAsync("TestStringAsync"));
-            while (!done) ;
-
-            Assert.Equal("TestStringAsync", fixture.Test);
-            Assert.Equal(1, stateChangeCount);
-        }
-
-        [Fact]
-        public void TestStateSync()
-        {
-            ServiceFixture fixture = new();
-            var stateChangeCount = 0;
-            bool done = false;
-
-            fixture.Subscribe(sc =>
-            {
-                if (sc.StateID == fixture.ServiceState.ID)
-                {
-                    stateChangeCount++;
-                }
-
-                _output.WriteLine($"Done {fixture.ServiceState.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ServiceState.Phase}, ID {sc.StateID}, VPID {fixture.ServiceState.ID}");
-
-                if (fixture.ServiceState.Done())
-                {
-                    done = true;
-                }
-            });
-
-            fixture.ClearTest();
-
-            Assert.Equal(string.Empty, fixture.Test);
-
-            fixture.ServiceState.Change(fixture.SetTestStringDirect);
-            while (!done) ;
-
-            Assert.Equal("Sync", fixture.Test);
-            Assert.Equal(2, stateChangeCount);
-        }
-
-        [Fact]
-        public async Task TestStateAsync()
-        {
-            ServiceFixture fixture = new();
-            var stateChangeCount = 0;
-            bool done = false;
-
-            fixture.Subscribe(sc =>
-            {
-                if (sc.StateID == fixture.ServiceStateLR.ID)
-                {
-                    stateChangeCount++;
-                }
-
-                _output.WriteLine($"Done {fixture.ServiceStateLR.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ServiceStateLR.Phase}, ID {sc.StateID}, VPID {fixture.ServiceStateLR.ID}");
-
-                if (fixture.ServiceStateLR.Done())
-                {
-                    done = true;
-                }
-            });
-
-            fixture.ClearTest();
-
-            Assert.Equal(string.Empty, fixture.Test);
-
-            await fixture.ServiceStateLR.ChangeAsync(fixture.SetTestStringAsyncDirect);
-            while (!done) ;
-
-            Assert.Equal("Async", fixture.Test);
-            Assert.Equal(1, stateChangeCount);
-        }
-
-        [Fact]
-        public async Task TestStateAsyncCancel()
-        {
-            ServiceFixture fixture = new();
-            var stateChangeCount = 0;
-            bool canceled = false;
-            bool done = false;
-
-            fixture.Subscribe(sc =>
-            {
-                if (sc.StateID == fixture.ServiceStateLR.ID)
-                {
-                    stateChangeCount++;
-
-                    if (fixture.ServiceStateLR.Changing())
-                    {
-                        fixture.ServiceStateLR.Cancel();
-                    }
-
-                    if (fixture.ServiceStateLR.Canceled())
-                    {
-                        canceled = true;
-                    }
-
-                    _output.WriteLine($"Done {fixture.ServiceStateLR.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.ServiceStateLR.Phase}, ID {sc.StateID}, VPID {fixture.ServiceStateLR.ID}");
-
-                    if (fixture.ServiceStateLR.Done())
-                    {
-                        done = true;
-                    }
-                }
-            });
-
-            fixture.ClearTest();
-            Assert.Equal(string.Empty, fixture.Test);
-
-            await fixture.ServiceStateLR.ChangeAsync(fixture.SetTestStringAsyncLR("Async"));
-            while (!done) ;
-
-            Assert.Equal(string.Empty, fixture.Test);
-            Assert.True(canceled);
-            Assert.Equal(2, stateChangeCount);
-        }
-
-        [Fact]
         public void TestStateObservable()
         {
             ServiceFixture fixture = new();
@@ -388,13 +212,13 @@ namespace RxBlazorLightCoreTests
             bool completed = false;
             bool initialized = false;
 
-            fixture.IntState.Subscribe(p =>
+            fixture.Subscribe(p =>
             {
                 phaseChangeCount++;
 
                 _output.WriteLine($"Value {fixture.IntState.Value}, PCC {phaseChangeCount} Phase {p}");
 
-                if (p is StatePhase.CHANGED)
+                if (fixture.IntState.Phase is StatePhase.CHANGED)
                 {
                     initialized = fixture.IntState.Value == 0;
                     completed = !completed && fixture.IntState.Value == 2;
@@ -414,56 +238,7 @@ namespace RxBlazorLightCoreTests
 
             while (!completed) ;
 
-            Assert.Equal(9, phaseChangeCount);
-        }
-
-        [Fact]
-        public void TestStateObservableDirect()
-        {
-            ServiceFixture fixture = new();
-            var phaseChangeCount = 0;
-            bool completed = false;
-            int completedCount = 3;
-
-            fixture.Subscribe(p =>
-            {
-                phaseChangeCount++;
-
-                _output.WriteLine($"PCC {phaseChangeCount} Phase {p}");
-                 
-                completed = !completed && phaseChangeCount == completedCount;
-            });
-
-
-            var changer = Observable.Range(0, 3).Select(_ => Unit.Default);
-
-            fixture.RegisterChangeObservables(changer);
-
-            while (!completed) ;
-
-            Assert.Equal(3, phaseChangeCount);
-
-            phaseChangeCount = 0;
-            completed = false;
-            completedCount = 6;
-
-            fixture.RegisterChangeObservables(changer);
-
-            while (!completed) ;
-
-            Assert.Equal(6, phaseChangeCount);
-
-            phaseChangeCount = 0;
-            completed = false;
-            completedCount = 3;
-
-            fixture.ClearChangeObservables();
-            fixture.RegisterChangeObservables(changer);
-
-            while (!completed) ;
-
-            Assert.Equal(3, phaseChangeCount);
-
+            Assert.Equal(8, phaseChangeCount);
         }
 
         [Fact]

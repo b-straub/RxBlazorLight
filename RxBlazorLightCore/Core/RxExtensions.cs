@@ -3,17 +3,6 @@ namespace RxBlazorLightCore
 {
     public static class RxExtensions
     {
-
-        public static IState CreateState(this RxBLService service)
-        {
-            return State.Create(service);
-        }
-
-        public static IStateAsync CreateStateAsync(this RxBLService service)
-        {
-            return StateAsync.Create(service);
-        }
-
         public static IState<T> CreateState<T>(this RxBLService service, T value)
         {
             return State<T>.Create(service, value);

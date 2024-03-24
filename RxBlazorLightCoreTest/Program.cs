@@ -7,10 +7,10 @@ var done = false;
 
 TestService testService = new();
 
-testService.CounterAsync.Subscribe(p =>
+testService.Subscribe(p =>
 {
     Console.WriteLine(p.ToString());
-    if (p is StatePhase.CHANGING)
+    if (testService.CounterAsync.Phase is StatePhase.CHANGING)
     {
         testService.CounterAsync.Cancel();
     }

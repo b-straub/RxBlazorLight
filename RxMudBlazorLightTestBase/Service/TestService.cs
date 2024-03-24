@@ -43,14 +43,13 @@ namespace RxMudBlazorLightTestBase.Service
 
     public partial class TestServiceBase : RxBLService
     {
-        public IState ServiceState { get; }
-        public StateInfo? StateInfo { get; protected set; }
+        public IState<StateInfo> ServiceState { get; }
 
         public TestServiceBase(IServiceProvider _)
         {
             Console.WriteLine("TestService Create");
 
-            ServiceState = this.CreateState();
+            ServiceState = this.CreateState(new StateInfo(string.Empty));
         }
     }
 
@@ -158,15 +157,12 @@ namespace RxMudBlazorLightTestBase.Service
             Console.WriteLine("TestService OnContextInitialized");
             await Task.Delay(3000);
             _canIncrement = true;
-            ServiceState.Change(s => StateInfo = new StateInfo("Initialized"));
+            ServiceState.Change(s => s.Value = new StateInfo("Initialized"));
         }
 
         public void ChangeState(string state)
         {
-            if (StateInfo is not null)
-            {
-                ServiceState.Change(s => StateInfo = StateInfo with { State = state });
-            }
+            ServiceState.Change(s => s.Value = s.Value with { State = state });
         }
 
         public IStateGroup<Pizza> GetPizzas1()

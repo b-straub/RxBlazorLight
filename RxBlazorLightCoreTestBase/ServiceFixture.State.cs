@@ -38,40 +38,6 @@ namespace RxBlazorLightCoreTestBase
             };
         }
 
-        public void SetTestStringDirect()
-        {
-            Test = "Sync";
-        }
-
-        public async Task SetTestStringAsyncDirect()
-        {
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            Test = "Async";
-        }
-
-        public Action SetTestString(string value)
-        {
-            return () => Test = value;
-        }
-
-        public Func<Task> SetTestStringAsync(string value)
-        {
-            return async () =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(2));
-                Test = value;
-            };
-        }
-
-        public Func<CancellationToken, Task> SetTestStringAsyncLR(string value)
-        {
-            return async (ct) =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(2), ct);
-                Test = value;
-            };
-        }
-
         public enum CMD_CRUD
         {
             ADD,

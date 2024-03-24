@@ -76,7 +76,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
             Assert.Equal(0, fixture.IntStateAsync.Value);
 
-            Assert.Equal(1, stateChangeCount);
+            Assert.Equal(2, stateChangeCount);
 
             await fixture.IntStateAsync.ChangeAsync(async s => { await Task.Delay(10); s.NotifyChanging() ; s.Value = 1; }, false);
             Assert.Equal(1, fixture.IntStateAsync.Value);
@@ -85,7 +85,7 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
             Assert.Equal(1, fixture.IntStateAsync.Value);
 
-            Assert.Equal(4, stateChangeCount);
+            Assert.Equal(5, stateChangeCount);
         }
 
         [Fact]

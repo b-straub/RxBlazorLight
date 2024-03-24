@@ -1,54 +1,27 @@
-﻿@inherits RxBLServiceSubscriber<TestService>
-
-<PageTitle>Debug</PageTitle>
+﻿<PageTitle>Debug</PageTitle>
 
 <MudStack AlignItems=@AlignItems.Start>
-    <MudText Class="mb-4">Current count Async: @Service.CountStateAsync.Value</MudText>
+    <RxBLStateSubscriber Service=@Service IDs=@([Service.CountState.ID, Service.ServiceState.ID])>
+        <DisplayRenderCycle>
+            <MudText Typo="Typo.h3" GutterBottom="true">@Service.CountState.Value</MudText>
+        </DisplayRenderCycle>
+        <DisplayRenderCycle>
+            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@TestService.IncrementCounter CanChange=@Service.IncrementStateCanChange>Increment</MudButtonRx>
+        </DisplayRenderCycle>
+    </RxBLStateSubscriber>
 
-    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                          State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync
-                          HasProgress=@false />
+    <RxBLStateSubscriber Service=@Service IDs=@([Service.ServiceState.ID])>
+        <DisplayRenderCycle>
+            <MudText Typo="Typo.h3" GutterBottom="true">@Service.ServiceState.Value.State</MudText>
+        </DisplayRenderCycle>
 
-    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                          State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync
-                          HasProgress=@true />
-
-    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                          State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync
-                          HasProgress=@true ForceBadge=@true />
-
-    <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                                State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10)
-                                CancelColor=Color.Error HasProgress=@false />
-
-    <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                                State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10)
-                                CancelColor=Color.Error HasProgress=@false ForceBadge=@true />
-
-    <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                                State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10)
-                                CancelColor=Color.Error HasProgress=@true />
-
-    <MudIconButtonAsyncCancelRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                                State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10)
-                                CancelColor=Color.Error HasProgress=@true ForceBadge=@true />
-
-    <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
-                   State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync />
-
-    <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
-                   State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync HasProgress=@true />
-
-    <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
-                   State=@Service.CountStateAsync ChangeStateAsync=@TestService.IncrementCounterAsync HasProgress=@true ForceBadge=@true />
-
-    <MudFabAsyncCancelRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
-                         State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10) />
-
-    <MudFabAsyncCancelRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
-                         State=@Service.CountStateAsync ChangeStateAsync=@TestService.AddToCounterAsync(10) HasProgress=@false />
-
-    <MudBadge Content="100" Color="Color.Primary" Overlap="true" Class="mx-6 my-4">
-        <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
-    </MudBadge>
+        <DisplayRenderCycle>
+            <MudButtonRx Color="Color.Warning" Variant="Variant.Filled" State=@Service.ServiceState ChangeState=@(s => s.Value = s.Value with { State = "Test" })>Change State to Test</MudButtonRx>
+        </DisplayRenderCycle>
+    </RxBLStateSubscriber>
 </MudStack>
+
+@code {
+    [Inject]
+    public required TestService Service { get; init; }
+}

@@ -16,14 +16,12 @@ namespace RxMudBlazorLight.ButtonBase
         [Parameter]
         public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
-        [Parameter]
-        public bool DeferredNotification { get; set; }
-
         protected Func<IStateAsync<T>, Task>? _changeStateAsync;
         protected Func<IStateAsync<T>, CancellationToken, Task>? _changeStateAsyncCancel;
         protected string? _cancelText;
         protected Color? _cancelColor;
         protected bool _hasProgress = false;
+        protected bool _deferredNotification = false;
 
         protected RenderFragment RenderBase() => base.BuildRenderTree;
 
@@ -39,7 +37,7 @@ namespace RxMudBlazorLight.ButtonBase
         protected override void OnParametersSet()
         {
             ArgumentNullException.ThrowIfNull(_buttonRx);
-            _buttonRx.SetParameter(State, _changeStateAsync, _changeStateAsyncCancel, CanChange, DeferredNotification);
+            _buttonRx.SetParameter(State, _changeStateAsync, _changeStateAsyncCancel, CanChange, _deferredNotification);
 
             ChildContent = _buttonRx.ChildContent;
             Color = _buttonRx.Color;

@@ -1,8 +1,8 @@
 ﻿@inherits MudFabAsyncBaseRx<T>
 @typeparam T
 
-<MudBadge Visible=@(_buttonRx is not null && _useProgressIcon && _buttonRx.GetBadgeIcon(State, IconVariant, true) != string.Empty)
-          Icon=@_buttonRx!.GetBadgeIcon(State, IconVariant, true) Color=@(_buttonRx.Disabled ? Color.Default : Color) Overlap="true" Bordered="true">
+<MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetBadgeIcon(State, IconVariant, CancelText is null) != string.Empty)
+          Icon=@_buttonRx!.GetBadgeIcon(State, IconVariant, CancelText is null) Color=@Color Overlap="true" OnClick=@OnClick>
     @RenderBase()
 </MudBadge>
 
@@ -19,7 +19,8 @@
     [Parameter]
     public bool HasProgress { get; set; } = true;
 
-    private bool _useProgressIcon;
+    [Parameter]
+    public bool DeferredNotification { get; set; }
 
     protected override void OnInitialized()
     {
@@ -27,7 +28,7 @@
         _cancelText = CancelText;
         _cancelColor = CancelColor;
         _hasProgress = HasProgress;
-        _useProgressIcon = _hasProgress && (_cancelText is null || (StartIcon is not null && EndIcon is not null));
+        _deferredNotification = DeferredNotification;
 
         base.OnInitialized();
     }

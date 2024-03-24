@@ -4,7 +4,7 @@
 
 <MudStack>
     <MudText Typo="Typo.h3" GutterBottom="true">Counter</MudText>
-    <MudText Typo="Typo.h3" GutterBottom="true">@Service.StateInfo?.State</MudText>
+    <MudText Typo="Typo.h3" GutterBottom="true">@Service.ServiceState.Value.State</MudText>
 
     <TimerComponent Name="Gobal" />
     <RxBLStateScope TScope=@TimerService.TimerStateScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>

@@ -17,9 +17,6 @@ namespace RxMudBlazorLight.ButtonBase
         public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
         [Parameter]
-        public bool DeferredNotification { get; set; }
-
-        [Parameter]
         public MBIconVariant? IconVariant { get; set; }
 
         protected Func<IStateAsync<T>, Task>? _changeStateAsync;
@@ -27,7 +24,7 @@ namespace RxMudBlazorLight.ButtonBase
         protected string? _cancelText;
         protected Color? _cancelColor;
         protected bool _hasProgress = false;
-        protected bool _forceBadge = false;
+        protected bool _deferredNotification = false;
 
         protected RenderFragment RenderBase() => base.BuildRenderTree;
         internal ButtonRx<T>? _buttonRx;
@@ -42,9 +39,9 @@ namespace RxMudBlazorLight.ButtonBase
         protected override void OnParametersSet()
         {
             ArgumentNullException.ThrowIfNull(_buttonRx);
-            _buttonRx.SetParameter(State, _changeStateAsync, _changeStateAsyncCancel, CanChange, DeferredNotification);
+            _buttonRx.SetParameter(State, _changeStateAsync, _changeStateAsyncCancel, CanChange, _deferredNotification);
                             
-            var parameters = _buttonRx.GetFabParameters(State, StartIcon, EndIcon, Label, IconVariant, _changeStateAsyncCancel is not null, _forceBadge);
+            var parameters = _buttonRx.GetFabParameters(State, StartIcon, EndIcon, Label, IconVariant, _changeStateAsyncCancel is not null);
 
             StartIcon = parameters.StartIcon;
             EndIcon = parameters.EndIcon;

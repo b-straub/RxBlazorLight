@@ -60,7 +60,10 @@ namespace RxMudBlazorLight.ButtonBase
                         builder.CloseComponent();
                     }
                     builder.OpenComponent<MudText>(4);
-                    builder.AddAttribute(5, "Class", "ms-2");
+                    if (_hasProgress)
+                    {
+                        builder.AddAttribute(5, "Class", "ms-2");
+                    }
                     if (_cancelText is not null)
                     {
                         builder.AddAttribute(6, "ChildContent", (RenderFragment)((childBuilder) =>
@@ -104,13 +107,13 @@ namespace RxMudBlazorLight.ButtonBase
             }
         };
 
-        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateBase<T> stateBase, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool canCancel, bool forceBadge = false)
+        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateBase<T> stateBase, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool canCancel)
         {
             if (_iconForState is IconForState.None)
             {
-                if (!string.IsNullOrEmpty(startIcon) && !string.IsNullOrEmpty(endIcon) && _cancelText is null)
+                if (!string.IsNullOrEmpty(startIcon) && !string.IsNullOrEmpty(endIcon) && _hasProgress)
                 {
-                    throw new InvalidOperationException("No Cancel Text provided. Cancellable Async FabButton can not have start and end icon set!");
+                    throw new InvalidOperationException("Async FabButton with progress can not have start and end icon set!");
                 }
 
                 if (string.IsNullOrEmpty(startIcon))
@@ -143,22 +146,7 @@ namespace RxMudBlazorLight.ButtonBase
             }
             else
             {
-                if (_cancelText is null && canCancel)
-                {
-                    var cancelIcon = iconVariant.GetCancelIcon();
-
-                    if (_iconForState is IconForState.Start)
-                    {
-                        startIcon = cancelIcon;
-                    }
-
-                    if (_iconForState is IconForState.End)
-                    {
-                        endIcon = cancelIcon;
-                    }
-                }
-
-                if (_hasProgress && !forceBadge && (_cancelText is not null || !canCancel))
+                if (_hasProgress)
                 {
                     var progressIcon = iconVariant.GetProgressIcon();
 
@@ -171,18 +159,18 @@ namespace RxMudBlazorLight.ButtonBase
                     {
                         endIcon = progressIcon;
                     }
+                }
 
-                    if (canCancel)
-                    {
-                        label = _cancelText;
-                    }
+                if (_cancelText is not null && canCancel)
+                {
+                    label = _cancelText;
                 }
             }
 
             return (startIcon, endIcon, label);
         }
 
-        public string GetIconButtonParameters(IStateBase<T> state, string icon, MBIconVariant? iconVariant, bool canCancel, bool forceBadge = false)
+        public string GetIconButtonParameters(IStateBase<T> state, string icon, MBIconVariant? iconVariant, bool canCancel)
         {
             if (!state.Changing() || state.ChangeCallerID != _id)
             {
@@ -200,11 +188,7 @@ namespace RxMudBlazorLight.ButtonBase
             }
             else
             {
-                if (canCancel && (_hasProgress || !forceBadge))
-                {
-                    icon = iconVariant.GetCancelIcon();
-                }
-                else if (_hasProgress && !forceBadge)
+                if (_hasProgress)
                 {
                     icon = iconVariant.GetProgressIcon();
                 }
@@ -213,22 +197,11 @@ namespace RxMudBlazorLight.ButtonBase
             return icon;
         }
 
-        public string GetBadgeIcon(IStateBase<T> state, MBIconVariant? iconVariant, bool canCancel, bool forceBadge = false)
+        public string GetBadgeIcon(IStateBase<T> state, MBIconVariant? iconVariant, bool canCancel)
         {
-            if (state.Changing() && state.ChangeCallerID == _id)
+            if (canCancel && state.Changing() && state.ChangeCallerID == _id)
             {
-                if (canCancel && _hasProgress)
-                {
-                    return iconVariant.GetProgressIcon();
-                }
-                else if (canCancel && forceBadge)
-                {
-                    return iconVariant.GetCancelIcon();
-                }
-                else if (_hasProgress && forceBadge)
-                {
-                    return iconVariant.GetProgressIcon();
-                }
+                return iconVariant.GetCancelIcon();
             }
 
             return string.Empty;
@@ -277,7 +250,10 @@ namespace RxMudBlazorLight.ButtonBase
                 {
                     throw new InvalidOperationException("Command can not be cancelled, but CancelText is provided!");
                 }
+            }
 
+            if (_buttonType is MBButtonType.DEFAULT)
+            {
                 if (_cancelText is null && _cancelColor is not null)
                 {
                     throw new InvalidOperationException("Command can not be cancelled, but CancelColor is provided!");

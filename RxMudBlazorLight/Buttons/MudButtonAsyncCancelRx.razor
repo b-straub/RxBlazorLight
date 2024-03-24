@@ -16,12 +16,16 @@
     [Parameter]
     public bool HasProgress { get; set; } = true;
 
+    [Parameter]
+    public bool DeferredNotification { get; set; }
+
     protected override void OnInitialized()
     {
         _changeStateAsyncCancel = ChangeStateAsync;
         _cancelText = CancelText;
         _cancelColor = CancelColor;
         _hasProgress = HasProgress;
+        _deferredNotification = DeferredNotification;
 
         base.OnInitialized();
     }

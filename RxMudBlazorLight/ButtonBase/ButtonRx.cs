@@ -31,7 +31,7 @@ namespace RxMudBlazorLight.ButtonBase
         public void SetParameter(IState<T> state, Action<IState<T>> changeState, Func<IState<T>, bool>? canChange)
         {
             VerifyButtonParameters();
-            
+
             Color = _buttonColor;
             if (_buttonType is not MBButtonType.FAB)
             {
@@ -57,7 +57,7 @@ namespace RxMudBlazorLight.ButtonBase
             {
                 if (state.ChangeCallerID == _id)
                 {
-                    if (state.CanCancel && changeStateAsyncCancel is not null)
+                    if (changeStateAsyncCancel is not null)
                     {
                         Color = _cancelColor ?? Color.Warning;
 
@@ -69,7 +69,18 @@ namespace RxMudBlazorLight.ButtonBase
                         OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, state.Cancel);
                         OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, state.Cancel);
 
-                        Disabled = false;
+                        if (_buttonType is MBButtonType.ICON)
+                        {
+                            Disabled = true;
+                        }
+                        else if (_buttonType is MBButtonType.FAB && _cancelText is null)
+                        {
+                            Disabled = true;
+                        }
+                        else
+                        {
+                            Disabled = false;
+                        }
                     }
                     else
                     {
@@ -90,8 +101,8 @@ namespace RxMudBlazorLight.ButtonBase
             {
                 ChildContent = _buttonChildContent;
                 Color = _buttonColor;
-              
-                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => 
+
+                OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () =>
                         ExecuteStateAsync(state, changeStateAsync, changeStateAsyncCancel, deferredNotification));
                 OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () =>
                         ExecuteStateAsync(state, changeStateAsync, changeStateAsyncCancel, deferredNotification));
@@ -115,10 +126,10 @@ namespace RxMudBlazorLight.ButtonBase
             Func<IStateAsync<T>, CancellationToken, Task>? changeStateAsyncCancel, bool deferredNotification)
         {
             if (_confirmExecutionAsync is null || await _confirmExecutionAsync())
-            { 
+            {
                 if (changeStateAsync is not null)
-                {   
-                    await state.ChangeAsync(changeStateAsync, !deferredNotification, _id);
+                {
+                    await state.ChangeAsync(changeStateAsync, _hasProgress, _id);
                 }
 
                 if (changeStateAsyncCancel is not null)

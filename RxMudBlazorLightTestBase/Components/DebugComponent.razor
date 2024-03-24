@@ -1,7 +1,7 @@
 ﻿<PageTitle>Debug</PageTitle>
 
 <MudStack AlignItems=@AlignItems.Start>
-    <RxBLStateSubscriber Service=@Service IDs=@([Service.CountState.ID, Service.ServiceState.ID])>
+    <RxBLStateSubscriber Service=@Service>
         <DisplayRenderCycle>
             <MudText Typo="Typo.h3" GutterBottom="true">@Service.CountState.Value</MudText>
         </DisplayRenderCycle>

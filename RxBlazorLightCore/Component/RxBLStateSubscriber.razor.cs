@@ -8,8 +8,8 @@ public partial class RxBLStateSubscriber<T> : ComponentBase
     [Parameter, EditorRequired]
     public required T Service { get; init; }
 
-    [Parameter, EditorRequired]
-    public required Guid[] IDs { get; init; }
+    [Parameter]
+    public Guid[] IDs { get; init; } = [];
 
     [Parameter]
     public required RenderFragment ChildContent { get; init; }
@@ -22,7 +22,7 @@ public partial class RxBLStateSubscriber<T> : ComponentBase
         base.OnInitialized();
         Service
             .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(cr => IDs.Any(i => i == cr.StateID))
+            .Where(cr => IDs.Length == 0 || IDs.Any(i => i == cr.StateID))
             .Subscribe(cr =>
             {
                 OnServiceStateHasChanged(cr);

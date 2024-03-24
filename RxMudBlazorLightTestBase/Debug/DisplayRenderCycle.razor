@@ -1,0 +1,18 @@
+﻿
+<MudStack AlignItems=@AlignItems.Start Row=@true>
+    <MudText Typo="Typo.h3" GutterBottom="true">@_renderCycles</MudText>
+    @ChildContent
+</MudStack>
+
+@code {
+    [Parameter]
+    public required RenderFragment ChildContent { get; init; }
+
+    private int _renderCycles = 0;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _renderCycles++;
+        base.OnAfterRender(firstRender);
+    }
+}

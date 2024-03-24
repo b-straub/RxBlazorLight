@@ -1,5 +1,6 @@
-﻿using MudBlazor;
+﻿
 using RxBlazorLightCore;
+using System.Reactive;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -19,6 +20,44 @@ namespace RxMudBlazorLightTestBase.Service
         Guest
     }
 
+    public static class CrudServiceExtensions
+    {
+        public static bool CanAdd(this IStateGroup<DBRole> roleGroup)
+        {
+            return roleGroup.Value is DBRole.Admin;
+        }
+
+        public static bool CanUpdateText(this IStateGroup<DBRole> roleGroup)
+        {
+            return roleGroup.Value is DBRole.Admin;
+        }
+
+        public static bool CanUpdateDueDate(this IStateGroup<DBRole> roleGroup)
+        {
+            return roleGroup.Value is DBRole.Admin || roleGroup.Value is DBRole.User;
+        }
+
+        public static bool CanUpdateCompleted(this IStateGroup<DBRole> roleGroup)
+        {
+            return roleGroup.Value is DBRole.Admin || roleGroup.Value is DBRole.User;
+        }
+
+        public static bool CanDeleteCompleted(this IStateGroup<DBRole> roleGroup)
+        {
+            return roleGroup.Value is DBRole.Admin || roleGroup.Value is DBRole.User;
+        }
+
+        public static bool CanDeleteOne(this IStateGroup<DBRole> roleGroup)
+        {
+            return roleGroup.Value is DBRole.Admin || roleGroup.Value is DBRole.User;
+        }
+
+        public static bool CanDeleteAll(this IStateGroup<DBRole> roleGroup)
+        {
+            return roleGroup.Value is DBRole.Admin;
+        }
+    }
+
     public class CrudService : RxBLService
     {
         public sealed partial class CrudItemInput(CrudService service, CRUDToDoItem? item)
@@ -32,7 +71,7 @@ namespace RxMudBlazorLightTestBase.Service
             public async Task SubmitAsync()
             {
                 var newItem = new CRUDToDoItem(Text.Value, DueDateDate.Value + DueDateTime.Value, false, _item?.Id ?? Guid.NewGuid());
-                await service.CRUDItemDB.ChangeAsync(AddCRUDItem(newItem));
+                await service.CRUDDBState.ChangeAsync(service.AddCRUDItem(newItem));
             }
             public bool CanSubmit()
             {
@@ -88,11 +127,16 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public IStateAsync<IDictionary<Guid, CRUDToDoItem>> CRUDItemDB { get; }
+        public IEnumerable<CRUDToDoItem> CRUDItems => _db.Values;
+
+        public IStateAsync<Unit> CRUDDBState { get; }
         public IStateGroup<DBRole> CRUDDBRoleGroup { get; }
+
+        private readonly Dictionary<Guid, CRUDToDoItem> _db;
         public CrudService()
         {
-            CRUDItemDB = this.CreateStateAsync<IDictionary<Guid, CRUDToDoItem>>(new Dictionary<Guid, CRUDToDoItem>());
+            _db = [];
+            CRUDDBState = this.CreateStateAsync(Unit.Default);
             CRUDDBRoleGroup = this.CreateStateGroup([DBRole.Admin, DBRole.User, DBRole.Guest], DBRole.Admin);
         }
 
@@ -101,97 +145,96 @@ namespace RxMudBlazorLightTestBase.Service
             return new CrudItemInput(this, item);
         }
 
-        public Func<IState<DBRole>, bool> CanChangeRole => _ => !CRUDItemDB.Changing();
+        public Func<IState<DBRole>, bool> CanChangeRole => _ => !CRUDDBState.Changing();
 
-        public bool CanAdd => CRUDDBRoleGroup.Value is DBRole.Admin && !CRUDItemDB.Changing();
-        public bool CanUpdate => (CanUpdateText || CanUpdateDueDate) && !CRUDItemDB.Changing();
+        public bool CanAdd => !CRUDDBState.Changing() && CRUDDBRoleGroup.CanAdd();
+        public bool CanUpdate => (CanUpdateText || CanUpdateDueDate) && !CRUDDBState.Changing();
 
-        public static Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, Task> AddCRUDItem(CRUDToDoItem item)
+        public Func<IStateAsync<Unit>, Task> AddCRUDItem(CRUDToDoItem item)
         {
-            return async s =>
+            return async _ =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
-                s.Value[item.Id!.Value] = item;
+                _db[item.Id!.Value] = item;
                 await Task.Delay(200);
             };
         }
 
-        public static Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, Task> UpdateCRUDItemAsync(CRUDToDoItem item)
+        public Func<IStateAsync<Unit>, Task> UpdateCRUDItemAsync(CRUDToDoItem item)
         {
-            return async s =>
+            return async _ =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
-                s.Value[item.Id!.Value] = item;
+                _db[item.Id!.Value] = item;
                 await Task.Delay(200);
             };
         }
 
-        public Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, bool> CanToggleCRUDItemCompleted => 
-            _ => (CRUDDBRoleGroup.Value is DBRole.Admin || CRUDDBRoleGroup.Value is DBRole.User) && !CRUDItemDB.Changing();
+        public Func<IStateAsync<Unit>, bool> CanToggleCRUDItemCompleted => 
+            _ => !CRUDDBState.Changing() && CRUDDBRoleGroup.CanUpdateCompleted();
 
-        public static Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, CancellationToken, Task> ToggleCRUDItemCompletedAsync(CRUDToDoItem item)
+        public Func<IStateAsync<Unit>, CancellationToken, Task> ToggleCRUDItemCompletedAsync(CRUDToDoItem item)
         {
-            return async (s, ct) =>
+            return async (_, ct) =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 item = item with { Completed = !item.Completed };
                 await Task.Delay(2000, ct);
-                s.Value[item.Id!.Value] = item;
+                _db[item.Id!.Value] = item;
             };
         }
 
-        public Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, bool> CanRemoveCRUDItem => _ =>
+        public Func<IStateAsync<Unit>, bool> CanRemoveCRUDItem => _ =>
         {
-            return !CRUDItemDB.Changing();
+            return !CRUDDBState.Changing() && CRUDDBRoleGroup.CanDeleteOne();
         };
 
-        public static Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, Task> RemoveCRUDItem(CRUDToDoItem item)
+        public Func<IStateAsync<Unit>, Task> RemoveCRUDItem(CRUDToDoItem item)
         {
             return async s =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
-                s.Value.Remove(item.Id!.Value);
+                _db.Remove(item.Id!.Value);
                 await Task.Delay(200);
             };
         }
 
-        public Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, bool> CanRemoveCompletedCRUDItems => s =>
+        public Func<IStateAsync<Unit>, bool> CanRemoveCompletedCRUDItems => s =>
         {
-            return s.Value.Values.Where(x => x.Completed).Any() &&
-                (CRUDDBRoleGroup.Value is DBRole.Admin || CRUDDBRoleGroup.Value is DBRole.User) && !CRUDItemDB.Changing();
+            return _db.Values.Where(x => x.Completed).Any() && !CRUDDBState.Changing() && CRUDDBRoleGroup.CanDeleteCompleted();
         };
 
 
-        public static Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, Task> RemoveCompletedCRUDItems()
+        public Func<IStateAsync<Unit>, Task> RemoveCompletedCRUDItems()
         {
             return async s =>
             {
-                foreach (var item in s.Value.Values)
+                foreach (var item in _db.Values)
                 {
                     if (item.Completed)
                     {
-                        s.Value.Remove(item.Id!.Value);
+                        _db.Remove(item.Id!.Value);
                     }
                 }
                 await Task.Delay(200);
             };
         }
 
-        public Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, bool> CanRemoveAllCRUDItems => s =>
+        public Func<IStateAsync<Unit>, bool> CanRemoveAllCRUDItems => s =>
         {
-            return s.Value.Values.Count != 0 && !CRUDItemDB.Changing();
+            return _db.Values.Count != 0 && !CRUDDBState.Changing() && CRUDDBRoleGroup.CanDeleteAll();
         };
 
-        public static Func<IStateAsync<IDictionary<Guid, CRUDToDoItem>>, Task> RemoveAllCRUDItems()
+        public Func<IStateAsync<Unit>, Task> RemoveAllCRUDItems()
         {
             return async s =>
             {
-                s.Value.Clear();
+                _db.Clear();
                 await Task.Delay(200);
             };
         }
 
-        private bool CanUpdateText => CRUDDBRoleGroup.Value is DBRole.Admin || CRUDDBRoleGroup.Value is DBRole.User;
-        private bool CanUpdateDueDate => CRUDDBRoleGroup.Value is DBRole.Admin;
+        private bool CanUpdateText => CRUDDBRoleGroup.CanUpdateText();
+        private bool CanUpdateDueDate => CRUDDBRoleGroup.CanUpdateDueDate();
     }
 }

@@ -35,7 +35,7 @@
         ArgumentNullException.ThrowIfNull(Icon);
         _buttonRx.SetParameter(State, ChangeState, CanChange);
 
-        Icon = _buttonRx.GetIconButtonParameters(State, Icon, IconVariant, false);
+        Icon = _buttonRx.GetIconButtonParameters(State, Icon, IconVariant);
 
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         Disabled = _buttonRx.Disabled;

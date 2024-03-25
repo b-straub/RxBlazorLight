@@ -16,7 +16,7 @@
         </CardHeaderContent>
         <CardHeaderActions>
             <MudStack Row=@true>
-                <MudSelectRx StateGroup=@Service.CRUDDBRoleGroup CanChange=Service.CanChangeRole FullWidth=@false />
+                <MudSelectRx StateGroup=@Service.CRUDDBRoleGroup CanChange=CrudService.CanChangeRole FullWidth=@false />
                 <CRUDItemAddOrUpdate AddMode=@true Item=@null />
                 <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.AutoDelete" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.Completed))
                                State=@Service.CRUDDBState CanChange=@Service.CanRemoveCompletedCRUDItems ChangeStateAsync=@(Service.RemoveCompletedCRUDItems()) />

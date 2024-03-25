@@ -170,7 +170,7 @@ namespace RxMudBlazorLight.ButtonBase
             return (startIcon, endIcon, label);
         }
 
-        public string GetIconButtonParameters(IStateBase<T> state, string icon, MBIconVariant? iconVariant, bool canCancel)
+        public string GetIconButtonParameters(IStateBase<T> state, string icon, MBIconVariant? iconVariant)
         {
             if (!state.Changing() || state.ChangeCallerID != _id)
             {

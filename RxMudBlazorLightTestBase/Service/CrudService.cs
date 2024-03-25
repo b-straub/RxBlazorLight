@@ -145,10 +145,10 @@ namespace RxMudBlazorLightTestBase.Service
             return new CrudItemInput(this, item);
         }
 
-        public Func<IState<DBRole>, bool> CanChangeRole => _ => !CRUDDBState.Changing();
+        public static Func<IState<DBRole>, bool> CanChangeRole => _ => true;
 
-        public bool CanAdd => !CRUDDBState.Changing() && CRUDDBRoleGroup.CanAdd();
-        public bool CanUpdate => (CanUpdateText || CanUpdateDueDate) && !CRUDDBState.Changing();
+        public Func<IStateAsync<Unit>, bool> CanAdd => _ => CRUDDBRoleGroup.CanAdd();
+        public Func<IStateAsync<Unit>, bool> CanUpdate(CRUDToDoItem? item) => _ => (CanUpdateText || CanUpdateDueDate) && !(item is not null && item.Completed);
 
         public Func<IStateAsync<Unit>, Task> AddCRUDItem(CRUDToDoItem item)
         {
@@ -171,7 +171,7 @@ namespace RxMudBlazorLightTestBase.Service
         }
 
         public Func<IStateAsync<Unit>, bool> CanToggleCRUDItemCompleted => 
-            _ => !CRUDDBState.Changing() && CRUDDBRoleGroup.CanUpdateCompleted();
+            _ => CRUDDBRoleGroup.CanUpdateCompleted();
 
         public Func<IStateAsync<Unit>, CancellationToken, Task> ToggleCRUDItemCompletedAsync(CRUDToDoItem item)
         {
@@ -186,7 +186,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Func<IStateAsync<Unit>, bool> CanRemoveCRUDItem => _ =>
         {
-            return !CRUDDBState.Changing() && CRUDDBRoleGroup.CanDeleteOne();
+            return CRUDDBRoleGroup.CanDeleteOne();
         };
 
         public Func<IStateAsync<Unit>, Task> RemoveCRUDItem(CRUDToDoItem item)
@@ -201,7 +201,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Func<IStateAsync<Unit>, bool> CanRemoveCompletedCRUDItems => s =>
         {
-            return _db.Values.Where(x => x.Completed).Any() && !CRUDDBState.Changing() && CRUDDBRoleGroup.CanDeleteCompleted();
+            return _db.Values.Where(x => x.Completed).Any() && CRUDDBRoleGroup.CanDeleteCompleted();
         };
 
 
@@ -222,7 +222,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Func<IStateAsync<Unit>, bool> CanRemoveAllCRUDItems => s =>
         {
-            return _db.Values.Count != 0 && !CRUDDBState.Changing() && CRUDDBRoleGroup.CanDeleteAll();
+            return _db.Values.Count != 0 && CRUDDBRoleGroup.CanDeleteAll();
         };
 
         public Func<IStateAsync<Unit>, Task> RemoveAllCRUDItems()

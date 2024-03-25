@@ -42,7 +42,7 @@ namespace RxMudBlazorLight.ButtonBase
             ArgumentNullException.ThrowIfNull(Icon);
             _buttonRx.SetParameter(State, _changeStateAsync, _changeStateAsyncCancel, CanChange, _deferredNotification);
 
-            Icon = _buttonRx.GetIconButtonParameters(State, Icon, IconVariant, _changeStateAsyncCancel is not null);
+            Icon = _buttonRx.GetIconButtonParameters(State, Icon, IconVariant);
             Color = _buttonRx.Color;
             OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
             Disabled = _buttonRx.Disabled;

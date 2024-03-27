@@ -1,5 +1,8 @@
 ﻿
 using RxBlazorLightCore;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("RxBlazorLightCoreTests")]
 
 namespace RxBlazorLightCoreTestBase
 {
@@ -8,39 +11,38 @@ namespace RxBlazorLightCoreTestBase
     public enum TestEnum
     {
         ONE,
-        TWO, 
+        TWO,
         THREE
     }
 
     public partial class ServiceFixture : RxBLService
     {
-        public IState<int> ObservableIntState { get; }
         public IState<int> IntState { get; }
-        public IStateAsync<int> IntStateAsync { get; }
 
-        public IStateAsync<IList<CRUDTest>> CRUDListState { get; }
-        public IStateAsync<IDictionary<Guid, CRUDTest>> CRUDDictState { get; }
+        public int IntStateResult { get; internal set; }
+        public IStateCommand IntCommand { get; }
+        public IStateCommandAsync IntCommandAsync { get; }
+
+        public List<CRUDTest> CRUDList { get; } = [];
+        public IStateCommandAsync CRUDListCommand { get; }
+
+        public Dictionary<Guid, CRUDTest> CRUDDict { get; } = [];
+        public IStateCommandAsync CRUDDictCommand { get; }
 
         public IStateGroup<TestEnum> EnumStateGroup { get; }
-        public IStateGroupAsync<TestEnum> EnumStateGroupLR { get; }
-
-        public string Test { get; private set; } = string.Empty;
+        public IStateGroupAsync<TestEnum> EnumStateGroupAsync { get; }
 
         public ServiceFixture()
         {
-            ObservableIntState = this.CreateState(0);
             IntState = this.CreateState(-1);
-            IntStateAsync = this.CreateStateAsync(10);
 
-            CRUDListState = this.CreateStateAsync<IList<CRUDTest>>([]);
-            CRUDDictState = this.CreateStateAsync<IDictionary<Guid, CRUDTest>>(new Dictionary<Guid, CRUDTest>());
+            IntCommand = this.CreateStateCommand();
+            IntCommandAsync = this.CreateStateCommandAsync();
+
+            CRUDListCommand = this.CreateStateCommandAsync();
+            CRUDDictCommand = this.CreateStateCommandAsync();
             EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
-            EnumStateGroupLR = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
-        }
-
-        public void ClearTest()
-        {
-            Test = string.Empty;
+            EnumStateGroupAsync = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
         }
     }
 }

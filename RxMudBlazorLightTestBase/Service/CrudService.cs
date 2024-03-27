@@ -1,6 +1,5 @@
 ﻿
 using RxBlazorLightCore;
-using System.Reactive;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -71,7 +70,7 @@ namespace RxMudBlazorLightTestBase.Service
             public async Task SubmitAsync()
             {
                 var newItem = new CRUDToDoItem(Text.Value, DueDateDate.Value + DueDateTime.Value, false, _item?.Id ?? Guid.NewGuid());
-                await service.CRUDDBState.ChangeAsync(service.AddCRUDItem(newItem));
+                await service.CRUDDBStateCMD.ChangeAsync(service.AddCRUDItem(newItem));
             }
             public bool CanSubmit()
             {
@@ -82,35 +81,35 @@ namespace RxMudBlazorLightTestBase.Service
                     (Text.Value != _item?.Text || dateNew != dateItem);
             }
 
-            public Func<IState<string>, bool> CanUpdateText => _ =>
+            public Func<string, bool> CanUpdateText => _ =>
             {
                 return service.CanUpdateText;
             };
 
-            public Func<IState<DateTime>, bool> CanUpdateDueDate => s =>
+            public Func<DateTime, bool> CanUpdateDueDate => _ =>
             {
                 return service.CanUpdateDueDate;
             };
 
-            public static Func<IState<string>, StateValidation> ValidateText => s =>
+            public static Func<string, StateValidation> ValidateText => v =>
             {
-                return new("Text can not be empty!", s.Value.Length == 0);
+                return new("Text can not be empty!", v.Length == 0);
             };
 
-            public static Func<IState<DateTime>, StateValidation> ValidateDueDate => s =>
+            public static Func<DateTime, StateValidation> ValidateDueDate => v =>
             {
-                return new("DueDate can not be in the past!", s.Value.Date < DateTime.Now.Date);
+                return new("DueDate can not be in the past!", v.Date < DateTime.Now.Date);
             };
 
-            public Func<IState<TimeSpan>, StateValidation> ValidateDueDateTime => s =>
+            public Func<TimeSpan, StateValidation> ValidateDueDateTime => v =>
             {
                 var dateNowNS = NoSeconds(DateTime.Now);
-                var dateNew = _item is null ? NoSeconds(DueDateDate.Value.Date + s.Value) : dateNowNS;
+                var dateNew = _item is null ? NoSeconds(DueDateDate.Value.Date + v) : dateNowNS;
 
                 return new("DueDate can not be in the past!", dateNew < dateNowNS);
             };
 
-            public Func<IState<TimeSpan>, bool> CanUpdateTime => s =>
+            public Func<TimeSpan, bool> CanUpdateTime => _ =>
             {
                 return service.CanUpdateDueDate;
             };
@@ -129,14 +128,14 @@ namespace RxMudBlazorLightTestBase.Service
 
         public IEnumerable<CRUDToDoItem> CRUDItems => _db.Values;
 
-        public IStateAsync<Unit> CRUDDBState { get; }
+        public IStateCommandAsync CRUDDBStateCMD { get; }
         public IStateGroup<DBRole> CRUDDBRoleGroup { get; }
 
         private readonly Dictionary<Guid, CRUDToDoItem> _db;
         public CrudService()
         {
             _db = [];
-            CRUDDBState = this.CreateStateAsync(Unit.Default);
+            CRUDDBStateCMD = this.CreateStateCommandAsync();
             CRUDDBRoleGroup = this.CreateStateGroup([DBRole.Admin, DBRole.User, DBRole.Guest], DBRole.Admin);
         }
 
@@ -145,14 +144,14 @@ namespace RxMudBlazorLightTestBase.Service
             return new CrudItemInput(this, item);
         }
 
-        public static Func<IState<DBRole>, bool> CanChangeRole => _ => true;
+        public static Func<DBRole, bool> CanChangeRole => _ => true;
 
-        public Func<IStateAsync<Unit>, bool> CanAdd => _ => CRUDDBRoleGroup.CanAdd();
-        public Func<IStateAsync<Unit>, bool> CanUpdate(CRUDToDoItem? item) => _ => (CanUpdateText || CanUpdateDueDate) && !(item is not null && item.Completed);
+        public Func<bool> CanAdd => () => CRUDDBRoleGroup.CanAdd();
+        public Func<bool> CanUpdate(CRUDToDoItem? item) => () => (CanUpdateText || CanUpdateDueDate) && !(item is not null && item.Completed);
 
-        public Func<IStateAsync<Unit>, Task> AddCRUDItem(CRUDToDoItem item)
+        public Func<Task> AddCRUDItem(CRUDToDoItem item)
         {
-            return async _ =>
+            return async () =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 _db[item.Id!.Value] = item;
@@ -160,9 +159,9 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<IStateAsync<Unit>, Task> UpdateCRUDItemAsync(CRUDToDoItem item)
+        public Func<Task> UpdateCRUDItemAsync(CRUDToDoItem item)
         {
-            return async _ =>
+            return async () =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 _db[item.Id!.Value] = item;
@@ -170,12 +169,11 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<IStateAsync<Unit>, bool> CanToggleCRUDItemCompleted => 
-            _ => CRUDDBRoleGroup.CanUpdateCompleted();
+        public Func<bool> CanToggleCRUDItemCompleted => () => CRUDDBRoleGroup.CanUpdateCompleted();
 
-        public Func<IStateAsync<Unit>, CancellationToken, Task> ToggleCRUDItemCompletedAsync(CRUDToDoItem item)
+        public Func<CancellationToken, Task> ToggleCRUDItemCompletedAsync(CRUDToDoItem item)
         {
-            return async (_, ct) =>
+            return async ct =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 item = item with { Completed = !item.Completed };
@@ -184,14 +182,11 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<IStateAsync<Unit>, bool> CanRemoveCRUDItem => _ =>
-        {
-            return CRUDDBRoleGroup.CanDeleteOne();
-        };
+        public Func<bool> CanRemoveCRUDItem => () => CRUDDBRoleGroup.CanDeleteOne();
 
-        public Func<IStateAsync<Unit>, Task> RemoveCRUDItem(CRUDToDoItem item)
+        public Func<Task> RemoveCRUDItem(CRUDToDoItem item)
         {
-            return async s =>
+            return async () =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 _db.Remove(item.Id!.Value);
@@ -199,15 +194,15 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<IStateAsync<Unit>, bool> CanRemoveCompletedCRUDItems => s =>
+        public Func<bool> CanRemoveCompletedCRUDItems => () =>
         {
             return _db.Values.Where(x => x.Completed).Any() && CRUDDBRoleGroup.CanDeleteCompleted();
         };
 
 
-        public Func<IStateAsync<Unit>, Task> RemoveCompletedCRUDItems()
+        public Func<Task> RemoveCompletedCRUDItems()
         {
-            return async s =>
+            return async () =>
             {
                 foreach (var item in _db.Values)
                 {
@@ -220,14 +215,14 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<IStateAsync<Unit>, bool> CanRemoveAllCRUDItems => s =>
+        public Func<bool> CanRemoveAllCRUDItems => () =>
         {
             return _db.Values.Count != 0 && CRUDDBRoleGroup.CanDeleteAll();
         };
 
-        public Func<IStateAsync<Unit>, Task> RemoveAllCRUDItems()
+        public Func<Task> RemoveAllCRUDItems()
         {
-            return async s =>
+            return async () =>
             {
                 _db.Clear();
                 await Task.Delay(200);

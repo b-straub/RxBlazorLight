@@ -1,28 +1,27 @@
 ﻿@inherits MudButton
-@typeparam T
 
 @RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required IState<T> State { get; init; }
+    public required IStateCommand StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action<IState<T>> ChangeState { get; init; }
+    public required Action ChangeState { get; init; }
 
     [Parameter]
-    public Func<IState<T>, bool>? CanChange { get; init; }
+    public Func<bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonRx<T>? _buttonRx;
+    private ButtonRx? _buttonRx;
     private Color _buttonColor;
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, false);
+        _buttonRx = ButtonRx.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, false);
         _buttonColor = Color;
 
         base.OnInitialized();
@@ -31,7 +30,7 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(State, ChangeState, CanChange);
+        _buttonRx.SetParameter(StateCommand, ChangeState, CanChange);
 
         ChildContent = _buttonRx.ChildContent;
         Color = _buttonRx.Color;

@@ -8,42 +8,47 @@ namespace RxBlazorLightCore
             return State<T>.Create(service, value);
         }
 
-        public static IStateAsync<T> CreateStateAsync<T>(this RxBLService service, T value)
+        public static IStateCommand CreateStateCommand(this RxBLService service)
         {
-            return StateAsync<T>.Create(service, value);
+            return StateCommand.Create(service);
         }
 
-        public static IStateGroup<T> CreateStateGroup<T>(this RxBLService service, T[] items, T inititalItem, Func<int, bool>? itemDisabledDelegate = null)
+        public static IStateCommandAsync CreateStateCommandAsync(this RxBLService service)
         {
-            return StateGroup<T>.Create(service, items, inititalItem, itemDisabledDelegate);
+            return StateCommandAsync.Create(service);
         }
 
-        public static IStateGroupAsync<T> CreateStateGroupAsync<T>(this RxBLService service, T[] items, T inititalItem, Func<int, bool>? itemDisabledDelegate = null)
+        public static IStateGroup<T> CreateStateGroup<T>(this RxBLService service, T[] items, T value, Func<int, bool>? itemDisabledDelegate = null)
         {
-            return StateGroupAsync<T>.Create(service, items, inititalItem, itemDisabledDelegate);
+            return StateGroup<T>.Create(service, items, value, itemDisabledDelegate);
         }
 
-        public static bool Changing<T>(this IStateBase<T> state)
+        public static IStateGroupAsync<T> CreateStateGroupAsync<T>(this RxBLService service, T[] items, T value, Func<int, bool>? itemDisabledDelegate = null)
+        {
+            return StateGroupAsync<T>.Create(service, items, value, itemDisabledDelegate);
+        }
+
+        public static bool Changing(this IStateCommandBase state)
         {
             return state.Phase is StatePhase.CHANGING;
         }
 
-        public static bool Changed<T>(this IStateBase<T> state)
+        public static bool Changed(this IStateCommandBase state)
         {
             return state.Phase is StatePhase.CHANGED;
         }
 
-        public static bool Canceled<T>(this IStateBase<T> state)
+        public static bool Canceled(this IStateCommandBase state)
         {
             return state.Phase is StatePhase.CANCELED;
         }
 
-        public static bool Exception<T>(this IStateBase<T> state)
+        public static bool Exception(this IStateCommandBase state)
         {
             return state.Phase is StatePhase.EXCEPTION;
         }
 
-        public static bool Done<T>(this IStateBase<T> state)
+        public static bool Done(this IStateCommandBase state)
         {
             return state.Phase is StatePhase.CHANGED ||
                 state.Phase is StatePhase.CANCELED ||

@@ -1,6 +1,5 @@
-﻿@typeparam TService
-@typeparam TParam
-@inherits RxBLServiceSubscriber<TService>
+﻿@typeparam T where T : IRxBLService
+@inherits RxBLServiceSubscriber<T>
 
 <MudElement>
     <MudDialog>
@@ -10,7 +9,7 @@
         <DialogActions>
             <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
             <MudButtonRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                         T=@TParam State=@State ChangeState=@ChangeState CanChange=@CanChange>
+                         StateCommand=@StateCommand ChangeState=@ChangeState CanChange=@CanChange>
                 @ConfirmButton
             </MudButtonRx>
         </DialogActions>

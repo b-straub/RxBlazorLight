@@ -8,10 +8,10 @@
     public required IStateGroup<T> StateGroup { get; init; }
 
     [Parameter]
-    public Action<IState<T>, T>? SelectionChanged { get; init; }
+    public Action<T>? SelectionChanged { get; init; }
 
     [Parameter]
-    public Func<IState<T>, bool>? CanChange { get; init; }
+    public Func<T, bool>? CanChange { get; init; }
 
     [Parameter]
     public bool HideDisabled { get; set; } = false;
@@ -22,13 +22,13 @@
     {
         ValueChanged = EventCallback.Factory.Create<T>(this, v =>
         {
-            StateGroup.Change(s =>
+            StateGroup.Change(() =>
             {
                 if (SelectionChanged is not null)
                 {
-                    SelectionChanged(s, v);
+                    SelectionChanged(v);
                 }
-                s.Value = v;
+                StateGroup.Value = v;
             });
         });
 
@@ -37,21 +37,21 @@
             var values = StateGroup.Items;
 
             ChildContent = builder =>
-            {
-                for (var i = 0; i < values.Length; i++)
                 {
-                    if (HideDisabled && StateGroup.ItemDisabled(i))
+                    for (var i = 0; i < values.Length; i++)
                     {
-                        continue;
-                    }
+                        if (HideDisabled && StateGroup.ItemDisabled(i))
+                        {
+                            continue;
+                        }
 
-                    builder.OpenComponent(0, typeof(MudSelectItemRx<T>));
-                    builder.AddAttribute(1, "Index", i);
-                    builder.AddAttribute(2, "Values", values);
-                    builder.AddAttribute(3, "Disabled", StateGroup.ItemDisabled(i));
-                    builder.CloseComponent();
-                }
-            };
+                        builder.OpenComponent(0, typeof(MudSelectItemRx<T>));
+                        builder.AddAttribute(1, "Index", i);
+                        builder.AddAttribute(2, "Values", values);
+                        builder.AddAttribute(3, "Disabled", StateGroup.ItemDisabled(i));
+                        builder.CloseComponent();
+                    }
+                };
         }
 
         base.OnInitialized();
@@ -59,13 +59,12 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !StateGroup.CanChange(CanChange));
+        Disabled = (CanChange is not null && !CanChange(StateGroup.Value));
         Value = StateGroup.Value;
         Text = Value?.ToString();
-        if (Validation is not null)
+        if (Validation is Func<T, StateValidation> validate)
         {
-            var validate = (Func<IState<T>, StateValidation>)Validation;
-            var validation = validate(StateGroup);
+            var validation = validate(StateGroup.Value);
             ErrorText = validation.Message;
             Error = validation.Error;
         }

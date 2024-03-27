@@ -4,27 +4,32 @@ namespace RxMudBlazorLightTestBase.Service
 {
     public sealed partial class TestService
     {
-        public static Action<IState<int>> CounterException => _ => throw new InvalidOperationException("Command test exception!");
+        public static Action CounterException => () => throw new InvalidOperationException("Command test exception!");
 
-        public static Action<IState<int>> IncrementCounter => s => s.Value++;
+        public Action IncrementCounter => () => Counter++;
 
-        public static Func<IStateAsync<int>, Task> IncrementCounterAsync => async s =>
+        public static Action IncrementCounterIndirect(int value, Action<int> setter) => () =>
         {
-            await Task.Delay(1000);
-            s.Value++;
+            setter(++value);
         };
 
-        public static Action<IState<int>> AddToCounter(int value)
+        public Func<Task> IncrementCounterAsync => async () =>
         {
-            return s => s.Value += value;
-        }
+            await Task.Delay(1000);
+            Counter++;
+        };
 
-        public static Func<IStateAsync<int>, CancellationToken, Task> AddToCounterAsync(int value)
+        public Action AddToCounter(int value) => () =>
         {
-            return async (s, ct) =>
+            Counter += value;
+        };
+
+        public Func<CancellationToken, Task> AddToCounterAsync(int value)
+        {
+            return async ct =>
             {
                 await Task.Delay(2000, ct);
-                s.Value += value;
+                Counter += value;
             };
         }
 
@@ -48,43 +53,43 @@ namespace RxMudBlazorLightTestBase.Service
             return index == 1 && CanIncrementCheck.Value;
         }
 
-        public bool AddModeCanChange(IState<bool> _)
+        public bool AddModeCanChange(bool _)
         {
-            return !CountState.Changing();
+            return !CounterCMD.Changing() && !CounterCMDAsync.Changing();
         }
 
-        public bool IncrementStateCanChangeCheck(IState<int> _)
+        public bool IncrementStateCanChangeCheck()
         {
             return CanIncrementCheck.Value;
         }
 
-        public bool IncrementStateCanChange(IStateBase<int> _)
+        public bool IncrementStateCanChange()
         {
             return _canIncrement;
         }
 
-        public static Func<IStateBase<int>, bool> IntStateCanChangeLowerBound(int lowerBound) => s => s.Value > lowerBound;
+        public Func<bool> CounterCanChangeLowerBound(int lowerBound) => () => Counter > lowerBound;
 
-        public bool RatingValueCanChange(IState<int> _)
+        public bool RatingValueCanChange(int _)
         {
             return GetRadio().Value.Color is ColorEnum.GREEN;
         }
 
-        public static Func<IStateAsync<Pizza>, Pizza, Task> ChangePizzaAsync => async (s, p) =>
+        public Func<Pizza, Task> ChangePizzaAsync => async p =>
             {
                 await Task.Delay(1000);
-                s.Value = p;
+                GetPizzas2().Value = p;
             };
 
-        public static Action<IState<Pizza>, Pizza> ChangePizza(string value)
+        public Action<Pizza> ChangePizza(string value)
         {
-            return (s, p) =>
+            return p =>
             {
                 var context = value;
-                s.Value = p;
+                GetPizzas1().Value = p;
             };
         }
 
-        public static Action<IState<TestColor>, TestColor> ChangeTestColor => (s, p) => s.Value = p;
+        public Action<TestColor> ChangeTestColor => c => GetRadio().Value = c;
     }
 }

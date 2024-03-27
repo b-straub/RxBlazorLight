@@ -1,34 +1,33 @@
 ﻿@inherits MudMenuItem
-@typeparam T
 
 @RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required IStateAsync<T> State { get; init; }
+    public required IStateCommandAsync StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Func<IStateAsync<T>, Task> ChangeStateAsync { get; init; }
+    public required Func<Task> ChangeStateAsync { get; init; }
 
     [Parameter]
-    public Func<IStateAsync<T>, bool>? CanChange { get; init; }
+    public Func<bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonRx<T>? _buttonRx;
+    private ButtonRx? _buttonRx;
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.MENU, ConfirmExecutionAsync, Color.Default);
+        _buttonRx = ButtonRx.Create(MBButtonType.MENU, ConfirmExecutionAsync, Color.Default);
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(State, ChangeStateAsync, null, CanChange, false);
+        _buttonRx.SetParameter(StateCommand, ChangeStateAsync, null, CanChange, false);
 
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         OnTouch = (EventCallback<TouchEventArgs>)_buttonRx.OnTouch;

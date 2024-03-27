@@ -43,13 +43,15 @@ namespace RxMudBlazorLightTestBase.Service
 
     public partial class TestServiceBase : RxBLService
     {
-        public IState<StateInfo> ServiceState { get; }
+        public StateInfo ServiceState { get; protected set; }
+        public IStateCommand ServiceStateCMD { get; }
 
         public TestServiceBase(IServiceProvider _)
         {
             Console.WriteLine("TestService Create");
 
-            ServiceState = this.CreateState(new StateInfo(string.Empty));
+            ServiceState = new StateInfo(string.Empty);
+            ServiceStateCMD = this.CreateStateCommand();
         }
     }
 
@@ -57,9 +59,11 @@ namespace RxMudBlazorLightTestBase.Service
     {
         public sealed class Scope(TestService service) : RxBLStateScope<TestService>(service)
         {
-            public IState<int> CountState = service.CreateState(0);
+            public int Counter { get; set; }
 
-            public IStateAsync<int> CountStateAsync = service.CreateStateAsync(0);
+            public IStateCommand CounterCMD = service.CreateStateCommand();
+
+            public IStateCommandAsync CounterCMDAsync = service.CreateStateCommandAsync();
 
             public override ValueTask OnContextReadyAsync()
             {
@@ -74,6 +78,23 @@ namespace RxMudBlazorLightTestBase.Service
                     Console.WriteLine("Scope Disposed");
                 }
             }
+
+            public Action IncrementCounter => () => Counter++;
+
+            public Func<Task> IncrementCounterAsync => async () =>
+            {
+                await Task.Delay(1000);
+                Counter++;
+            };
+
+            public Func<CancellationToken, Task> AddToCounterAsync(int value)
+            {
+                return async ct =>
+                {
+                    await Task.Delay(2000, ct);
+                    Counter += value;
+                };
+            }
         }
 
         public class ColorsStateScope(TestService service) : RxBLStateScope<TestService>(service)
@@ -87,27 +108,26 @@ namespace RxMudBlazorLightTestBase.Service
 
             public IStateGroupAsync<TestColor> TestColors = service.CreateStateGroupAsync(Colors, Colors[0]);
 
-            public static Func<IStateAsync<TestColor>, TestColor, Task> ChangeTestColorAsync(int context)
+            public Func<TestColor, Task> ChangeTestColorAsync(int context)
             {
-                return async (s, p) =>
+                return async _ =>
                 {
-                    var newContext = context;
                     await Task.Delay(1000);
-                    s.Value = p;
+                    TestColors.Value = Colors[context];
                 };
             }
 
-            public static Func<IStateAsync<TestColor>, bool> CanChangeTestColor(int context)
+            public static Func<TestColor, bool> CanChangeTestColor(int context) => c =>
             {
-                return s =>
-                {
-                    return context != 1;
-                };
-            }
+                return context != 1;
+            };
         }
 
-        public IState<int> CountState { get; }
-        public IStateAsync<int> CountStateAsync { get; }
+        public int Counter { get; set; }
+
+        public IStateCommand CounterCMD { get; }
+
+        public IStateCommandAsync CounterCMDAsync { get; }
 
         public IState<bool> AddMode { get; }
 
@@ -127,8 +147,8 @@ namespace RxMudBlazorLightTestBase.Service
         {
             Console.WriteLine("TestService Create");
 
-            CountState = this.CreateState(0);
-            CountStateAsync = this.CreateStateAsync(0);
+            CounterCMD = this.CreateStateCommand();
+            CounterCMDAsync = this.CreateStateCommandAsync();
 
             CanIncrementCheck = this.CreateState(false);
             AddMode = this.CreateState(false);
@@ -157,13 +177,13 @@ namespace RxMudBlazorLightTestBase.Service
             Console.WriteLine("TestService OnContextInitialized");
             await Task.Delay(3000);
             _canIncrement = true;
-            ServiceState.Change(s => s.Value = new StateInfo("Initialized"));
+            ServiceState = new StateInfo("Initialized");
         }
 
-        public void ChangeState(string state)
+        public Action ChangeServiceState(string state) => () =>
         {
-            ServiceState.Change(s => s.Value = s.Value with { State = state });
-        }
+            ServiceState = ServiceState with { State = state };
+        };
 
         public IStateGroup<Pizza> GetPizzas1()
         {

@@ -1,40 +1,41 @@
 ﻿
-using RxBlazorLightCore;
-
 namespace RxBlazorLightCoreTestBase
 {
     public partial class ServiceFixture
     {
-        public static Func<IStateBase<int>, bool> CanChangeNotZero => s => s.Value > 0;
-        public static Func<IStateBase<int>, bool> CanChangeBelow(int upperBound) => s => s.Value < upperBound;
+        public Func<bool> CanChangeNotZero => () => IntStateResult > 0;
+        public Func<bool> CanChangeBelow(int upperBound) => () => IntStateResult < upperBound;
 
-        public static Action<IState<int>> Increment => s => s.Value++;
+        public Action Reset => () => IntStateResult = 0;
+        public Func<Task> ResetAsync => () => { IntStateResult = 0; return Task.CompletedTask; };
 
-        public static Action<IState<int>> Add(int value)
+        public Action Increment => () => IntStateResult++;
+
+        public Action Add(int value)
         {
-            return s => s.Value += value;
+            return () => IntStateResult += value;
         }
 
-        public static Func<IStateAsync<int>, Task> AddAsync(int value)
+        public Func<Task> AddAsync(int value)
         {
-            return async s =>
+            return async () =>
             {
-                if (s.Value > 0)
+                if (IntStateResult > 0)
                 {
                     throw new InvalidOperationException("AddAsync");
                 }
 
                 await Task.Delay(1000);
-                s.Value += value;
+                IntStateResult += value;
             };
         }
 
-        public static Func<IStateAsync<int>, CancellationToken, Task> MultiplyAsync(int value)
+        public Func<CancellationToken, Task> MultiplyAsync(int value)
         {
-            return async (s, ct) =>
+            return async ct =>
             {
                 await Task.Delay(1000, ct);
-                s.Value *= value;
+                IntStateResult *= value;
             };
         }
 
@@ -46,32 +47,32 @@ namespace RxBlazorLightCoreTestBase
             CLEAR
         }
 
-        public static Func<IStateAsync<IList<CRUDTest>>, CancellationToken, Task> ChangeCrudListAsync((CMD_CRUD CMD, CRUDTest? ITEM) value)
+        public Func<CancellationToken, Task> ChangeCrudListAsync((CMD_CRUD CMD, CRUDTest? ITEM) value)
         {
-            return async (s, ct) =>
+            return async ct =>
             {
                 if (value.CMD is CMD_CRUD.ADD)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
-                    s.Value.Add(value.ITEM);
+                    CRUDList.Add(value.ITEM);
                 }
                 else if (value.CMD is CMD_CRUD.UPDATE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
-                    var item = s.Value.Where(i => i.Id == value.ITEM.Id).FirstOrDefault();
+                    var item = CRUDList.Where(i => i.Id == value.ITEM.Id).FirstOrDefault();
                     ArgumentNullException.ThrowIfNull(item);
 
-                    s.Value.Remove(item);
-                    s.Value.Add(value.ITEM);
+                    CRUDList.Remove(item);
+                    CRUDList.Add(value.ITEM);
                 }
                 else if (value.CMD is CMD_CRUD.DELETE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
-                    s.Value.Remove(value.ITEM);
+                    CRUDList.Remove(value.ITEM);
                 }
                 else if (value.CMD is CMD_CRUD.CLEAR)
                 {
-                    s.Value.Clear();
+                    CRUDList.Clear();
                 }
                 else
                 {
@@ -82,30 +83,30 @@ namespace RxBlazorLightCoreTestBase
             };
         }
 
-        public static Func<IStateAsync<IDictionary<Guid, CRUDTest>>, CancellationToken, Task> ChangeCrudDictAsync((CMD_CRUD CMD, Guid? ID, CRUDTest? ITEM) value)
+        public Func<CancellationToken, Task> ChangeCrudDictAsync((CMD_CRUD CMD, Guid? ID, CRUDTest? ITEM) value)
         {
-            return async (s, ct) =>
+            return async ct =>
             {
                 if (value.CMD is CMD_CRUD.ADD)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
                     ArgumentNullException.ThrowIfNull(value.ID);
-                    s.Value.Add(value.ID.Value, value.ITEM);
+                    CRUDDict.Add(value.ID.Value, value.ITEM);
                 }
                 else if (value.CMD is CMD_CRUD.UPDATE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
                     ArgumentNullException.ThrowIfNull(value.ID);
-                    s.Value[value.ID.Value] = value.ITEM;
+                    CRUDDict[value.ID.Value] = value.ITEM;
                 }
                 else if (value.CMD is CMD_CRUD.DELETE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ID);
-                    s.Value.Remove(value.ID.Value);
+                    CRUDDict.Remove(value.ID.Value);
                 }
                 else if (value.CMD is CMD_CRUD.CLEAR)
                 {
-                    s.Value.Clear();
+                    CRUDDict.Clear();
                 }
                 else
                 {

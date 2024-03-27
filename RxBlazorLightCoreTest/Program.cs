@@ -7,42 +7,45 @@ var done = false;
 
 TestService testService = new();
 
-testService.Subscribe(p =>
-{
-    Console.WriteLine(p.ToString());
-    if (testService.CounterAsync.Phase is StatePhase.CHANGING)
-    {
-        testService.CounterAsync.Cancel();
-    }
-});
-
 testService.Subscribe(cr =>
 {
     Console.WriteLine(cr.StateID);
+    Console.WriteLine(testService.Counter.Value);
+    Console.WriteLine(testService.CounterCommandResult);
+    Console.WriteLine(testService.StringList.FirstOrDefault());
+    Console.WriteLine(testService.NullString);
 
-    if (testService.CounterAsync.Phase is StatePhase.CANCELED)
+    if (testService.CounterCommandAsync.Phase is StatePhase.CHANGING)
+    {
+        testService.CounterCommandAsync.Cancel();
+    }
+
+    if (testService.CounterCommandAsync.Phase is StatePhase.CANCELED)
     {
         done = true;
     }
 });
 
-testService.Counter.Change(TestService.Increment);
-testService.Counter.Change(TestService.Increment);
+testService.Counter.Value = 1;
+testService.Counter.Value = 2;
 
-testService.Counter.Change(TestService.Add(10));
-testService.StringList.Change(TestService.AddString("Test"));
-testService.NullString.Change(s => s.Value = "TestNotNull");
+testService.CounterCommand.Change(testService.Increment);
+testService.CounterCommand.Change(testService.Increment);
 
-await testService.CounterAsync.ChangeAsync(TestService.AddAsync(10));
+testService.CounterCommand.Change(testService.Add(10));
+testService.StringListCommand.Change(testService.AddString("Test"));
+testService.StringCommand.Change(testService.SetString("TestNotNull"));
 
-await testService.CounterAsync.ChangeAsync(TestService.IncrementAsync);
+await testService.CounterCommandAsync.ChangeAsync(testService.AddAsync(10));
 
-await testService.CounterAsync.ChangeAsync(TestService.AddAsyncLR(10));
+await testService.CounterCommandAsync.ChangeAsync(testService.IncrementAsync);
 
-var ccCounter = testService.Counter.CanChange(TestService.CanChangeT(1));
-ccCounter = testService.Counter.CanChange(TestService.CanChangeT(100));
-var ccCounterAsync = testService.CounterAsync.CanChange(TestService.CanChangeNV);
-var ccNullString = testService.NullString.CanChange(TestService.CanChangeS("TestNotNull"));
+await testService.CounterCommandAsync.ChangeAsync(testService.AddAsyncCancel(10));
+
+var ccCounter = testService.CanChangeT(1);
+ccCounter = testService.CanChangeT(100);
+var ccCounterAsync = testService.CanChangeNV;
+var ccNullString = testService.CanChangeS("TestNotNull");
 
 /*ServiceFixture fixture = new();
 

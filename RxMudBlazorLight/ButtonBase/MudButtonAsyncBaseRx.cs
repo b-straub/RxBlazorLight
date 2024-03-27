@@ -5,19 +5,19 @@ using RxBlazorLightCore;
 
 namespace RxMudBlazorLight.ButtonBase
 {
-    public class MudButtonAsyncBaseRx<T> : MudButton
+    public class MudButtonAsyncBaseRx : MudButton
     {
         [Parameter, EditorRequired]
-        public required IStateAsync<T> State { get; init; }
+        public required IStateCommandAsync StateCommand { get; init; }
 
         [Parameter]
-        public Func<IStateAsync<T>, bool>? CanChange { get; init; }
+        public Func<bool>? CanChange { get; init; }
 
         [Parameter]
         public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
-        protected Func<IStateAsync<T>, Task>? _changeStateAsync;
-        protected Func<IStateAsync<T>, CancellationToken, Task>? _changeStateAsyncCancel;
+        protected Func<Task>? _changeStateAsync;
+        protected Func<CancellationToken, Task>? _changeStateAsyncCancel;
         protected string? _cancelText;
         protected Color? _cancelColor;
         protected bool _hasProgress = false;
@@ -25,11 +25,11 @@ namespace RxMudBlazorLight.ButtonBase
 
         protected RenderFragment RenderBase() => base.BuildRenderTree;
 
-        private ButtonRx<T>? _buttonRx;
+        private ButtonRx? _buttonRx;
 
         protected override void OnInitialized()
         {
-            _buttonRx = ButtonRx<T>.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, _hasProgress, _cancelText, _cancelColor);
+            _buttonRx = ButtonRx.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, _hasProgress, _cancelText, _cancelColor);
 
             base.OnInitialized();
         }
@@ -37,7 +37,7 @@ namespace RxMudBlazorLight.ButtonBase
         protected override void OnParametersSet()
         {
             ArgumentNullException.ThrowIfNull(_buttonRx);
-            _buttonRx.SetParameter(State, _changeStateAsync, _changeStateAsyncCancel, CanChange, _deferredNotification);
+            _buttonRx.SetParameter(StateCommand, _changeStateAsync, _changeStateAsyncCancel, CanChange, _deferredNotification);
 
             ChildContent = _buttonRx.ChildContent;
             Color = _buttonRx.Color;

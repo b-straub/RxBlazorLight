@@ -1,17 +1,16 @@
 ﻿@inherits MudFab
-@typeparam T
 
 @RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required IState<T> State { get; init; }
+    public required IStateCommand StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action<IState<T>> ChangeState { get; init; }
+    public required Action ChangeState { get; init; }
 
     [Parameter]
-    public Func<IState<T>, bool>? CanChange { get; init; }
+    public Func<bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
@@ -20,11 +19,11 @@
     public MBIconVariant? IconVariant { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonRx<T>? _buttonRx;
+    private ButtonRx? _buttonRx;
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color);
+        _buttonRx = ButtonRx.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color);
 
         base.OnInitialized();
     }
@@ -32,9 +31,9 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(State, ChangeState, CanChange);
+        _buttonRx.SetParameter(StateCommand, ChangeState, CanChange);
 
-        var parameters = _buttonRx.GetFabParameters(State, StartIcon, EndIcon, Label, IconVariant, false);
+        var parameters = _buttonRx.GetFabParameters(StateCommand, StartIcon, EndIcon, Label, IconVariant, false);
         StartIcon = parameters.StartIcon;
         EndIcon = parameters.EndIcon;
         Label = parameters.Label;

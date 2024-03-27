@@ -8,10 +8,10 @@
     public required IStateGroupAsync<T> StateGroupAsync { get; init; }
 
     [Parameter]
-    public Func<IStateAsync<T>, T, Task>? SelectionChangedAsync { get; init; }
+    public Func<T, Task>? SelectionChangedAsync { get; init; }
 
     [Parameter]
-    public Func<IStateAsync<T>, bool>? CanChange { get; init; }
+    public Func<T, bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<T, bool> DenseCallback { get; set; } = _ => false;
@@ -31,13 +31,13 @@
     {
         ValueChanged = EventCallback.Factory.Create<T>(this, async v =>
         {
-            await StateGroupAsync.ChangeAsync(async s =>
+            await StateGroupAsync.ChangeAsync(async _ =>
             {
                 if (SelectionChangedAsync is not null)
                 {
-                    await SelectionChangedAsync(s, v);
+                    await SelectionChangedAsync(v);
                 }
-                s.Value = v;
+                StateGroupAsync.Value = v;
             });
         });
 
@@ -68,14 +68,13 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !StateGroupAsync.CanChange(CanChange)) || StateGroupAsync.Changing();
+        Disabled = (CanChange is not null && !CanChange(StateGroupAsync.Value)) || StateGroupAsync.Changing();
         if (StateGroupAsync.Done())
         {
             Value = StateGroupAsync.Value;
-            if (Validation is not null)
+            if (Validation is Func<T, StateValidation> validate)
             {
-                var validate = (Func<IStateAsync<T>, StateValidation>)Validation;
-                var validation = validate(StateGroupAsync);
+                var validation = validate(StateGroupAsync.Value);
                 ErrorText = validation.Message;
                 Error = validation.Error;
             }

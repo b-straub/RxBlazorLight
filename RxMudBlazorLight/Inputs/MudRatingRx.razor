@@ -7,7 +7,7 @@
     public required IState<int> State { get; init; }
 
     [Parameter]
-    public Func<IState<int>, bool>? CanChange { get; init; }
+    public Func<int, bool>? CanChange { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
@@ -15,7 +15,7 @@
     {
         SelectedValueChanged = EventCallback.Factory.Create<int>(this, v =>
         {
-            State.Change(s => s.Value = v);
+            State.Value = v;
         });
 
         base.OnInitialized();
@@ -23,7 +23,7 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !State.CanChange(CanChange));
+        Disabled = (CanChange is not null && !CanChange(State.Value));
         SelectedValue = State.Value;
 
         base.OnParametersSet();

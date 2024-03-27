@@ -5,7 +5,7 @@ using RxMudBlazorLight.Extensions;
 
 namespace RxMudBlazorLight.ButtonBase
 {
-    internal class ButtonBaseRx<T>
+    internal class ButtonBaseRx
     {
         public bool Disabled { get; protected set; } = true;
         public Color Color { get; protected set; }
@@ -107,7 +107,7 @@ namespace RxMudBlazorLight.ButtonBase
             }
         };
 
-        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateBase<T> stateBase, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool canCancel)
+        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateCommandBase stateCommandBase, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool canCancel)
         {
             if (_iconForState is IconForState.None)
             {
@@ -128,7 +128,7 @@ namespace RxMudBlazorLight.ButtonBase
                 _buttonLabel = label;
             }
 
-            if (!stateBase.Changing() || stateBase.ChangeCallerID != _id)
+            if (!stateCommandBase.Changing() || stateCommandBase.ChangeCallerID != _id)
             {
                 if (_iconForState is IconForState.Start)
                 {
@@ -170,9 +170,9 @@ namespace RxMudBlazorLight.ButtonBase
             return (startIcon, endIcon, label);
         }
 
-        public string GetIconButtonParameters(IStateBase<T> state, string icon, MBIconVariant? iconVariant)
+        public string GetIconButtonParameters(IStateCommandBase stateCommand, string icon, MBIconVariant? iconVariant)
         {
-            if (!state.Changing() || state.ChangeCallerID != _id)
+            if (!stateCommand.Changing() || stateCommand.ChangeCallerID != _id)
             {
                 if (_iconForState is IconForState.None)
                 {
@@ -197,9 +197,9 @@ namespace RxMudBlazorLight.ButtonBase
             return icon;
         }
 
-        public string GetBadgeIcon(IStateBase<T> state, MBIconVariant? iconVariant, bool canCancel)
+        public string GetBadgeIcon(IStateCommandBase stateCommand, MBIconVariant? iconVariant, bool canCancel)
         {
-            if (canCancel && state.Changing() && state.ChangeCallerID == _id)
+            if (canCancel && stateCommand.Changing() && stateCommand.ChangeCallerID == _id)
             {
                 return iconVariant.GetCancelIcon();
             }
@@ -223,8 +223,8 @@ namespace RxMudBlazorLight.ButtonBase
             }
         }
 
-        protected void VerifyButtonParametersAsync(Func<IStateAsync<T>, Task>? changeStateAsync,
-            Func<IStateAsync<T>, CancellationToken, Task>? changeStateAsyncCancel)
+        protected void VerifyButtonParametersAsync(Func<Task>? changeStateAsync,
+            Func<CancellationToken, Task>? changeStateAsyncCancel)
         {
             if (changeStateAsync is null && changeStateAsyncCancel is null)
             {

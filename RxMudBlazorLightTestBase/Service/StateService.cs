@@ -5,36 +5,38 @@ namespace RxMudBlazorLightTestBase.Service
     public class StateService : RxBLService
     {
         public IState<int> Counter { get; }
-        public IStateAsync<int> CounterAsync { get; }
+        public int CounterAsync { get; private set; }
+
+        public IStateCommandAsync CounterAsyncCMD { get; }
 
         public StateService()
         {
             Counter = this.CreateState(0);
-            CounterAsync = this.CreateStateAsync(0);
+            CounterAsyncCMD = this.CreateStateCommandAsync();
         }
 
-        public static Func<IState<int>, bool> CounterCanChange => s => s.Value < 20;
-        public static Func<IStateAsync<int>, bool> CounterAsyncCanChange => s => s.Value < 10;
+        public static Func<int, bool> CounterCanChange => v => v < 20;
+        public Func<bool> CounterAsyncCanChange => () => CounterAsync < 10;
 
-        public static Action<IState<int>> Increment => s => s.Value++;
+        public Action  Increment => () => CounterAsync++;
 
-        public static Action<IState<int>> Add(int value)
+        public Action Add(int value)
         {
-            return s => s.Value += value;
+            return () => CounterAsync += value;
         }
 
-        public static Func<IStateAsync<int>, Task> IncrementAsync => async s =>
+        public Func<Task> IncrementAsync => async () =>
         {
             await Task.Delay(1000);
-            s.Value++;
+            CounterAsync++;
         };
 
-        public static Func<IStateAsync<int>, CancellationToken, Task> AddAsync(int value)
+        public Func<CancellationToken, Task> AddAsync(int value)
         {
-            return async (s, ct) =>
+            return async ct =>
             {
                 await Task.Delay(1000, ct);
-                s.Value += value;
+                CounterAsync += value;
             };
         }
     }

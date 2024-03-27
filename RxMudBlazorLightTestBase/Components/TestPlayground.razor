@@ -8,10 +8,10 @@
     <RxBLStateScope TScope=@TimerService.TimerStateScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
         <TimerComponent Name="TestPlayground" />
     </RxBLStateScope>
-    <MudText id="result" Class="mb-4">Current count: @Service.CountState.Value</MudText>
-    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() SelectionChangedAsync=@TestService.ChangePizzaAsync />
-    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@TestService.IncrementCounter>Increment</MudButtonRx>
-    <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@(TestService.AddToCounter(5))>Add 5</MudButtonRx>
+    <MudText id="result" Class="mb-4">Current count: @Service.Counter</MudText>
+    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() SelectionChangedAsync=@Service.ChangePizzaAsync />
+    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ChangeState=@Service.IncrementCounter>Increment</MudButtonRx>
+    <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ChangeState=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Count State Changes {_countStateChanges}")</MudText>
 
     <MudGrid>
@@ -33,7 +33,7 @@
 
     protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
     {
-        if (cr.StateID == Service.CountState.ID && Service.CountState.Changed())
+        if (cr.StateID == Service.CounterCMD.ID && Service.CounterCMD.Changed())
         {
             _countStateChanges++;
         }

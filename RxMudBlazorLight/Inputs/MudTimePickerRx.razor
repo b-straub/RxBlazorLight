@@ -7,7 +7,7 @@
     public required IState<TimeSpan> State { get; init; }
 
     [Parameter]
-    public Func<IState<TimeSpan>, bool>? CanChange { get; init; }
+    public Func<TimeSpan, bool>? CanChange { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
@@ -17,7 +17,7 @@
         {
             if (v.HasValue)
             {
-                State.Change(s => s.Value = v.Value);
+                State.Value = v.Value;
             }
         });
 
@@ -26,11 +26,11 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !State.CanChange(CanChange));
+        Disabled = (CanChange is not null && !CanChange(State.Value));
         Time = State.Value;
-        if (Validation is Func<IState<TimeSpan>, StateValidation> validate)
+        if (Validation is Func<TimeSpan, StateValidation> validate)
         {
-            var validation = validate(State);
+            var validation = validate(Time.Value);
             ErrorText = validation.Message;
             Error = validation.Error;
         }

@@ -1,17 +1,16 @@
 ﻿@inherits MudIconButton
-@typeparam T
     
 @RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required IState<T> State { get; init; }
+    public required IStateCommand StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action<IState<T>> ChangeState { get; init; }
+    public required Action ChangeState { get; init; }
 
     [Parameter]
-    public Func<IState<T>, bool>? CanChange { get; init; }
+    public Func<bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
@@ -20,11 +19,11 @@
     public MBIconVariant? IconVariant { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
-    private ButtonRx<T>? _buttonRx;
+    private ButtonRx? _buttonRx;
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx<T>.Create(MBButtonType.ICON, ConfirmExecutionAsync, Color);
+        _buttonRx = ButtonRx.Create(MBButtonType.ICON, ConfirmExecutionAsync, Color);
 
         base.OnInitialized();
     }
@@ -33,9 +32,9 @@
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
         ArgumentNullException.ThrowIfNull(Icon);
-        _buttonRx.SetParameter(State, ChangeState, CanChange);
+        _buttonRx.SetParameter(StateCommand, ChangeState, CanChange);
 
-        Icon = _buttonRx.GetIconButtonParameters(State, Icon, IconVariant);
+        Icon = _buttonRx.GetIconButtonParameters(StateCommand, Icon, IconVariant);
 
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         Disabled = _buttonRx.Disabled;

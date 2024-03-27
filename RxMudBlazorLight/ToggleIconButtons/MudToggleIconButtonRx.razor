@@ -7,7 +7,7 @@
     public required IState<bool> State { get; init; }
 
     [Parameter]
-    public Func<IStateBase<bool>, bool>? CanChange { get; init; }
+    public Func<bool, bool>? CanChange { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
@@ -24,7 +24,7 @@
     {
         ToggledChanged = EventCallback.Factory.Create<bool>(this, v =>
         {
-            State.Change(s => s.Value = v);
+            State.Value = v;
         });
 
         base.OnInitialized();
@@ -32,7 +32,7 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !State.CanChange(CanChange));
+        Disabled = (CanChange is not null && !CanChange(State.Value));
         Toggled = State.Value;
 
         base.OnParametersSet();

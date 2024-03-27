@@ -3,20 +3,20 @@
 <MudStack AlignItems=@AlignItems.Start>
     <RxBLStateSubscriber Service=@Service>
         <DisplayRenderCycle>
-            <MudText Typo="Typo.h3" GutterBottom="true">@Service.CountState.Value</MudText>
+            <MudText Typo="Typo.h3" GutterBottom="true">@Service.Counter</MudText>
         </DisplayRenderCycle>
         <DisplayRenderCycle>
-            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" State=@Service.CountState ChangeState=@TestService.IncrementCounter CanChange=@Service.IncrementStateCanChange>Increment</MudButtonRx>
+            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ChangeState=@Service.IncrementCounter CanChange=@Service.IncrementStateCanChange>Increment</MudButtonRx>
         </DisplayRenderCycle>
     </RxBLStateSubscriber>
 
-    <RxBLStateSubscriber Service=@Service IDs=@([Service.ServiceState.ID])>
+    <RxBLStateSubscriber Service=@Service IDs=@([Service.ServiceStateCMD.ID])>
         <DisplayRenderCycle>
-            <MudText Typo="Typo.h3" GutterBottom="true">@Service.ServiceState.Value.State</MudText>
+            <MudText Typo="Typo.h3" GutterBottom="true">@Service.ServiceState.State</MudText>
         </DisplayRenderCycle>
 
         <DisplayRenderCycle>
-            <MudButtonRx Color="Color.Warning" Variant="Variant.Filled" State=@Service.ServiceState ChangeState=@(s => s.Value = s.Value with { State = "Test" })>Change State to Test</MudButtonRx>
+            <MudButtonRx Color="Color.Warning" Variant="Variant.Filled" StateCommand=@Service.ServiceStateCMD ChangeState=@(Service.ChangeServiceState("Test"))>Change State to Test</MudButtonRx>
         </DisplayRenderCycle>
     </RxBLStateSubscriber>
 </MudStack>

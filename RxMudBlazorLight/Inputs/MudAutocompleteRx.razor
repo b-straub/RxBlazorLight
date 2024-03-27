@@ -8,7 +8,7 @@
     public required IState<T> State { get; init; }
 
     [Parameter]
-    public Func<IState<T>, bool>? CanChange { get; init; }
+    public Func<T, bool>? CanChange { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
@@ -16,7 +16,7 @@
     {
         ValueChanged = EventCallback.Factory.Create<T>(this, v =>
         {
-            State.Change(s => s.Value = v);
+            State.Value = v;
         });
 
         base.OnInitialized();
@@ -24,12 +24,12 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !State.CanChange(CanChange));
+        Disabled = (CanChange is not null && !CanChange(State.Value));
         Value = State.Value;
         Text = Value?.ToString();
-        if (Validation is Func<IState<T>, StateValidation> validate)
+        if (Validation is Func<T, StateValidation> validate)
         {
-            var validation = validate(State);
+            var validation = validate(Value);
             ErrorText = validation.Message;
             Error = validation.Error;
         }

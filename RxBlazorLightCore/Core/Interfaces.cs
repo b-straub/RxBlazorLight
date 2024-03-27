@@ -35,42 +35,54 @@ namespace RxBlazorLightCore
         EXCEPTION
     }
 
-    public interface IStateBase<T>
+    public interface IState<T>
     {
         public T Value { get; set; }
 
         [MemberNotNullWhen(true, nameof(Value))]
         public bool HasValue();
-        public void NotifyChanging();
+        public Guid ID { get; }
+    }
+
+    public interface IStateCommandBase
+    {
         public StatePhase Phase { get; }
         public Guid ID { get; }
-
         public Guid? ChangeCallerID { get; }
     }
 
-    public interface IState<T> : IStateBase<T>
+    public interface IStateCommandAsyncBase
     {
-        public bool CanChange(Func<IState<T>, bool> canChangeDelegate);
-
-        public void Change(Action<IState<T>> changeDelegate);
+        public void NotifyChanging();
     }
 
-    public interface IStateAsync<T> : IStateBase<T>
+    public interface IStateCommand : IStateCommandBase
     {
-        public bool CanChange(Func<IStateAsync<T>, bool> canChangeDelegate);
-        public Task ChangeAsync(Func<IStateAsync<T>, Task> changeDelegateAsync, bool notifyChanging = false, Guid? changeCallerID = null);
-        public Task ChangeAsync(Func<IStateAsync<T>, CancellationToken, Task> changeDelegateAsync, bool notifyChanging = true, Guid? changeCallerID = null);
+        public void Change();
+
+        public void Change(Action changeDelegate);
+    }
+
+    public interface IStateCommandAsync : IStateCommand, IStateCommandAsyncBase
+    {
+        public Task ChangeAsync(Func<Task> changeDelegateAsync, bool notifyChanging = true, Guid? changeCallerID = null);
+        public Task ChangeAsync(Func<CancellationToken, Task> changeDelegateAsync, bool notifyChanging = true, Guid? changeCallerID = null);
         public void Cancel();
     }
 
-    public interface IStateGroup<T> : IState<T>
+
+    public interface IStateGroup<T> : IStateCommand
     {
+        public T Value { get; set; }
+
         public T[] Items { get; }
         public bool ItemDisabled(int index);
     }
 
-    public interface IStateGroupAsync<T> : IStateAsync<T>
+    public interface IStateGroupAsync<T> : IStateCommandAsync
     {
+        public T Value { get; set; }
+
         public T[] Items { get; }
         public bool ItemDisabled(int index);
     }

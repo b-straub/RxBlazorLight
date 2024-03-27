@@ -6,55 +6,69 @@ namespace RxBlazorLightCoreTest
     internal class TestService : RxBLService
     {
         public IState<int> Counter { get; }
-        public IStateAsync<int> CounterAsync { get; }
-        public IState<IList<string>> StringList { get; }
-        public IState<string?> NullString { get; }
+
+        public int CounterCommandResult { get; private set; }
+        public IStateCommand CounterCommand { get; }
+        public IStateCommandAsync CounterCommandAsync { get; }
+
+
+        public IList<string> StringList { get; }
+        public IStateCommand StringListCommand { get; }
+
+        public string? NullString { get; private set; }
+        public IStateCommand StringCommand { get; }
 
         public TestService()
         {
             Counter = this.CreateState(0);
-            CounterAsync = this.CreateStateAsync(10);
-            StringList = this.CreateState<IList<string>>([]);
-            NullString = this.CreateState<string?>(null);
+            CounterCommand = this.CreateStateCommand();
+            CounterCommandAsync = this.CreateStateCommandAsync();
+
+            StringListCommand = this.CreateStateCommand();
+            StringCommand = this.CreateStateCommand();
+
+            StringList = [];
         }
 
-        public static Func<IStateBase<int>, bool> CanChangeNV => s => s.Value < 20;
-        public static Func<IStateBase<int>, bool> CanChangeT(int threshold) => s => s.Value < threshold;
-        public static Func<IStateBase<string?>, bool> CanChangeS(string compare) => s => compare != s.Value;
+        public bool CanChangeNV => CounterCommandResult < 20;
+        public bool CanChangeT(int threshold) => CounterCommandResult < threshold;
+        public bool CanChangeS(string compare) => NullString != compare;
 
-        public static Action<IState<int>> Increment => s => s.Value++;
+        public Action Increment => () => CounterCommandResult++;
 
-        public static Action<IState<IList<string>>> AddString(string value)
+        public Action AddString(string value) => () =>
         {
-            return s => s.Value.Add(value);
-        }
-
-        public static Action<IState<int>> Add(int value)
-        {
-            return s => s.Value += value;
-        }
-
-        public static Func<IStateAsync<int>, Task> IncrementAsync => async s =>
-        {
-            await Task.Delay(1000);
-            s.Value++;
+            StringList.Add(value);
         };
 
-        public static Func<IStateAsync<int>, Task> AddAsync(int value)
+        public Action SetString(string value) => () =>
         {
-            return async s =>
-            {
-                await Task.Delay(1000);
-                s.Value += value;
-            };
+            NullString = value;
+        };
+
+        public Action Add(int value) => () =>
+        {
+            CounterCommandResult += value;
+        };
+
+        public async Task IncrementAsync()
+        {
+            await Task.Delay(1000);
+            CounterCommandResult++;
         }
 
-        public static Func<IStateAsync<int>, CancellationToken, Task> AddAsyncLR(int value)
+        public Func<Task> AddAsync(int value) => async () => 
         {
-            return async (s, ct) =>
+            await Task.Delay(1000);
+            CounterCommandResult += value;
+        };
+
+        public Func<CancellationToken, Task> AddAsyncCancel(int value)
+        {
+            return async ct =>
             {
                 await Task.Delay(1000, ct);
-                s.Value += value;
+                CounterCommandResult = value;
             };
         }
     }

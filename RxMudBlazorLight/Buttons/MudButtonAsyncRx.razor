@@ -1,11 +1,10 @@
-﻿@inherits MudButtonAsyncBaseRx<T>
-@typeparam T
+﻿@inherits MudButtonAsyncBaseRx
 
 @RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required Func<IStateAsync<T>, Task> ChangeStateAsync { get; init; }
+    public required Func<Task> ChangeStateAsync { get; init; }
 
     [Parameter]
     public bool HasProgress { get; set; } = false;

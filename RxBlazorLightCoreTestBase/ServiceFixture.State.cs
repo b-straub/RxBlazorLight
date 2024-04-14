@@ -58,20 +58,20 @@ namespace RxBlazorLightCoreTestBase
             await IntCommandAsync.ExecuteAsync(async c => { await Task.Delay(10, c.CancellationToken); state.Value++; });
         }
 
-        public void ValueChanging(TestEnum testEnum)
+        public void ValueChanging(TestEnum oldValue, TestEnum newValue)
         {
-            if (EnumStateGroup.Value != testEnum)
+            if (oldValue != newValue)
             {
-                EnumStateGroupOldValue = EnumStateGroup.Value;
+                EnumStateGroupOldValue = oldValue;
             }
         }
 
-        public async Task ValueChangingAsync(TestEnum testEnum)
+        public async Task ValueChangingAsync(TestEnum oldValue, TestEnum newValue)
         {
             await Task.Delay(100);
-            if (EnumStateGroupAsync.Value != testEnum)
+            if (oldValue != newValue)
             {
-                EnumStateGroupAsyncOldValue = EnumStateGroupAsync.Value;
+                EnumStateGroupAsyncOldValue = oldValue;
             }
         }
 

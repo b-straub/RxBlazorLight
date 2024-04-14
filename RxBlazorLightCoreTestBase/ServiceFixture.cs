@@ -43,8 +43,8 @@ namespace RxBlazorLightCoreTestBase
 
             CRUDListCommand = this.CreateStateCommandAsync(true);
             CRUDDictCommand = this.CreateStateCommandAsync(true);
-            EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, ValueChanging, i => i == 1);
-            EnumStateGroupAsync = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, ValueChangingAsync, i => i == 1);
+            EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
+            EnumStateGroupAsync = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
         }
     }
 }

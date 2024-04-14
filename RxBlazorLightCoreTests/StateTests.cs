@@ -652,7 +652,7 @@ namespace RxBlazorLightCoreTests
                 }
             });
 
-            fixture.EnumStateGroup.ChangeValue(TestEnum.THREE);
+            fixture.EnumStateGroup.ChangeValue(TestEnum.THREE, fixture.ValueChanging);
             while (!done) ;
             Assert.Equal(TestEnum.THREE, fixture.EnumStateGroup.Value);
             Assert.Equal(TestEnum.ONE, fixture.EnumStateGroupOldValue);
@@ -684,7 +684,7 @@ namespace RxBlazorLightCoreTests
                 }
             });
 
-            await fixture.EnumStateGroupAsync.ChangeValueAsync(TestEnum.THREE);
+            await fixture.EnumStateGroupAsync.ChangeValueAsync(TestEnum.THREE, fixture.ValueChangingAsync);
 
             while (!done) ;
             Assert.Equal(TestEnum.THREE, fixture.EnumStateGroupAsync.Value);

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RxBlazorLightCore;
-using RxMudBlazorLight.ButtonBase;
+using RxMudBlazorLight.Buttons;
 
 namespace RxMudBlazorLight.Dialogs
 {
@@ -25,11 +25,8 @@ namespace RxMudBlazorLight.Dialogs
         [Parameter, EditorRequired]
         public required IStateCommandAsync StateCommand { get; init; }
 
-        [Parameter]
-        public Func<Task>? ChangeStateAsync { get; init; }
-
-        [Parameter]
-        public Func<CancellationToken, Task>? ChangeStateAsyncCancel { get; init; }
+        [Parameter, EditorRequired]
+        public required Func<IStateCommandAsync, Task> ExecuteCommandAsync { get; init; }
 
         [Parameter]
         public Func<bool>? CanChange { get; init; }
@@ -41,50 +38,21 @@ namespace RxMudBlazorLight.Dialogs
         public Color? CancelColor { get; set; }
 
         [Parameter]
-        public bool HasProgress { get; set; } = true;
+        public bool HasProgress { get; set; } = false;
 
-        private MudButtonAsyncBaseRx? _buttonRef;
+        private MudButtonAsyncRx? _buttonRef;
         private IDisposable? _buttonDisposable;
         private bool _canceled = false;
 
         public static async Task<bool> Show(IDialogService dialogService,
-           IStateCommandAsync stateCommand, Func<Task>? changeStateAsync, string title,
-           string message, string confirmButton, string cancelButton, bool successOnConfirm, bool hasProgress = true,
+           IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeCommandAsync, string title,
+           string message, string confirmButton, string cancelButton, bool successOnConfirm, string cancelText, Color? cancelColor = null, bool hasProgress = true,
            Func<bool>? canChange = null)
         {
             var parameters = new DialogParameters
             {
                 ["StateCommand"] = stateCommand,
-                ["ChangeStateAsync"] = changeStateAsync,
-                ["CanChange"] = canChange,
-                ["HasProgress"] = hasProgress,
-                ["Message"] = message,
-                ["ConfirmButton"] = confirmButton,
-                ["CancelButton"] = cancelButton,
-                ["SuccessOnConfirm"] = successOnConfirm
-            };
-
-            var dialog = dialogService.Show<DialogAsyncRx<T>>(title, parameters);
-
-            var res = await dialog.Result;
-
-            if (res.Canceled)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        public static async Task<bool> Show(IDialogService dialogService,
-          IStateCommandAsync stateCommand, Func<CancellationToken, Task>? changeStateAsyncCancel, string title,
-          string message, string confirmButton, string cancelButton, bool successOnConfirm, string cancelText, Color? cancelColor = null, bool hasProgress = true,
-          Func<bool>? canChange = null)
-        {
-            var parameters = new DialogParameters
-            {
-                ["StateCommand"] = stateCommand,
-                ["ChangeStateAsyncCancel"] = changeStateAsyncCancel,
+                ["ExecuteCommandAsync"] = executeCommandAsync,
                 ["CanChange"] = canChange,
                 ["CancelColor"] = cancelColor,
                 ["CancelText"] = cancelText,

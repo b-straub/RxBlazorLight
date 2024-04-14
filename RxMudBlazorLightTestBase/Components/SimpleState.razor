@@ -9,6 +9,6 @@
     <MudSlider @bind-Value=@Service.Counter.Value />
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudButton Disabled=@(!StateService.CounterCanChange(Service.CounterAsync)) OnClick=@(() => Service.Counter.Value++)>Increment</MudButton>
-        <MudButtonAsyncCancelRx StateCommand=@Service.CounterAsyncCMD ChangeStateAsync=Service.AddAsync(10) CanChange=@Service.CounterAsyncCanChange CancelText="Cancel Add">Add</MudButtonAsyncCancelRx>
+        <MudButtonAsyncRx StateCommand=@Service.CounterAsyncCMDCancel ExecuteCommandAsync=Service.AddAsync(10) CanChange=@Service.CounterAsyncCanChange CancelText="Cancel Add">Add</MudButtonAsyncRx>
     </MudStack>
 </MudStack>

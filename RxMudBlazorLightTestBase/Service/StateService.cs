@@ -8,11 +8,13 @@ namespace RxMudBlazorLightTestBase.Service
         public int CounterAsync { get; private set; }
 
         public IStateCommandAsync CounterAsyncCMD { get; }
+        public IStateCommandAsync CounterAsyncCMDCancel { get; }
 
         public StateService()
         {
             Counter = this.CreateState(0);
             CounterAsyncCMD = this.CreateStateCommandAsync();
+            CounterAsyncCMDCancel = this.CreateStateCommandAsync(true);
         }
 
         public static Func<int, bool> CounterCanChange => v => v < 20;
@@ -31,11 +33,11 @@ namespace RxMudBlazorLightTestBase.Service
             CounterAsync++;
         };
 
-        public Func<CancellationToken, Task> AddAsync(int value)
+        public Func<IStateCommandAsync, Task> AddAsync(int value)
         {
-            return async ct =>
+            return async c =>
             {
-                await Task.Delay(1000, ct);
+                await Task.Delay(1000, c.CancellationToken);
                 CounterAsync += value;
             };
         }

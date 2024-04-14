@@ -6,7 +6,7 @@
             <MudText Typo="Typo.h3" GutterBottom="true">@Service.Counter</MudText>
         </DisplayRenderCycle>
         <DisplayRenderCycle>
-            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ChangeState=@Service.IncrementCounter CanChange=@Service.IncrementStateCanChange>Increment</MudButtonRx>
+            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ExecuteCommand=@Service.IncrementCounter CanChange=@Service.IncrementStateCanChange>Increment</MudButtonRx>
         </DisplayRenderCycle>
     </RxBLStateSubscriber>
 
@@ -16,7 +16,7 @@
         </DisplayRenderCycle>
 
         <DisplayRenderCycle>
-            <MudButtonRx Color="Color.Warning" Variant="Variant.Filled" StateCommand=@Service.ServiceStateCMD ChangeState=@(Service.ChangeServiceState("Test"))>Change State to Test</MudButtonRx>
+            <MudButtonRx Color="Color.Warning" Variant="Variant.Filled" StateCommand=@Service.ServiceStateCMD ExecuteCommand=@(Service.ChangeServiceState("Test"))>Change State to Test</MudButtonRx>
         </DisplayRenderCycle>
     </RxBLStateSubscriber>
 </MudStack>

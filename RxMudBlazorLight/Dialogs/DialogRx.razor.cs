@@ -25,28 +25,25 @@ namespace RxMudBlazorLight.Dialogs
         [Parameter, EditorRequired]
         public required IStateCommand StateCommand { get; init; }
 
-        [Parameter]
-        public Action? ChangeState { get; init; }
+        [Parameter, EditorRequired]
+        public required Action ExecuteCommand { get; init; }
 
         [Parameter]
         public Func<bool>? CanChange { get; init; }
-
-        [Parameter]
-        public bool HasProgress { get; set; } = false;
 
         private MudButtonRx? _buttonRef;
         private IDisposable? _buttonDisposable;
         private bool _canceled = false;
 
         public static async Task<bool> Show(IDialogService dialogService,
-           IStateCommand stateCommand, Action changeState, string title,
+           IStateCommand stateCommand, Action executeCommand, string title,
            string message, string confirmButton, string cancelButton, bool successOnConfirm,
            Func<bool>? canChange = null)
         {
             var parameters = new DialogParameters
             {
                 ["StateCommand"] = stateCommand,
-                ["ChangeState"] = changeState,
+                ["ExecuteCommand"] = executeCommand,
                 ["CanChange"] = canChange,
                 ["Message"] = message,
                 ["ConfirmButton"] = confirmButton,

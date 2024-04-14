@@ -7,7 +7,7 @@
     public required IStateCommand StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action ChangeState { get; init; }
+    public required Action ExecuteCommand { get; init; }
 
     [Parameter]
     public Func<bool>? CanChange { get; init; }
@@ -17,12 +17,10 @@
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonRx? _buttonRx;
-    private Color _buttonColor;
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, false);
-        _buttonColor = Color;
+        _buttonRx = ButtonRx.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color);
 
         base.OnInitialized();
     }
@@ -30,10 +28,8 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(StateCommand, ChangeState, CanChange);
+        _buttonRx.SetParameter(StateCommand, ExecuteCommand, CanChange);
 
-        ChildContent = _buttonRx.ChildContent;
-        Color = _buttonRx.Color;
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         Disabled = _buttonRx.Disabled;
 

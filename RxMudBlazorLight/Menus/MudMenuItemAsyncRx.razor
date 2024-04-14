@@ -7,7 +7,7 @@
     public required IStateCommandAsync StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Func<Task> ChangeStateAsync { get; init; }
+    public required Func<IStateCommandAsync, Task> ExecuteCommandAsync { get; init; }
 
     [Parameter]
     public Func<bool>? CanChange { get; init; }
@@ -27,7 +27,7 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(StateCommand, ChangeStateAsync, null, CanChange, false);
+        _buttonRx.SetParameter(StateCommand, ExecuteCommandAsync, CanChange, false);
 
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         OnTouch = (EventCallback<TouchEventArgs>)_buttonRx.OnTouch;

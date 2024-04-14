@@ -36,6 +36,102 @@ namespace RxBlazorLightCoreTests
         }
 
         [Fact]
+        public void TestIntStateCommand()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+
+            fixture.Subscribe(sc =>
+            {
+                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.StateID}, VPID {fixture.IntState.ID}");
+
+                if (sc.StateID == fixture.IntState.ID)
+                {
+                    stateChangeCount++;
+                }
+            });
+
+            fixture.IntState.Value = 0;
+            Assert.Equal(0, fixture.IntState.Value);
+
+            fixture.IncrementState(fixture.IntState);
+            Assert.Equal(1, fixture.IntState.Value);
+
+            Assert.Equal(2, stateChangeCount);
+        }
+
+        [Fact]
+        public async Task TestIntStateCommandAsync()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.StateID}, VPID {fixture.IntState.ID}");
+
+                if (sc.StateID == fixture.IntState.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                if (fixture.IntCommandAsync.Done())
+                {
+                    done = true;
+                }
+            });
+
+            fixture.IntState.Value = 0;
+            Assert.Equal(0, fixture.IntState.Value);
+
+            await fixture.IncrementStateAsync(fixture.IntState);
+            while (!done) ;
+
+            Assert.Equal(1, fixture.IntState.Value);
+
+            Assert.Equal(2, stateChangeCount);
+        }
+
+        [Fact]
+        public async Task TestIntStateCommandAsyncCancel()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.StateID}, VPID {fixture.IntState.ID}");
+
+                if (sc.StateID == fixture.IntState.ID || sc.StateID == fixture.IntCommandAsync.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                if (fixture.IntCommandAsync.Changing())
+                {
+                    fixture.IntCommandAsync.Cancel();
+                }
+
+                if (fixture.IntCommandAsync.Done())
+                {
+                    done = true;
+                }
+            });
+
+            fixture.IntState.Value = 0;
+            Assert.Equal(0, fixture.IntState.Value);
+
+            await fixture.IncrementStateAsyncC(fixture.IntState);
+            while (!done) ;
+
+            Assert.Equal(0, fixture.IntState.Value);
+
+            Assert.Equal(3, stateChangeCount);
+        }
+
+        [Fact]
         public void TestIncrement()
         {
             ServiceFixture fixture = new();
@@ -57,12 +153,12 @@ namespace RxBlazorLightCoreTests
                 }
             });
 
-            fixture.IntCommand.Change(fixture.Reset);
+            fixture.IntCommand.Execute(fixture.Reset);
             while (!done) ;
             Assert.False(fixture.CanChangeNotZero());
             Assert.Equal(0, fixture.IntStateResult);
 
-            fixture.IntCommand.Change(fixture.Increment);
+            fixture.IntCommand.Execute(fixture.Increment);
             while (!done) ;
             Assert.True(fixture.CanChangeNotZero());
 
@@ -71,44 +167,105 @@ namespace RxBlazorLightCoreTests
         }
 
         [Fact]
-        public async Task TestNotNotify()
+        public async Task TestCommandNotNotify()
         {
             ServiceFixture fixture = new();
             var stateChangeCount = 0;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            IDisposable subscribeTest()
             {
-                if (sc.StateID == fixture.IntCommandAsync.ID)
+                done = false;
+                stateChangeCount = 0;
+
+                return fixture.Subscribe(sc =>
                 {
-                    stateChangeCount++;
-                }
+                    if (sc.StateID == fixture.IntCommandAsync.ID)
+                    {
+                        stateChangeCount++;
+                    }
 
-                _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
+                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
 
-                if (fixture.IntCommandAsync.Done())
-                {
-                    done = true;
-                }
-            });
+                    if (fixture.IntCommandAsync.Done())
+                    {
+                        done = true;
+                    }
+                });
+            }
 
-            await fixture.IntCommandAsync.ChangeAsync(fixture.ResetAsync, false);
-            Assert.Equal(0, fixture.IntStateResult);
-
-            await fixture.IntCommandAsync.ChangeAsync(_ => throw new ArgumentOutOfRangeException("Test"), false);
+            var disposable = subscribeTest();
+            await fixture.IntCommandAsync.ExecuteAsync(fixture.ResetAsync, true);
             while (!done) ;
             Assert.Equal(0, fixture.IntStateResult);
+            disposable.Dispose();
 
+            disposable = subscribeTest();
+            await fixture.IntCommandAsync.ExecuteAsync(_ => throw new ArgumentOutOfRangeException("Test"), true);
+            while (!done) ;
+            Assert.Equal(0, fixture.IntStateResult);
+            Assert.Equal(1, stateChangeCount);
+            disposable.Dispose();
+
+            disposable = subscribeTest();
+            await fixture.IntCommandAsync.ExecuteAsync(async _ => { await Task.Delay(10); fixture.IntCommandAsync.NotifyChanging(); fixture.IntStateResult = 1; }, true);
+            while (!done) ;
+            Assert.Equal(1, fixture.IntStateResult);
             Assert.Equal(2, stateChangeCount);
+            disposable.Dispose();
 
-            await fixture.IntCommandAsync.ChangeAsync(async () => { await Task.Delay(10); fixture.IntCommandAsync.NotifyChanging() ; fixture.IntStateResult = 1; }, false);
-            Assert.Equal(1, fixture.IntStateResult);
-
-            await fixture.IntCommandAsync.ChangeAsync(async () => { await Task.Delay(10); throw new ArgumentOutOfRangeException("Test"); }, false);
+            disposable = subscribeTest();
+            await fixture.IntCommandAsync.ExecuteAsync(async _ => { await Task.Delay(10); throw new ArgumentOutOfRangeException("Test"); }, true);
             while (!done) ;
             Assert.Equal(1, fixture.IntStateResult);
+            Assert.Equal(1, stateChangeCount);
+            disposable.Dispose();
+        }
 
-            Assert.Equal(5, stateChangeCount);
+        [Fact]
+        public async Task TestStateNotNotify()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            IDisposable subscribeTest()
+            {
+                done = false;
+                stateChangeCount = 0;
+
+                return fixture.Subscribe(sc =>
+                {
+                    if (sc.StateID == fixture.IntCommandAsync.ID || sc.StateID == fixture.IntState.ID)
+                    {
+                        stateChangeCount++;
+                    }
+
+                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
+
+                    if (fixture.IntCommandAsync.Done())
+                    {
+                        done = true;
+                    }
+                });
+            }
+
+            fixture.IntState.Value = 0;
+            Assert.Equal(0, fixture.IntState.Value);
+
+            var disposable = subscribeTest();
+            await fixture.IntCommandAsync.ExecuteAsync(async _ => { await Task.Delay(10); fixture.IntState.Update(1); });
+            while (!done) ;
+            Assert.Equal(1, fixture.IntState.Value);
+            Assert.Equal(2, stateChangeCount);
+            disposable.Dispose();
+
+            disposable = subscribeTest();
+            await fixture.IntCommandAsync.ExecuteAsync(async _ => { await Task.Delay(10); fixture.IntState.Value = 2; });
+            while (!done) ;
+            Assert.Equal(2, fixture.IntState.Value);
+            Assert.Equal(3, stateChangeCount);
+            disposable.Dispose();
         }
 
         [Fact]
@@ -133,11 +290,11 @@ namespace RxBlazorLightCoreTests
                 }
             });
 
-            fixture.IntCommand.Change(fixture.Reset);
+            fixture.IntCommand.Execute(fixture.Reset);
             while (!done) ;
             Assert.Equal(0, fixture.IntStateResult);
 
-            fixture.IntCommand.Change(fixture.Add(10));
+            fixture.IntCommand.Execute(fixture.Add(10));
             while (!done) ;
 
             Assert.Equal(10, fixture.IntStateResult);
@@ -171,7 +328,7 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(10, fixture.IntStateResult);
             Assert.True(fixture.CanChangeBelow(20)());
 
-            await fixture.IntCommandAsync.ChangeAsync(fixture.MultiplyAsync(5));
+            await fixture.IntCommandAsync.ExecuteAsync(fixture.MultiplyAsync(5));
             while (!done) ;
 
             Assert.False(fixture.CanChangeBelow(20)());
@@ -187,46 +344,53 @@ namespace RxBlazorLightCoreTests
             bool exception = false;
             bool done = false;
 
-            fixture.Subscribe(sc =>
+            IDisposable subscribeTest()
             {
-                if (!done && sc.StateID == fixture.IntCommandAsync.ID)
+                done = false;
+                stateChangeCount = 0;
+
+                return fixture.Subscribe(sc =>
                 {
-                    stateChangeCount++;
-                }
+                    if (!done && sc.StateID == fixture.IntCommandAsync.ID)
+                    {
+                        stateChangeCount++;
+                    }
 
-                if (fixture.IntCommandAsync.Phase is StatePhase.EXCEPTION &&
-                    fixture.Exceptions.First().Exception.Message == "AddAsync")
-                {
-                    exception = true;
-                }
+                    if (fixture.IntCommandAsync.Phase is StatePhase.EXCEPTION &&
+                        fixture.Exceptions.First().Exception.Message == "AddAsync")
+                    {
+                        exception = true;
+                    }
 
-                _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
+                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
 
-                if (fixture.IntCommandAsync.Done())
-                {
-                    done = true;
-                }
-            });
+                    if (fixture.IntCommandAsync.Done())
+                    {
+                        done = true;
+                    }
+                });
+            }
 
+            var disposable = subscribeTest();
             fixture.ResetExceptions();
-            await fixture.IntCommandAsync.ChangeAsync(fixture.ResetAsync);
-
+            await fixture.IntCommandAsync.ExecuteAsync(fixture.ResetAsync);
             while (!done) ;
             Assert.Equal(0, fixture.IntStateResult);
+            disposable.Dispose();
 
-            await fixture.IntCommandAsync.ChangeAsync(fixture.AddAsync(10));
+            disposable = subscribeTest();
+            await fixture.IntCommandAsync.ExecuteAsync(fixture.AddAsync(10));
             while (!done) ;
             Assert.Equal(10, fixture.IntStateResult);
             Assert.Equal(2, stateChangeCount);
+            disposable.Dispose();
 
-            done = false;
-            stateChangeCount = 0;
-
-            await fixture.IntCommandAsync.ChangeAsync(fixture.AddAsync(1));
+            disposable = subscribeTest();
+            await fixture.IntCommandAsync.ExecuteAsync(fixture.AddAsync(1));
             while (!done) ;
-
             Assert.True(exception);
             Assert.Equal(2, stateChangeCount);
+            disposable.Dispose();
         }
 
         [Fact]
@@ -250,7 +414,7 @@ namespace RxBlazorLightCoreTests
                 }
             });
 
-            fixture.IntCommand.Change(fixture.Reset);
+            fixture.IntCommand.Execute(fixture.Reset);
             while (!initialized) ;
             Assert.Equal(0, fixture.IntStateResult);
 
@@ -259,10 +423,9 @@ namespace RxBlazorLightCoreTests
             var disposable = changer
                 .ObserveOn(ImmediateScheduler.Instance)
                 .SubscribeOn(ImmediateScheduler.Instance)
-                .Subscribe(r => fixture.IntCommand.Change(() => fixture.IntStateResult = r));
+                .Subscribe(r => fixture.IntCommand.Execute(() => { fixture.IntStateResult = r; }));
 
             while (!completed) ;
-
             Assert.Equal(4, phaseChangeCount);
         }
 
@@ -295,7 +458,7 @@ namespace RxBlazorLightCoreTests
             }
 
             var disposable = subscribeTest();
-            await fixture.CRUDListCommand.ChangeAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.CLEAR, null)));
+            await fixture.CRUDListCommand.ExecuteAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.CLEAR, null)));
             while (!done) ;
             disposable.Dispose();
 
@@ -304,7 +467,7 @@ namespace RxBlazorLightCoreTests
 
             Assert.Empty(fixture.CRUDList);
             disposable = subscribeTest();
-            await fixture.CRUDListCommand.ChangeAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.ADD, new CRUDTest("Item1", Guid.NewGuid()))));
+            await fixture.CRUDListCommand.ExecuteAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.ADD, new CRUDTest("Item1", Guid.NewGuid()))));
             while (!done) ;
             disposable.Dispose();
 
@@ -313,7 +476,7 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(2, stateChangeCount);
 
             disposable = subscribeTest();
-            await fixture.CRUDListCommand.ChangeAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.ADD, new CRUDTest("Item2", Guid.NewGuid()))));
+            await fixture.CRUDListCommand.ExecuteAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.ADD, new CRUDTest("Item2", Guid.NewGuid()))));
             while (!done) ;
             disposable.Dispose();
 
@@ -325,7 +488,7 @@ namespace RxBlazorLightCoreTests
             var updateItem = lastItem with { Item = "Item3" };
 
             disposable = subscribeTest();
-            await fixture.CRUDListCommand.ChangeAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.UPDATE, updateItem)));
+            await fixture.CRUDListCommand.ExecuteAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.UPDATE, updateItem)));
             while (!done) ;
             disposable.Dispose();
 
@@ -334,7 +497,7 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(2, stateChangeCount);
 
             disposable = subscribeTest();
-            await fixture.CRUDListCommand.ChangeAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.DELETE, updateItem)));
+            await fixture.CRUDListCommand.ExecuteAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.DELETE, updateItem)));
             while (!done) ;
             disposable.Dispose();
 
@@ -342,7 +505,7 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(2, stateChangeCount);
 
             disposable = subscribeTest();
-            await fixture.CRUDListCommand.ChangeAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.CLEAR, null)));
+            await fixture.CRUDListCommand.ExecuteAsync(fixture.ChangeCrudListAsync((ServiceFixture.CMD_CRUD.CLEAR, null)));
             while (!done) ;
             disposable.Dispose();
 
@@ -379,7 +542,7 @@ namespace RxBlazorLightCoreTests
             }
 
             var disposable = subscribeTest();
-            await fixture.CRUDDictCommand.ChangeAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.CLEAR, default, null)));
+            await fixture.CRUDDictCommand.ExecuteAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.CLEAR, default, null)));
             while (!done) ;
             disposable.Dispose();
 
@@ -389,7 +552,7 @@ namespace RxBlazorLightCoreTests
             Assert.Empty(fixture.CRUDDict);
             disposable = subscribeTest();
             var addGuid1 = Guid.NewGuid();
-            await fixture.CRUDDictCommand.ChangeAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.ADD, addGuid1, new CRUDTest("Item1", addGuid1))));
+            await fixture.CRUDDictCommand.ExecuteAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.ADD, addGuid1, new CRUDTest("Item1", addGuid1))));
             while (!done) ;
             disposable.Dispose();
 
@@ -399,11 +562,11 @@ namespace RxBlazorLightCoreTests
 
             disposable = subscribeTest();
             var addGuid2 = Guid.NewGuid();
-            await fixture.CRUDDictCommand.ChangeAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.ADD, addGuid2, new CRUDTest("Item2", addGuid2))));
+            await fixture.CRUDDictCommand.ExecuteAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.ADD, addGuid2, new CRUDTest("Item2", addGuid2))));
             while (!done) ;
             disposable.Dispose();
 
-            Assert.Equal(2, fixture.CRUDDict.Count());
+            Assert.Equal(2, fixture.CRUDDict.Count);
             Assert.Equal("Item2", fixture.CRUDDict.Last().Value.Item);
             Assert.Equal(2, stateChangeCount);
 
@@ -411,16 +574,16 @@ namespace RxBlazorLightCoreTests
             var updateItem = lastItem with { Item = "Item3" };
 
             disposable = subscribeTest();
-            await fixture.CRUDDictCommand.ChangeAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.UPDATE, updateItem.Id, updateItem)));
+            await fixture.CRUDDictCommand.ExecuteAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.UPDATE, updateItem.Id, updateItem)));
             while (!done) ;
             disposable.Dispose();
 
-            Assert.Equal(2, fixture.CRUDDict.Count());
+            Assert.Equal(2, fixture.CRUDDict.Count);
             Assert.Equal("Item3", fixture.CRUDDict.Last().Value.Item);
             Assert.Equal(2, stateChangeCount);
 
             disposable = subscribeTest();
-            await fixture.CRUDDictCommand.ChangeAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.DELETE, updateItem.Id, null)));
+            await fixture.CRUDDictCommand.ExecuteAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.DELETE, updateItem.Id, null)));
             while (!done) ;
             disposable.Dispose();
 
@@ -428,7 +591,7 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(2, stateChangeCount);
 
             disposable = subscribeTest();
-            await fixture.CRUDDictCommand.ChangeAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.CLEAR, default, null)));
+            await fixture.CRUDDictCommand.ExecuteAsync(fixture.ChangeCrudDictAsync((ServiceFixture.CMD_CRUD.CLEAR, default, null)));
             while (!done) ;
             disposable.Dispose();
 
@@ -458,7 +621,7 @@ namespace RxBlazorLightCoreTests
                 }
             });
 
-            fixture.EnumStateGroup.Change(() => fixture.EnumStateGroup.Value = TestEnum.THREE);
+            fixture.EnumStateGroup.ChangeValue(TestEnum.THREE);
             while (!done) ;
             Assert.Equal(TestEnum.THREE, fixture.EnumStateGroup.Value);
 
@@ -489,9 +652,10 @@ namespace RxBlazorLightCoreTests
                 }
             });
 
-            fixture.EnumStateGroup.Change(() => fixture.EnumStateGroup.Value = TestEnum.THREE);
+            fixture.EnumStateGroup.ChangeValue(TestEnum.THREE);
             while (!done) ;
             Assert.Equal(TestEnum.THREE, fixture.EnumStateGroup.Value);
+            Assert.Equal(TestEnum.ONE, fixture.EnumStateGroupOldValue);
 
             Assert.True(fixture.EnumStateGroup.ItemDisabled(1));
 
@@ -520,13 +684,11 @@ namespace RxBlazorLightCoreTests
                 }
             });
 
-            await fixture.EnumStateGroupAsync.ChangeAsync(async ct => 
-                { 
-                    await Task.Delay(1000, ct); fixture.EnumStateGroupAsync.Value = TestEnum.THREE; 
-                });
+            await fixture.EnumStateGroupAsync.ChangeValueAsync(TestEnum.THREE);
 
             while (!done) ;
             Assert.Equal(TestEnum.THREE, fixture.EnumStateGroupAsync.Value);
+            Assert.Equal(TestEnum.ONE, fixture.EnumStateGroupAsyncOldValue);
 
             Assert.True(fixture.EnumStateGroupAsync.ItemDisabled(1));
 

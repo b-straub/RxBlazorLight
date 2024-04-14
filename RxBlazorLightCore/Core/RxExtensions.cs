@@ -13,9 +13,9 @@ namespace RxBlazorLightCore
             return StateCommand.Create(service);
         }
 
-        public static IStateCommandAsync CreateStateCommandAsync(this RxBLService service)
+        public static IStateCommandAsync CreateStateCommandAsync(this RxBLService service, bool canCancel = false)
         {
-            return StateCommandAsync.Create(service);
+            return StateCommandAsync.Create(service, canCancel);
         }
 
         public static IStateGroup<T> CreateStateGroup<T>(this RxBLService service, T[] items, T value, Func<int, bool>? itemDisabledDelegate = null)
@@ -28,27 +28,27 @@ namespace RxBlazorLightCore
             return StateGroupAsync<T>.Create(service, items, value, itemDisabledDelegate);
         }
 
-        public static bool Changing(this IStateCommandBase state)
+        public static bool Changing(this IStateInformation state)
         {
             return state.Phase is StatePhase.CHANGING;
         }
 
-        public static bool Changed(this IStateCommandBase state)
+        public static bool Changed(this IStateInformation state)
         {
             return state.Phase is StatePhase.CHANGED;
         }
 
-        public static bool Canceled(this IStateCommandBase state)
+        public static bool Canceled(this IStateInformation state)
         {
             return state.Phase is StatePhase.CANCELED;
         }
 
-        public static bool Exception(this IStateCommandBase state)
+        public static bool Exception(this IStateInformation state)
         {
             return state.Phase is StatePhase.EXCEPTION;
         }
 
-        public static bool Done(this IStateCommandBase state)
+        public static bool Done(this IStateInformation state)
         {
             return state.Phase is StatePhase.CHANGED ||
                 state.Phase is StatePhase.CANCELED ||

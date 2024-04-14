@@ -70,7 +70,7 @@ namespace RxMudBlazorLightTestBase.Service
             public async Task SubmitAsync()
             {
                 var newItem = new CRUDToDoItem(Text.Value, DueDateDate.Value + DueDateTime.Value, false, _item?.Id ?? Guid.NewGuid());
-                await service.CRUDDBStateCMD.ChangeAsync(service.AddCRUDItem(newItem));
+                await service.CRUDDBStateCMD.ExecuteAsync(service.AddCRUDItem(newItem));
             }
             public bool CanSubmit()
             {
@@ -129,6 +129,8 @@ namespace RxMudBlazorLightTestBase.Service
         public IEnumerable<CRUDToDoItem> CRUDItems => _db.Values;
 
         public IStateCommandAsync CRUDDBStateCMD { get; }
+        public IStateCommandAsync CRUDDBStateCMDCancel { get; }
+
         public IStateGroup<DBRole> CRUDDBRoleGroup { get; }
 
         private readonly Dictionary<Guid, CRUDToDoItem> _db;
@@ -136,6 +138,7 @@ namespace RxMudBlazorLightTestBase.Service
         {
             _db = [];
             CRUDDBStateCMD = this.CreateStateCommandAsync();
+            CRUDDBStateCMDCancel = this.CreateStateCommandAsync(true);
             CRUDDBRoleGroup = this.CreateStateGroup([DBRole.Admin, DBRole.User, DBRole.Guest], DBRole.Admin);
         }
 
@@ -149,9 +152,9 @@ namespace RxMudBlazorLightTestBase.Service
         public Func<bool> CanAdd => () => CRUDDBRoleGroup.CanAdd();
         public Func<bool> CanUpdate(CRUDToDoItem? item) => () => (CanUpdateText || CanUpdateDueDate) && !(item is not null && item.Completed);
 
-        public Func<Task> AddCRUDItem(CRUDToDoItem item)
+        public Func<IStateCommandAsync, Task> AddCRUDItem(CRUDToDoItem item)
         {
-            return async () =>
+            return async _ =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 _db[item.Id!.Value] = item;
@@ -159,9 +162,9 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<Task> UpdateCRUDItemAsync(CRUDToDoItem item)
+        public Func<IStateCommandAsync, Task> UpdateCRUDItemAsync(CRUDToDoItem item)
         {
-            return async () =>
+            return async _ =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 _db[item.Id!.Value] = item;
@@ -171,22 +174,22 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Func<bool> CanToggleCRUDItemCompleted => () => CRUDDBRoleGroup.CanUpdateCompleted();
 
-        public Func<CancellationToken, Task> ToggleCRUDItemCompletedAsync(CRUDToDoItem item)
+        public Func<IStateCommandAsync, Task> ToggleCRUDItemCompletedAsync(CRUDToDoItem item)
         {
-            return async ct =>
+            return async c =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 item = item with { Completed = !item.Completed };
-                await Task.Delay(2000, ct);
+                await Task.Delay(2000, c.CancellationToken);
                 _db[item.Id!.Value] = item;
             };
         }
 
         public Func<bool> CanRemoveCRUDItem => () => CRUDDBRoleGroup.CanDeleteOne();
 
-        public Func<Task> RemoveCRUDItem(CRUDToDoItem item)
+        public Func<IStateCommandAsync, Task> RemoveCRUDItem(CRUDToDoItem item)
         {
-            return async () =>
+            return async _ =>
             {
                 ArgumentNullException.ThrowIfNull(item.Id, nameof(item.Id));
                 _db.Remove(item.Id!.Value);
@@ -200,9 +203,9 @@ namespace RxMudBlazorLightTestBase.Service
         };
 
 
-        public Func<Task> RemoveCompletedCRUDItems()
+        public Func<IStateCommandAsync, Task> RemoveCompletedCRUDItems()
         {
-            return async () =>
+            return async _ =>
             {
                 foreach (var item in _db.Values)
                 {
@@ -220,9 +223,9 @@ namespace RxMudBlazorLightTestBase.Service
             return _db.Values.Count != 0 && CRUDDBRoleGroup.CanDeleteAll();
         };
 
-        public Func<Task> RemoveAllCRUDItems()
+        public Func<IStateCommandAsync, Task> RemoveAllCRUDItems()
         {
-            return async () =>
+            return async _ =>
             {
                 _db.Clear();
                 await Task.Delay(200);

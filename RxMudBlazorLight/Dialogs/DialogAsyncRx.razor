@@ -8,20 +8,10 @@
         </DialogContent>
         <DialogActions>
             <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
-            @if (ChangeStateAsyncCancel is not null)
-            {
-                <MudButtonAsyncCancelRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                                  StateCommand=@StateCommand ChangeStateAsync=@ChangeStateAsyncCancel CanChange=@CanChange CancelColor=@CancelColor CancelText=@CancelText HasProgress=@HasProgress>
-                    @ConfirmButton
-                </MudButtonAsyncCancelRx>
-            }
-            else
-            {
-                <MudButtonAsyncRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                                  StateCommand=@StateCommand ChangeStateAsync=@(ChangeStateAsync!) CanChange=@CanChange HasProgress=@HasProgress>
-                    @ConfirmButton
-                </MudButtonAsyncRx>
-            }
+            <MudButtonAsyncRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
+                              StateCommand=@StateCommand ExecuteCommandAsync=@ExecuteCommandAsync CanChange=@CanChange HasProgress=@HasProgress CancelText=@CancelText CancelColor=@CancelColor>
+                @ConfirmButton
+            </MudButtonAsyncRx>
         </DialogActions>
     </MudDialog>
 </MudElement>

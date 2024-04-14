@@ -28,36 +28,32 @@ namespace RxMudBlazorLight.ButtonBase
 
         [MemberNotNull(nameof(OnClick))]
         [MemberNotNull(nameof(OnTouch))]
-        public void SetParameter(IStateCommand stateCommand, Action changeState, Func<bool>? canChange)
+        public void SetParameter(IStateCommand stateCommand, Action executeCommand, Func<bool>? canChange)
         {
             VerifyButtonParameters();
 
-            Color = _buttonColor;
             if (_buttonType is not MBButtonType.FAB)
             {
                 ChildContent = stateCommand.Changing() && _hasProgress ? RenderProgress() : _buttonChildContent;
             }
 
-            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteState(stateCommand, changeState));
-            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteState(stateCommand, changeState));
+            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => stateCommand.Execute(executeCommand));
+            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => stateCommand.Execute(executeCommand));
 
-            Disabled = canChange is not null && !canChange();
+            Disabled = stateCommand.Changing() || (canChange is not null && !canChange());
         }
 
         [MemberNotNull(nameof(OnClick))]
         [MemberNotNull(nameof(OnTouch))]
-        public void SetParameter(IStateCommandAsync stateCommand,
-            Func<Task>? changeStateAsync,
-            Func<CancellationToken, Task>? changeStateAsyncCancel,
-            Func<bool>? canChange, bool deferredNotification)
+        public void SetParameter(IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeCommandAsync, Func<bool>? canChange, bool deferredNotification)
         {
-            VerifyButtonParametersAsync(changeStateAsync, changeStateAsyncCancel);
+            VerifyButtonParametersAsync(stateCommand);
 
             if (stateCommand.Changing())
             {
                 if (stateCommand.ChangeCallerID == _id)
                 {
-                    if (changeStateAsyncCancel is not null)
+                    if (stateCommand.CanCancel)
                     {
                         Color = _cancelColor ?? Color.Warning;
 
@@ -103,9 +99,9 @@ namespace RxMudBlazorLight.ButtonBase
                 Color = _buttonColor;
 
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () =>
-                        ExecuteStateAsync(stateCommand, changeStateAsync, changeStateAsyncCancel, deferredNotification));
+                        ExecuteStateCommandAsync(stateCommand, executeCommandAsync, deferredNotification));
                 OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () =>
-                        ExecuteStateAsync(stateCommand, changeStateAsync, changeStateAsyncCancel, deferredNotification));
+                        ExecuteStateCommandAsync(stateCommand, executeCommandAsync, deferredNotification));
 
                 Disabled = canChange is not null && !canChange();
             }
@@ -114,28 +110,11 @@ namespace RxMudBlazorLight.ButtonBase
             OnTouch ??= EventCallback.Factory.Create<TouchEventArgs>(this, _ => { });
         }
 
-        private async Task ExecuteState(IStateCommand stateCommand, Action changeState)
+        private async Task ExecuteStateCommandAsync(IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeCommandAsync, bool deferredNotification)
         {
             if (_confirmExecutionAsync is null || await _confirmExecutionAsync())
-            {
-                stateCommand.Change(changeState);
-            }
-        }
-
-        private async Task ExecuteStateAsync(IStateCommandAsync stateCommand, Func<Task>? changeStateAsync,
-            Func<CancellationToken, Task>? changeStateAsyncCancel, bool deferredNotification)
-        {
-            if (_confirmExecutionAsync is null || await _confirmExecutionAsync())
-            {
-                if (changeStateAsync is not null)
-                {
-                    await stateCommand.ChangeAsync(changeStateAsync, _hasProgress, _id);
-                }
-
-                if (changeStateAsyncCancel is not null)
-                {
-                    await stateCommand.ChangeAsync(changeStateAsyncCancel, !deferredNotification, _id);
-                }
+            {   
+                await stateCommand.ExecuteAsync(executeCommandAsync, deferredNotification, _id);
             }
         }
     }

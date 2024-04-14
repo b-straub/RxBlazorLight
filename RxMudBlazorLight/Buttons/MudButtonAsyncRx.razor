@@ -1,19 +1,50 @@
-﻿@inherits MudButtonAsyncBaseRx
-
+﻿@inherits MudButton
 @RenderBase()
 
 @code {
     [Parameter, EditorRequired]
-    public required Func<Task> ChangeStateAsync { get; init; }
+    public required IStateCommandAsync StateCommand { get; init; }
+
+    [Parameter, EditorRequired]
+    public required Func<IStateCommandAsync, Task> ExecuteCommandAsync { get; init; }
 
     [Parameter]
-    public bool HasProgress { get; set; } = false;
+    public Func<bool>? CanChange { get; init; }
+
+    [Parameter]
+    public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
+
+    [Parameter]
+    public string? CancelText { get; set; }
+
+    [Parameter]
+    public Color? CancelColor { get; set; }
+
+    [Parameter]
+    public bool HasProgress { get; set; } = true;
+
+    [Parameter]
+    public bool DeferredNotification { get; set; }
+
+    private ButtonRx? _buttonRx;
+    private RenderFragment RenderBase() => base.BuildRenderTree;
 
     protected override void OnInitialized()
     {
-        _changeStateAsync = ChangeStateAsync;
-        _hasProgress = HasProgress;
-
+        _buttonRx = ButtonRx.Create(MBButtonType.DEFAULT, ConfirmExecutionAsync, Color, ChildContent, HasProgress, CancelText, CancelColor);
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(_buttonRx);
+        _buttonRx.SetParameter(StateCommand, ExecuteCommandAsync, CanChange, DeferredNotification);
+
+        ChildContent = _buttonRx.ChildContent;
+        Color = _buttonRx.Color;
+        OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
+        Disabled = _buttonRx.Disabled;
+
+        base.OnParametersSet();
     }
 }

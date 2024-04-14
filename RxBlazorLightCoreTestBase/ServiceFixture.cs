@@ -30,19 +30,21 @@ namespace RxBlazorLightCoreTestBase
         public IStateCommandAsync CRUDDictCommand { get; }
 
         public IStateGroup<TestEnum> EnumStateGroup { get; }
+        public TestEnum? EnumStateGroupOldValue { get; private set; }
         public IStateGroupAsync<TestEnum> EnumStateGroupAsync { get; }
+        public TestEnum? EnumStateGroupAsyncOldValue { get; private set; }
 
         public ServiceFixture()
         {
             IntState = this.CreateState(-1);
 
             IntCommand = this.CreateStateCommand();
-            IntCommandAsync = this.CreateStateCommandAsync();
+            IntCommandAsync = this.CreateStateCommandAsync(true);
 
-            CRUDListCommand = this.CreateStateCommandAsync();
-            CRUDDictCommand = this.CreateStateCommandAsync();
-            EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
-            EnumStateGroupAsync = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, i => i == 1);
+            CRUDListCommand = this.CreateStateCommandAsync(true);
+            CRUDDictCommand = this.CreateStateCommandAsync(true);
+            EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, ValueChanging, i => i == 1);
+            EnumStateGroupAsync = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE, ValueChangingAsync, i => i == 1);
         }
     }
 }

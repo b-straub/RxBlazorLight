@@ -8,7 +8,7 @@
     public required IStateGroup<T> StateGroup { get; init; }
 
     [Parameter]
-    public Action<T>? SelectionChanged { get; init; }
+    public Action<T, T>? SelectionChanging { get; init; }
 
     [Parameter]
     public Func<T, bool>? CanChange { get; init; }
@@ -22,14 +22,7 @@
     {
         ValueChanged = EventCallback.Factory.Create<T>(this, v =>
         {
-            StateGroup.Change(() =>
-            {
-                if (SelectionChanged is not null)
-                {
-                    SelectionChanged(v);
-                }
-                StateGroup.Value = v;
-            });
+            StateGroup.ChangeValue(v, SelectionChanging);
         });
 
         if (ChildContent is null)
@@ -62,6 +55,7 @@
         Disabled = (CanChange is not null && !CanChange(StateGroup.Value));
         Value = StateGroup.Value;
         Text = Value?.ToString();
+
         if (Validation is Func<T, StateValidation> validate)
         {
             var validation = validate(StateGroup.Value);

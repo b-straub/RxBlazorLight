@@ -13,7 +13,7 @@ namespace RxMudBlazorLightTestBase.Service
             setter(++value);
         };
 
-        public Func<Task> IncrementCounterAsync => async () =>
+        public Func<IStateCommandAsync, Task> IncrementCounterAsync => async _ =>
         {
             await Task.Delay(1000);
             Counter++;
@@ -24,11 +24,11 @@ namespace RxMudBlazorLightTestBase.Service
             Counter += value;
         };
 
-        public Func<CancellationToken, Task> AddToCounterAsync(int value)
+        public Func<IStateCommandAsync, Task> AddToCounterAsync(int value)
         {
-            return async ct =>
+            return async c =>
             {
-                await Task.Delay(2000, ct);
+                await Task.Delay(2000, c.CancellationToken);
                 Counter += value;
             };
         }
@@ -75,21 +75,21 @@ namespace RxMudBlazorLightTestBase.Service
             return GetRadio().Value.Color is ColorEnum.GREEN;
         }
 
-        public Func<Pizza, Task> ChangePizzaAsync => async p =>
+        public static Func<Pizza, Pizza, Task> ChangePizzaAsync => async (o, n) =>
             {
                 await Task.Delay(1000);
-                GetPizzas2().Value = p;
+                Console.WriteLine($"{o}, {n}");
             };
 
-        public Action<Pizza> ChangePizza(string value)
+        public static Action<Pizza, Pizza> ChangePizza(string value)
         {
-            return p =>
+            return (o, n) =>
             {
                 var context = value;
-                GetPizzas1().Value = p;
+                Console.WriteLine($"{o}, {n}");
             };
         }
 
-        public Action<TestColor> ChangeTestColor => c => GetRadio().Value = c;
+        public static Action<TestColor, TestColor> ChangeTestColor => (o, n) => Console.WriteLine($"{o}, {n}");
     }
 }

@@ -2,11 +2,11 @@
 
 @if (AddMode)
 {
-    <MudFabAsyncRx StateCommand=@Service.CRUDDBStateCMD CanChange=@Service.CanAdd Class="mr-2" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" ChangeStateAsync=@ShowAddUpdateDialog />
+    <MudFabAsyncRx StateCommand=@Service.CRUDDBStateCMD CanChange=@Service.CanAdd Class="mr-2" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" ExecuteCommandAsync=@ShowAddUpdateDialog />
 }
 else
 {
-    <MudIconButtonAsyncRx StateCommand=@Service.CRUDDBStateCMD CanChange=@(Service.CanUpdate(Item)) Color="Color.Info" Icon=@Icons.Material.Filled.Edit ChangeStateAsync=@ShowAddUpdateDialog />
+    <MudIconButtonAsyncRx StateCommand=@Service.CRUDDBStateCMD CanChange=@(Service.CanUpdate(Item)) Color="Color.Info" Icon=@Icons.Material.Filled.Edit ExecuteCommandAsync=@ShowAddUpdateDialog />
 }
 
 @code {
@@ -19,7 +19,7 @@ else
     [Inject]
     public required IDialogService DialogService { get; init; }
 
-    private async Task ShowAddUpdateDialog()
+    private async Task ShowAddUpdateDialog(IStateCommandAsync _)
     {
         var parameters = new DialogParameters { ["Item"] = Item };
         var dialog = DialogService.Show<CRUDItemDialog>(AddMode ? "Add ToDo" : "Edit ToDo", parameters);

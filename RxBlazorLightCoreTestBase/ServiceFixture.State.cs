@@ -1,4 +1,6 @@
 ﻿
+using RxBlazorLightCore;
+
 namespace RxBlazorLightCoreTestBase
 {
     public partial class ServiceFixture
@@ -7,7 +9,7 @@ namespace RxBlazorLightCoreTestBase
         public Func<bool> CanChangeBelow(int upperBound) => () => IntStateResult < upperBound;
 
         public Action Reset => () => IntStateResult = 0;
-        public Func<Task> ResetAsync => () => { IntStateResult = 0; return Task.CompletedTask; };
+        public Func<IStateCommandAsync, Task<bool>> ResetAsync => _ => { IntStateResult = 0; return Task.FromResult(true); };
 
         public Action Increment => () => IntStateResult++;
 
@@ -16,9 +18,9 @@ namespace RxBlazorLightCoreTestBase
             return () => IntStateResult += value;
         }
 
-        public Func<Task> AddAsync(int value)
+        public Func<IStateCommandAsync, Task<bool>> AddAsync(int value)
         {
-            return async () =>
+            return async _ =>
             {
                 if (IntStateResult > 0)
                 {
@@ -27,16 +29,50 @@ namespace RxBlazorLightCoreTestBase
 
                 await Task.Delay(1000);
                 IntStateResult += value;
+                return true;
             };
         }
 
-        public Func<CancellationToken, Task> MultiplyAsync(int value)
+        public Func<IStateCommandAsync, Task<bool>> MultiplyAsync(int value)
         {
-            return async ct =>
+            return async c =>
             {
-                await Task.Delay(1000, ct);
+                await Task.Delay(1000, c.CancellationToken);
                 IntStateResult *= value;
+                return true;
             };
+        }
+
+        public void IncrementState(IState<int> state)
+        {
+            IntCommand.Execute(() => state.Value++);
+        }
+
+        public async Task IncrementStateAsync(IState<int> state)
+        {
+            await IntCommandAsync.ExecuteAsync(async _ => { await Task.Delay(10); state.Value++; });
+        }
+
+        public async Task IncrementStateAsyncC(IState<int> state)
+        {
+            await IntCommandAsync.ExecuteAsync(async c => { await Task.Delay(10, c.CancellationToken); state.Value++; });
+        }
+
+        public void ValueChanging(TestEnum testEnum)
+        {
+            if (EnumStateGroup.Value != testEnum)
+            {
+                EnumStateGroupOldValue = EnumStateGroup.Value;
+            }
+        }
+
+        public async Task ValueChangingAsync(TestEnum testEnum)
+        {
+            await Task.Delay(100);
+            if (EnumStateGroupAsync.Value != testEnum)
+            {
+                EnumStateGroupAsyncOldValue = EnumStateGroupAsync.Value;
+            }
         }
 
         public enum CMD_CRUD
@@ -47,9 +83,9 @@ namespace RxBlazorLightCoreTestBase
             CLEAR
         }
 
-        public Func<CancellationToken, Task> ChangeCrudListAsync((CMD_CRUD CMD, CRUDTest? ITEM) value)
+        public Func<IStateCommandAsync, Task> ChangeCrudListAsync((CMD_CRUD CMD, CRUDTest? ITEM) value)
         {
-            return async ct =>
+            return async c =>
             {
                 if (value.CMD is CMD_CRUD.ADD)
                 {
@@ -79,13 +115,13 @@ namespace RxBlazorLightCoreTestBase
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                await Task.Delay(5, ct);
+                await Task.Delay(5, c.CancellationToken);
             };
         }
 
-        public Func<CancellationToken, Task> ChangeCrudDictAsync((CMD_CRUD CMD, Guid? ID, CRUDTest? ITEM) value)
+        public Func<IStateCommandAsync, Task> ChangeCrudDictAsync((CMD_CRUD CMD, Guid? ID, CRUDTest? ITEM) value)
         {
-            return async ct =>
+            return async c =>
             {
                 if (value.CMD is CMD_CRUD.ADD)
                 {
@@ -113,7 +149,7 @@ namespace RxBlazorLightCoreTestBase
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                await Task.Delay(5, ct);
+                await Task.Delay(5, c.CancellationToken);
             };
         }
     }

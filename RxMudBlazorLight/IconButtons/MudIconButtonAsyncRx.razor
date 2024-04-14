@@ -1,22 +1,56 @@
-﻿@inherits MudIconButtonAsyncBaseRx
+﻿@inherits MudIconButton
 
-<MudBadge Visible=@(_buttonRx is not null && _hasProgress && _buttonRx.GetBadgeIcon(StateCommand, IconVariant, false) != string.Empty)
-          Icon=@_buttonRx!.GetBadgeIcon(StateCommand, IconVariant, false) Color=@Color Overlap="true">
+<MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetBadgeIcon(StateCommand, IconVariant, true) != string.Empty)
+          Icon=@_buttonRx!.GetBadgeIcon(StateCommand, IconVariant, true) Color=@Color Overlap="true" OnClick=@OnClick>
     @RenderBase()
 </MudBadge>
 
 @code {
     [Parameter, EditorRequired]
-    public required Func<Task> ChangeStateAsync { get; init; }
+    public required IStateCommandAsync StateCommand { get; init; }
+
+    [Parameter, EditorRequired]
+    public required Func<IStateCommandAsync, Task> ExecuteCommandAsync { get; init; }
 
     [Parameter]
-    public bool HasProgress { get; set; } = false;
+    public Func<bool>? CanChange { get; init; }
+
+    [Parameter]
+    public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
+
+    [Parameter]
+    public MBIconVariant? IconVariant { get; set; }
+
+    [Parameter]
+    public Color? CancelColor { get; set; }
+
+    [Parameter]
+    public bool HasProgress { get; set; } = true;
+
+    [Parameter]
+    public bool DeferredNotification { get; set; }
+
+    private RenderFragment RenderBase() => base.BuildRenderTree;
+    private ButtonRx? _buttonRx;
 
     protected override void OnInitialized()
     {
-        _changeStateAsync = ChangeStateAsync;
-        _hasProgress = HasProgress;
+        _buttonRx = ButtonRx.Create(MBButtonType.ICON, ConfirmExecutionAsync, Color, null, HasProgress, null, CancelColor);
 
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(_buttonRx);
+        ArgumentNullException.ThrowIfNull(Icon);
+        _buttonRx.SetParameter(StateCommand, ExecuteCommandAsync, CanChange, DeferredNotification);
+
+        Icon = _buttonRx.GetIconButtonParameters(StateCommand, Icon, IconVariant);
+        Color = _buttonRx.Color;
+        OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
+        Disabled = _buttonRx.Disabled;
+
+        base.OnParametersSet();
     }
 }

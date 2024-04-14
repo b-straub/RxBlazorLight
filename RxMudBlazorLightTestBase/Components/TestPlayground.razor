@@ -9,9 +9,9 @@
         <TimerComponent Name="TestPlayground" />
     </RxBLStateScope>
     <MudText id="result" Class="mb-4">Current count: @Service.Counter</MudText>
-    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() SelectionChangedAsync=@Service.ChangePizzaAsync />
-    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ChangeState=@Service.IncrementCounter>Increment</MudButtonRx>
-    <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ChangeState=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
+    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() SelectionChangingAsync=@TestService.ChangePizzaAsync />
+    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ExecuteCommand=@Service.IncrementCounter>Increment</MudButtonRx>
+    <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ExecuteCommand=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Count State Changes {_countStateChanges}")</MudText>
 
     <MudGrid>

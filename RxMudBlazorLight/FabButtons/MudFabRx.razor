@@ -7,7 +7,7 @@
     public required IStateCommand StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action ChangeState { get; init; }
+    public required Action ExecuteCommand { get; init; }
 
     [Parameter]
     public Func<bool>? CanChange { get; init; }
@@ -31,12 +31,7 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(StateCommand, ChangeState, CanChange);
-
-        var parameters = _buttonRx.GetFabParameters(StateCommand, StartIcon, EndIcon, Label, IconVariant, false);
-        StartIcon = parameters.StartIcon;
-        EndIcon = parameters.EndIcon;
-        Label = parameters.Label;
+        _buttonRx.SetParameter(StateCommand, ExecuteCommand, CanChange);
 
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         Disabled = _buttonRx.Disabled;

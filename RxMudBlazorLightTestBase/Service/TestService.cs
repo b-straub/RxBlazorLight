@@ -64,6 +64,7 @@ namespace RxMudBlazorLightTestBase.Service
             public IStateCommand CounterCMD = service.CreateStateCommand();
 
             public IStateCommandAsync CounterCMDAsync = service.CreateStateCommandAsync();
+            public IStateCommandAsync CounterCMDAsyncCancel = service.CreateStateCommandAsync(true);
 
             public override ValueTask OnContextReadyAsync()
             {
@@ -81,17 +82,17 @@ namespace RxMudBlazorLightTestBase.Service
 
             public Action IncrementCounter => () => Counter++;
 
-            public Func<Task> IncrementCounterAsync => async () =>
+            public Func<IStateCommandAsync, Task> IncrementCounterAsync => async _ =>
             {
                 await Task.Delay(1000);
                 Counter++;
             };
 
-            public Func<CancellationToken, Task> AddToCounterAsync(int value)
+            public Func<IStateCommandAsync, Task> AddToCounterAsync(int value)
             {
-                return async ct =>
+                return async c =>
                 {
-                    await Task.Delay(2000, ct);
+                    await Task.Delay(2000, c.CancellationToken);
                     Counter += value;
                 };
             }
@@ -113,7 +114,7 @@ namespace RxMudBlazorLightTestBase.Service
                 return async _ =>
                 {
                     await Task.Delay(1000);
-                    TestColors.Value = Colors[context];
+                    await TestColors.ChangeValueAsync(Colors[context]);
                 };
             }
 
@@ -128,6 +129,7 @@ namespace RxMudBlazorLightTestBase.Service
         public IStateCommand CounterCMD { get; }
 
         public IStateCommandAsync CounterCMDAsync { get; }
+        public IStateCommandAsync CounterCMDAsyncCancel { get; }
 
         public IState<bool> AddMode { get; }
 
@@ -149,6 +151,7 @@ namespace RxMudBlazorLightTestBase.Service
 
             CounterCMD = this.CreateStateCommand();
             CounterCMDAsync = this.CreateStateCommandAsync();
+            CounterCMDAsyncCancel = this.CreateStateCommandAsync(true);
 
             CanIncrementCheck = this.CreateState(false);
             AddMode = this.CreateState(false);

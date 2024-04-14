@@ -107,7 +107,7 @@ namespace RxMudBlazorLight.ButtonBase
             }
         };
 
-        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateCommandBase stateCommandBase, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool canCancel)
+        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateCommandAsync stateCommand, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool canCancel)
         {
             if (_iconForState is IconForState.None)
             {
@@ -128,7 +128,7 @@ namespace RxMudBlazorLight.ButtonBase
                 _buttonLabel = label;
             }
 
-            if (!stateCommandBase.Changing() || stateCommandBase.ChangeCallerID != _id)
+            if (!stateCommand.Changing() || stateCommand.ChangeCallerID != _id)
             {
                 if (_iconForState is IconForState.Start)
                 {
@@ -170,7 +170,7 @@ namespace RxMudBlazorLight.ButtonBase
             return (startIcon, endIcon, label);
         }
 
-        public string GetIconButtonParameters(IStateCommandBase stateCommand, string icon, MBIconVariant? iconVariant)
+        public string GetIconButtonParameters(IStateCommandAsync stateCommand, string icon, MBIconVariant? iconVariant)
         {
             if (!stateCommand.Changing() || stateCommand.ChangeCallerID != _id)
             {
@@ -197,7 +197,7 @@ namespace RxMudBlazorLight.ButtonBase
             return icon;
         }
 
-        public string GetBadgeIcon(IStateCommandBase stateCommand, MBIconVariant? iconVariant, bool canCancel)
+        public string GetBadgeIcon(IStateCommandAsync stateCommand, MBIconVariant? iconVariant, bool canCancel)
         {
             if (canCancel && stateCommand.Changing() && stateCommand.ChangeCallerID == _id)
             {
@@ -223,22 +223,11 @@ namespace RxMudBlazorLight.ButtonBase
             }
         }
 
-        protected void VerifyButtonParametersAsync(Func<Task>? changeStateAsync,
-            Func<CancellationToken, Task>? changeStateAsyncCancel)
+        protected void VerifyButtonParametersAsync(IStateCommandAsync stateCommand)
         {
-            if (changeStateAsync is null && changeStateAsyncCancel is null)
-            {
-                throw new InvalidOperationException("Either ChangeStateAsync or ChangeStateAsync must be provided!");
-            }
-
-            if (changeStateAsync is not null && changeStateAsyncCancel is not null)
-            {
-                throw new InvalidOperationException("Either ChangeStateAsync or ChangeStateAsync can be provided!");
-            }
-
             if (_buttonType is MBButtonType.DEFAULT)
             {
-                if (changeStateAsyncCancel is not null && _cancelText is null)
+                if (stateCommand.CanCancel && _cancelText is null)
                 {
                     throw new InvalidOperationException("Command can be cancelled, but no CancelText is provided!");
                 }
@@ -246,7 +235,7 @@ namespace RxMudBlazorLight.ButtonBase
 
             if (_buttonType is MBButtonType.DEFAULT || _buttonType is MBButtonType.FAB)
             {
-                if (changeStateAsyncCancel is null && _cancelText is not null)
+                if (!stateCommand.CanCancel && _cancelText is not null)
                 {
                     throw new InvalidOperationException("Command can not be cancelled, but CancelText is provided!");
                 }

@@ -24,6 +24,7 @@ namespace RxBlazorLightCore
         public IEnumerable<ServiceException> Exceptions { get; }
         public void ResetExceptions();
         public Guid ID { get; }
+        public void StateHasChanged();
     }
 
     public enum StatePhase

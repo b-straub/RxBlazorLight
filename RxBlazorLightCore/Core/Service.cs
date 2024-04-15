@@ -44,6 +44,11 @@ namespace RxBlazorLightCore
             ID = Guid.NewGuid();
         }
 
+        public void StateHasChanged()
+        {
+            StateHasChanged(ID);
+        }
+
         internal void StateHasChanged(Guid stateID, Exception? exception = null)
         {
             if (exception is not null)

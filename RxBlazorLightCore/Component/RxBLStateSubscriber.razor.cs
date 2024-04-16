@@ -22,7 +22,7 @@ public partial class RxBLStateSubscriber<T> : ComponentBase
         base.OnInitialized();
         Service
             .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(cr => IDs.Length == 0 || IDs.Any(i => i == cr.StateID))
+            .Where(cr => IDs.Length == 0 || IDs.Any(i => i == cr.ID))
             .Subscribe(cr =>
             {
                 OnServiceStateHasChanged(cr);

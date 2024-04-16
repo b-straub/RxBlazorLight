@@ -28,7 +28,7 @@
         </MudSelectItem>
     </MudSelectRx>
 
-    <MudRadioGroupRx StateGroup=@Service.GetPizzas1() SelectionChanging=@(TestService.ChangePizza("Radio")) />
+    <MudRadioGroupRx StateGroup=@Service.GetPizzas1() Value=@new("Spinaci") SelectionChanging=@(TestService.ChangePizza("Radio")) />
     <MudSelectRx StateGroup=@Service.GetPizzas1() SelectionChanging=@(TestService.ChangePizza("Select")) HideDisabled=@true />
 
     <MudRadioGroupAsyncRx StateGroupAsync=@Service.GetPizzas2() SelectionChangingAsync=@TestService.ChangePizzaAsync />
@@ -84,7 +84,7 @@
 
     protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
     {
-        if (cr.StateID == Service.CanIncrementCheck.ID)
+        if (cr.ID == Service.CanIncrementCheck.ID)
         {
             SetImageSource();
         }

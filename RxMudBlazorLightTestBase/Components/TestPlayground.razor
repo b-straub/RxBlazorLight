@@ -33,7 +33,7 @@
 
     protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
     {
-        if (cr.StateID == Service.CounterCMD.ID && Service.CounterCMD.Changed())
+        if (cr.ID == Service.CounterCMD.ID && Service.CounterCMD.Changed())
         {
             _countStateChanges++;
         }

@@ -9,7 +9,7 @@ var done = false;
 
 testService.Subscribe(cr =>
 {
-    Console.WriteLine(cr.StateID);
+    Console.WriteLine(cr.ID);
     Console.WriteLine(testService.Counter.Value);
     Console.WriteLine(testService.CounterCommandResult);
     Console.WriteLine(testService.StringList.FirstOrDefault());

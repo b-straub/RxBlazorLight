@@ -49,22 +49,17 @@ namespace RxBlazorLightCore
             StateHasChanged(ID);
         }
 
-        internal void StateHasChanged(Guid stateID, Exception? exception = null)
+        internal void StateHasChanged(Guid id, Exception? exception = null)
         {
             if (exception is not null)
             {
-                _serviceExceptions.Add(new(exception, stateID));
-                _changedSubject.OnNext(new(ID, stateID, ChangeReason.EXCEPTION));
+                _serviceExceptions.Add(new(id, exception));
+                _changedSubject.OnNext(new(id, ChangeReason.EXCEPTION));
             }
             else
             {
-                _changedSubject.OnNext(new(ID, stateID, ChangeReason.STATE));
+                _changedSubject.OnNext(new(id, ChangeReason.STATE));
             }
-        }
-
-        public void RegisterChangeObservables(params IObservable<Unit>[] observables)
-        {
-            Observable.Merge(observables).Subscribe(_ => _changedSubject.OnNext(new(ID, ID, ChangeReason.STATE)));
         }
 
         public IDisposable Subscribe(IObserver<ServiceChangeReason> observer)

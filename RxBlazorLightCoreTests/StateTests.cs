@@ -18,9 +18,9 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.StateID}, VPID {fixture.IntState.ID}");
+                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.ID}, VPID {fixture.IntState.ID}");
 
-                if (sc.StateID == fixture.IntState.ID)
+                if (sc.ID == fixture.IntState.ID)
                 {
                     stateChangeCount++;
                 }
@@ -43,9 +43,9 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.StateID}, VPID {fixture.IntState.ID}");
+                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.ID}, VPID {fixture.IntState.ID}");
 
-                if (sc.StateID == fixture.IntState.ID)
+                if (sc.ID == fixture.IntState.ID)
                 {
                     stateChangeCount++;
                 }
@@ -69,9 +69,9 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.StateID}, VPID {fixture.IntState.ID}");
+                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.ID}, VPID {fixture.IntState.ID}");
 
-                if (sc.StateID == fixture.IntState.ID)
+                if (sc.ID == fixture.IntState.ID)
                 {
                     stateChangeCount++;
                 }
@@ -102,9 +102,9 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.StateID}, VPID {fixture.IntState.ID}");
+                _output.WriteLine($"Value {fixture.IntState.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.ID}, VPID {fixture.IntState.ID}");
 
-                if (sc.StateID == fixture.IntState.ID || sc.StateID == fixture.IntCommandAsync.ID)
+                if (sc.ID == fixture.IntState.ID || sc.ID == fixture.IntCommandAsync.ID)
                 {
                     stateChangeCount++;
                 }
@@ -140,12 +140,12 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.StateID == fixture.IntCommand.ID)
+                if (sc.ID == fixture.IntCommand.ID)
                 {
                     stateChangeCount++;
                 }
 
-                _output.WriteLine($"Done {fixture.IntCommand.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommand.Phase}, ID {sc.StateID}, VPID {fixture.IntCommand.ID}");
+                _output.WriteLine($"Done {fixture.IntCommand.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommand.Phase}, ID {sc.ID}, VPID {fixture.IntCommand.ID}");
 
                 if (fixture.IntCommand.Done())
                 {
@@ -180,12 +180,12 @@ namespace RxBlazorLightCoreTests
 
                 return fixture.Subscribe(sc =>
                 {
-                    if (sc.StateID == fixture.IntCommandAsync.ID)
+                    if (sc.ID == fixture.IntCommandAsync.ID)
                     {
                         stateChangeCount++;
                     }
 
-                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
+                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.ID}, VPID {fixture.IntCommandAsync.ID}");
 
                     if (fixture.IntCommandAsync.Done())
                     {
@@ -236,12 +236,12 @@ namespace RxBlazorLightCoreTests
 
                 return fixture.Subscribe(sc =>
                 {
-                    if (sc.StateID == fixture.IntCommandAsync.ID || sc.StateID == fixture.IntState.ID)
+                    if (sc.ID == fixture.IntCommandAsync.ID || sc.ID == fixture.IntState.ID)
                     {
                         stateChangeCount++;
                     }
 
-                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
+                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.ID}, VPID {fixture.IntCommandAsync.ID}");
 
                     if (fixture.IntCommandAsync.Done())
                     {
@@ -277,12 +277,12 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.StateID == fixture.IntCommand.ID)
+                if (sc.ID == fixture.IntCommand.ID)
                 {
                     stateChangeCount++;
                 }
 
-                _output.WriteLine($"Done {fixture.IntCommand.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommand.Phase}, ID {sc.StateID}, VPID {fixture.IntCommand.ID}");
+                _output.WriteLine($"Done {fixture.IntCommand.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommand.Phase}, ID {sc.ID}, VPID {fixture.IntCommand.ID}");
 
                 if (fixture.IntCommand.Done())
                 {
@@ -310,12 +310,12 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.StateID == fixture.IntCommandAsync.ID)
+                if (sc.ID == fixture.IntCommandAsync.ID)
                 {
                     stateChangeCount++;
                 }
 
-                _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
+                _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.ID}, VPID {fixture.IntCommandAsync.ID}");
 
                 if (fixture.IntCommandAsync.Done())
                 {
@@ -351,7 +351,7 @@ namespace RxBlazorLightCoreTests
 
                 return fixture.Subscribe(sc =>
                 {
-                    if (!done && sc.StateID == fixture.IntCommandAsync.ID)
+                    if (!done && sc.ID == fixture.IntCommandAsync.ID)
                     {
                         stateChangeCount++;
                     }
@@ -362,7 +362,7 @@ namespace RxBlazorLightCoreTests
                         exception = true;
                     }
 
-                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.StateID}, VPID {fixture.IntCommandAsync.ID}");
+                    _output.WriteLine($"Done {fixture.IntCommandAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.IntCommandAsync.Phase}, ID {sc.ID}, VPID {fixture.IntCommandAsync.ID}");
 
                     if (fixture.IntCommandAsync.Done())
                     {
@@ -443,12 +443,12 @@ namespace RxBlazorLightCoreTests
 
                 return fixture.Subscribe(sc =>
                 {
-                    if (!done && sc.StateID == fixture.CRUDListCommand.ID)
+                    if (!done && sc.ID == fixture.CRUDListCommand.ID)
                     {
                         stateChangeCount++;
                     }
 
-                    _output.WriteLine($"Done {fixture.CRUDListCommand.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CRUDListCommand.Phase}, ID {sc.StateID}, VPID {fixture.CRUDListCommand.ID}");
+                    _output.WriteLine($"Done {fixture.CRUDListCommand.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CRUDListCommand.Phase}, ID {sc.ID}, VPID {fixture.CRUDListCommand.ID}");
 
                     if (fixture.CRUDListCommand.Done())
                     {
@@ -527,12 +527,12 @@ namespace RxBlazorLightCoreTests
 
                 return fixture.Subscribe(sc =>
                 {
-                    if (!done && sc.StateID == fixture.CRUDDictCommand.ID)
+                    if (!done && sc.ID == fixture.CRUDDictCommand.ID)
                     {
                         stateChangeCount++;
                     }
 
-                    _output.WriteLine($"Done {fixture.CRUDDictCommand.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CRUDDictCommand.Phase}, ID {sc.StateID}, VPID {fixture.CRUDDictCommand.ID}");
+                    _output.WriteLine($"Done {fixture.CRUDDictCommand.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CRUDDictCommand.Phase}, ID {sc.ID}, VPID {fixture.CRUDDictCommand.ID}");
 
                     if (fixture.CRUDDictCommand.Done())
                     {
@@ -608,12 +608,12 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.StateID == fixture.EnumStateGroup.ID)
+                if (sc.ID == fixture.EnumStateGroup.ID)
                 {
                     stateChangeCount++;
                 }
 
-                _output.WriteLine($"Done {fixture.EnumStateGroup.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.EnumStateGroup.Phase}, ID {sc.StateID}, VPID {fixture.EnumStateGroup.ID}");
+                _output.WriteLine($"Done {fixture.EnumStateGroup.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.EnumStateGroup.Phase}, ID {sc.ID}, VPID {fixture.EnumStateGroup.ID}");
 
                 if (fixture.EnumStateGroup.Done())
                 {
@@ -639,12 +639,12 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.StateID == fixture.EnumStateGroup.ID)
+                if (sc.ID == fixture.EnumStateGroup.ID)
                 {
                     stateChangeCount++;
                 }
 
-                _output.WriteLine($"Done {fixture.EnumStateGroup.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.EnumStateGroup.Phase}, ID {sc.StateID}, VPID {fixture.EnumStateGroup.ID}");
+                _output.WriteLine($"Done {fixture.EnumStateGroup.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.EnumStateGroup.Phase}, ID {sc.ID}, VPID {fixture.EnumStateGroup.ID}");
 
                 if (fixture.EnumStateGroup.Done())
                 {
@@ -671,12 +671,12 @@ namespace RxBlazorLightCoreTests
 
             fixture.Subscribe(sc =>
             {
-                if (sc.StateID == fixture.EnumStateGroupAsync.ID)
+                if (sc.ID == fixture.EnumStateGroupAsync.ID)
                 {
                     stateChangeCount++;
                 }
 
-                _output.WriteLine($"Done {fixture.EnumStateGroupAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.EnumStateGroupAsync.Phase}, ID {sc.StateID}, VPID {fixture.EnumStateGroupAsync.ID}");
+                _output.WriteLine($"Done {fixture.EnumStateGroupAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.EnumStateGroupAsync.Phase}, ID {sc.ID}, VPID {fixture.EnumStateGroupAsync.ID}");
 
                 if (fixture.EnumStateGroupAsync.Done())
                 {

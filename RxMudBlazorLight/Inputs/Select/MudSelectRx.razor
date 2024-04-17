@@ -8,10 +8,16 @@
     public required IStateGroup<T> StateGroup { get; init; }
 
     [Parameter]
-    public Action<T, T>? SelectionChanging { get; init; }
+    public Func<T>? InitializeCallback { get; init; }
 
     [Parameter]
-    public Func<T, bool>? CanChange { get; init; }
+    public Action<T?, T>? ChangingCallback { get; init; }
+
+    [Parameter]
+    public Func<T, bool>? CanChangeCallback { get; init; }
+
+    [Parameter]
+    public Func<int, bool> ItemDisabledCallback { get; set; } = _ => false;
 
     [Parameter]
     public bool HideDisabled { get; set; } = false;
@@ -20,9 +26,14 @@
 
     protected override void OnInitialized()
     {
+        if (InitializeCallback is not null)
+        {
+            StateGroup.Update(InitializeCallback());
+        }
+
         ValueChanged = EventCallback.Factory.Create<T>(this, v =>
         {
-            StateGroup.ChangeValue(v, SelectionChanging);
+            StateGroup.ChangeValue(v, ChangingCallback);
         });
 
         if (ChildContent is null)
@@ -33,7 +44,7 @@
                 {
                     for (var i = 0; i < values.Length; i++)
                     {
-                        if (HideDisabled && StateGroup.ItemDisabled(i))
+                        if (HideDisabled && ItemDisabledCallback(i))
                         {
                             continue;
                         }
@@ -41,7 +52,7 @@
                         builder.OpenComponent(0, typeof(MudSelectItemRx<T>));
                         builder.AddAttribute(1, "Index", i);
                         builder.AddAttribute(2, "Values", values);
-                        builder.AddAttribute(3, "Disabled", StateGroup.ItemDisabled(i));
+                        builder.AddAttribute(3, "Disabled", ItemDisabledCallback(i));
                         builder.CloseComponent();
                     }
                 };
@@ -52,15 +63,22 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !CanChange(StateGroup.Value));
-        Value = StateGroup.Value;
-        Text = Value?.ToString();
-
-        if (Validation is Func<T, StateValidation> validate)
+        if (StateGroup.HasValue())
         {
-            var validation = validate(StateGroup.Value);
-            ErrorText = validation.Message;
-            Error = validation.Error;
+            Disabled = (CanChangeCallback is not null && !CanChangeCallback(StateGroup.Value));
+            Value = StateGroup.Value;
+            Text = Value?.ToString();
+
+            if (Validation is Func<T, StateValidation> validate)
+            {
+                var validation = validate(StateGroup.Value);
+                ErrorText = validation.Message;
+                Error = validation.Error;
+            }
+        }
+        else
+        {
+            Disabled = true;
         }
 
         base.OnParametersSet();

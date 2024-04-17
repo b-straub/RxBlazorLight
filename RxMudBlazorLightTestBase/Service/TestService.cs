@@ -160,9 +160,9 @@ namespace RxMudBlazorLightTestBase.Service
             TextValue = this.CreateState("No Text");
             RatingValue = this.CreateState(0);
 
-            _pizzaState1 = this.CreateStateGroup(Pizzas, Pizzas[0]);
+            _pizzaState1 = this.CreateStateGroup(Pizzas);
             _pizzaState2 = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);
-            _radioTestExtended = this.CreateStateGroup(Colors, Colors[0], ColorDisabled);
+            _radioTestExtended = this.CreateStateGroup(Colors, Colors[0]);
         }
 
         public IRxBLStateScope CreateScope()

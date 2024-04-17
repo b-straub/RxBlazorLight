@@ -7,10 +7,10 @@
     public required IStateCommand StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Action ExecuteCommand { get; init; }
+    public required Action ExecuteCallback { get; init; }
 
     [Parameter]
-    public Func<bool>? CanChange { get; init; }
+    public Func<bool>? CanChangeCallback { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
@@ -32,7 +32,7 @@
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
         ArgumentNullException.ThrowIfNull(Icon);
-        _buttonRx.SetParameter(StateCommand, ExecuteCommand, CanChange);
+        _buttonRx.SetParameter(StateCommand, ExecuteCallback, CanChangeCallback);
 
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         Disabled = _buttonRx.Disabled;

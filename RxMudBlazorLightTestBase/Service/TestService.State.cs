@@ -48,7 +48,7 @@ namespace RxMudBlazorLightTestBase.Service
             new(ColorEnum.BLUE)
         ];
 
-        private bool ColorDisabled(int index)
+        public bool ColorDisabled(int index)
         {
             return index == 1 && CanIncrementCheck.Value;
         }
@@ -72,7 +72,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public bool RatingValueCanChange(int _)
         {
-            return GetRadio().Value.Color is ColorEnum.GREEN;
+            return GetRadio().HasValue() && GetRadio().Value!.Color is ColorEnum.GREEN;
         }
 
         public static Func<Pizza, Pizza, Task> ChangePizzaAsync => async (o, n) =>

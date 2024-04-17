@@ -10,10 +10,10 @@
     public required IStateCommandAsync StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Func<IStateCommandAsync, Task> ExecuteCommandAsync { get; init; }
+    public required Func<IStateCommandAsync, Task> ExecuteAsyncCallback { get; init; }
 
     [Parameter]
-    public Func<bool>? CanChange { get; init; }
+    public Func<bool>? CanChangeCallback { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
@@ -44,7 +44,7 @@
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
         ArgumentNullException.ThrowIfNull(Icon);
-        _buttonRx.SetParameter(StateCommand, ExecuteCommandAsync, CanChange, DeferredNotification);
+        _buttonRx.SetParameter(StateCommand, ExecuteAsyncCallback, CanChangeCallback, DeferredNotification);
 
         Icon = _buttonRx.GetIconButtonParameters(StateCommand, Icon, IconVariant);
         Color = _buttonRx.Color;

@@ -7,7 +7,7 @@
     public required IState<TimeSpan> State { get; init; }
 
     [Parameter]
-    public Func<TimeSpan, bool>? CanChange { get; init; }
+    public Func<TimeSpan, bool>? CanChangeCallback { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
@@ -26,7 +26,7 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !CanChange(State.Value));
+        Disabled = (CanChangeCallback is not null && !CanChangeCallback(State.Value));
         Time = State.Value;
         if (Validation is Func<TimeSpan, StateValidation> validate)
         {

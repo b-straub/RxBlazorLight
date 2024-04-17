@@ -101,11 +101,11 @@ namespace RxBlazorLightCore
         {
         }
 
-        public void Execute(Action changeDelegate)
+        public void Execute(Action changeCallback)
         {
             try
             {
-                changeDelegate();
+                changeCallback();
                 PhaseChanged(true);
             }
             catch (Exception ex)
@@ -142,7 +142,7 @@ namespace RxBlazorLightCore
         }
 
      
-        public async Task ExecuteAsync(Func<IStateCommandAsync, Task> changeDelegateAsync, bool deferredNotification = false, Guid? changeCallerID = null)
+        public async Task ExecuteAsync(Func<IStateCommandAsync, Task> changeCallbackAsync, bool deferredNotification = false, Guid? changeCallerID = null)
         {
             try
             {
@@ -150,7 +150,7 @@ namespace RxBlazorLightCore
 
                 ResetCancellationToken();
                 PhaseChanged(false, !deferredNotification);
-                await changeDelegateAsync(this);
+                await changeCallbackAsync(this);
                 PhaseChanged(true);
             }
             catch (Exception ex)
@@ -188,35 +188,46 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class StateGroup<T> : StateBase, IStateGroup<T>
+    public class StateGroupBase<T> : StateBase, IStateGroupBase<T>
     {
-        public T Value { get; private set; }
+        public T? Value { get; protected set; }
         public T[] Items => _items;
 
         private readonly T[] _items;
-        private readonly Func<int, bool>? _itemDisabledDelegate;
 
-        protected StateGroup(RxBLService service, T value, T[] items, Func<int, bool>? itemDisabledDelegate) :
+        protected StateGroupBase(RxBLService service, T? value, T[] items) :
             base(service)
         {
             Value = value;
             _items = items;
-
-            _itemDisabledDelegate = itemDisabledDelegate;
         }
 
-        public bool ItemDisabled(int index)
+        public void Update(T value)
         {
-            return _itemDisabledDelegate is not null && _itemDisabledDelegate(index);
+            Value = value; 
         }
 
-        public void ChangeValue(T value, Action<T, T>? changingDelegate)
+        [MemberNotNullWhen(true, nameof(Value))]
+        public bool HasValue()
+        {
+            return Value is not null;
+        }
+    }
+
+    public class StateGroup<T> : StateGroupBase<T>, IStateGroup<T>
+    {
+        protected StateGroup(RxBLService service, T? value, T[] items) :
+            base(service, value, items)
+        {
+        }
+
+        public void ChangeValue(T value, Action<T?, T>? changingCallback)
         {
             try
             {
-                if (changingDelegate is not null)
+                if (changingCallback is not null)
                 {
-                    changingDelegate(Value, value);
+                    changingCallback(Value, value);
                 }
                 Value = value;
                 PhaseChanged(true);
@@ -227,42 +238,27 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateGroup<T> Create(RxBLService service, T[] items, T value, Func<int, bool>? itemDisabledDelegate = null)
+        public static IStateGroup<T> Create(RxBLService service, T[] items, T? value = default)
         {
-            return new StateGroup<T>(service, value, items, itemDisabledDelegate);
+            return new StateGroup<T>(service, value, items);
         }
     }
 
-    public class StateGroupAsync<T> : StateBase, IStateGroupAsync<T>
+    public class StateGroupAsync<T> : StateGroupBase<T>, IStateGroupAsync<T>
     {
-        public T Value { get; private set; }
-        public T[] Items => _items;
-
-        private readonly T[] _items;
-        private readonly Func<int, bool>? _itemDisabledDelegate;
-
-        protected StateGroupAsync(RxBLService service, T value, T[] items, Func<int, bool>? itemDisabledDelegate) :
-            base(service)
+        protected StateGroupAsync(RxBLService service, T? value, T[] items) :
+            base(service, value, items)
         {
-            Value = value;
-            _items = items;
-
-            _itemDisabledDelegate = itemDisabledDelegate;
         }
 
-        public bool ItemDisabled(int index)
-        {
-            return _itemDisabledDelegate is not null && _itemDisabledDelegate(index);
-        }
-
-        public async Task ChangeValueAsync(T value, Func<T, T, Task>? changingDelegateAsync)
+        public async Task ChangeValueAsync(T value, Func<T?, T, Task>? changingCallbackAsync)
         {
             try
             {
                 PhaseChanged(false);
-                if (changingDelegateAsync is not null)
+                if (changingCallbackAsync is not null)
                 {
-                    await changingDelegateAsync(Value, value);
+                    await changingCallbackAsync(Value, value);
                 }
                 Value = value;
                 PhaseChanged(true);
@@ -273,9 +269,9 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateGroupAsync<T> Create(RxBLService service, T[] items, T value, Func<int, bool>? itemDisabledDelegate = null)
+        public static IStateGroupAsync<T> Create(RxBLService service, T[] items, T? value = default)
         {
-            return new StateGroupAsync<T>(service, value, items, itemDisabledDelegate);
+            return new StateGroupAsync<T>(service, value, items);
         }
     }
 }

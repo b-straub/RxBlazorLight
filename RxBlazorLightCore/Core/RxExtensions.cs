@@ -18,14 +18,14 @@ namespace RxBlazorLightCore
             return StateCommandAsync.Create(service, canCancel);
         }
 
-        public static IStateGroup<T> CreateStateGroup<T>(this RxBLService service, T[] items, T value, Func<int, bool>? itemDisabledDelegate = null)
+        public static IStateGroup<T> CreateStateGroup<T>(this RxBLService service, T[] items, T? value = default)
         {
-            return StateGroup<T>.Create(service, items, value, itemDisabledDelegate);
+            return StateGroup<T>.Create(service, items, value);
         }
 
-        public static IStateGroupAsync<T> CreateStateGroupAsync<T>(this RxBLService service, T[] items, T value, Func<int, bool>? itemDisabledDelegate = null)
+        public static IStateGroupAsync<T> CreateStateGroupAsync<T>(this RxBLService service, T[] items, T? value = default)
         {
-            return StateGroupAsync<T>.Create(service, items, value, itemDisabledDelegate);
+            return StateGroupAsync<T>.Create(service, items, value);
         }
 
         public static bool Changing(this IStateInformation state)

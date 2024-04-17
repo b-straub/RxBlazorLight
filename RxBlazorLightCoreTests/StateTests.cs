@@ -624,9 +624,6 @@ namespace RxBlazorLightCoreTests
             fixture.EnumStateGroup.ChangeValue(TestEnum.THREE);
             while (!done) ;
             Assert.Equal(TestEnum.THREE, fixture.EnumStateGroup.Value);
-
-            Assert.True(fixture.EnumStateGroup.ItemDisabled(1));
-
             Assert.Equal(1, stateChangeCount);
         }
 
@@ -656,9 +653,6 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
             Assert.Equal(TestEnum.THREE, fixture.EnumStateGroup.Value);
             Assert.Equal(TestEnum.ONE, fixture.EnumStateGroupOldValue);
-
-            Assert.True(fixture.EnumStateGroup.ItemDisabled(1));
-
             Assert.Equal(1, stateChangeCount);
         }
 
@@ -689,9 +683,6 @@ namespace RxBlazorLightCoreTests
             while (!done) ;
             Assert.Equal(TestEnum.THREE, fixture.EnumStateGroupAsync.Value);
             Assert.Equal(TestEnum.ONE, fixture.EnumStateGroupAsyncOldValue);
-
-            Assert.True(fixture.EnumStateGroupAsync.ItemDisabled(1));
-
             Assert.Equal(2, stateChangeCount);
         }
     }

@@ -6,10 +6,10 @@
     public required IStateCommandAsync StateCommand { get; init; }
 
     [Parameter, EditorRequired]
-    public required Func<IStateCommandAsync, Task> ExecuteCommandAsync { get; init; }
+    public required Func<IStateCommandAsync, Task> ExecuteAsyncCallback { get; init; }
 
     [Parameter]
-    public Func<bool>? CanChange { get; init; }
+    public Func<bool>? CanChangeCallback { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
@@ -38,7 +38,7 @@
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
-        _buttonRx.SetParameter(StateCommand, ExecuteCommandAsync, CanChange, DeferredNotification);
+        _buttonRx.SetParameter(StateCommand, ExecuteAsyncCallback, CanChangeCallback, DeferredNotification);
 
         ChildContent = _buttonRx.ChildContent;
         Color = _buttonRx.Color;

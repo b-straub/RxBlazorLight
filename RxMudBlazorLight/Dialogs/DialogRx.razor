@@ -9,7 +9,7 @@
         <DialogActions>
             <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
             <MudButtonRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                         StateCommand=@StateCommand ExecuteCommand=@ExecuteCommand CanChange=@CanChange>
+                         StateCommand=@StateCommand ExecuteCallback=@ExecuteCallback CanChangeCallback=@CanChangeCallback>
                 @ConfirmButton
             </MudButtonRx>
         </DialogActions>

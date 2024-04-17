@@ -9,7 +9,7 @@
         <DialogActions>
             <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
             <MudButtonAsyncRx @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                              StateCommand=@StateCommand ExecuteCommandAsync=@ExecuteCommandAsync CanChange=@CanChange HasProgress=@HasProgress CancelText=@CancelText CancelColor=@CancelColor>
+                              StateCommand=@StateCommand ExecuteAsyncCallback=@ExecuteAsyncCallback CanChangeCallback=@CanChangeCallback HasProgress=@HasProgress CancelText=@CancelText CancelColor=@CancelColor>
                 @ConfirmButton
             </MudButtonAsyncRx>
         </DialogActions>

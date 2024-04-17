@@ -2,11 +2,11 @@
 
 @if (AddMode)
 {
-    <MudFabAsyncRx StateCommand=@Service.CRUDDBStateCMD CanChange=@Service.CanAdd Class="mr-2" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" ExecuteCommandAsync=@ShowAddUpdateDialog />
+    <MudFabAsyncRx StateCommand=@Service.CRUDDBStateCMD CanChangeCallback=@Service.CanAdd Class="mr-2" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" ExecuteAsyncCallback=@ShowAddUpdateDialog />
 }
 else
 {
-    <MudIconButtonAsyncRx StateCommand=@Service.CRUDDBStateCMD CanChange=@(Service.CanUpdate(Item)) Color="Color.Info" Icon=@Icons.Material.Filled.Edit ExecuteCommandAsync=@ShowAddUpdateDialog />
+    <MudIconButtonAsyncRx StateCommand=@Service.CRUDDBStateCMD CanChangeCallback=@(Service.CanUpdate(Item)) Color="Color.Info" Icon=@Icons.Material.Filled.Edit ExecuteAsyncCallback=@ShowAddUpdateDialog />
 }
 
 @code {

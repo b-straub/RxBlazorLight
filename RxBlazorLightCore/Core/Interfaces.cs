@@ -52,7 +52,7 @@ namespace RxBlazorLightCore
 
     public interface IStateCommand : IStateInformation
     {
-        public void Execute(Action executeDelegate);
+        public void Execute(Action executeCallback);
     }
 
     public interface IStateCommandAsync : IStateCommand
@@ -61,24 +61,27 @@ namespace RxBlazorLightCore
         public CancellationToken CancellationToken { get; }
         public Guid? ChangeCallerID { get; }
         public void NotifyChanging();
-        public Task ExecuteAsync(Func<IStateCommandAsync, Task> executeDelegateAsync, bool deferredNotification = false, Guid? changeCallerID = null);
+        public Task ExecuteAsync(Func<IStateCommandAsync, Task> executeCallbackAsync, bool deferredNotification = false, Guid? changeCallerID = null);
         public void Cancel();
     }
 
-
-    public interface IStateGroup<T> : IStateInformation
+    public interface IStateGroupBase<T> : IStateInformation
     {
-        public T Value { get; }
+        public T? Value { get; }
         public T[] Items { get; }
-        public bool ItemDisabled(int index);
-        public void ChangeValue(T value, Action<T, T>? changingDelegate = null);
+        public void Update(T value);
+
+        [MemberNotNullWhen(true, nameof(Value))]
+        public bool HasValue();
     }
 
-    public interface IStateGroupAsync<T> : IStateInformation
+    public interface IStateGroup<T> : IStateGroupBase<T>
     {
-        public T Value { get; }
-        public T[] Items { get; }
-        public bool ItemDisabled(int index);
-        public Task ChangeValueAsync(T value, Func<T, T, Task>? changingDelegateAsync = null);
+        public void ChangeValue(T value, Action<T?, T>? changingCallback = null);
+    }
+
+    public interface IStateGroupAsync<T> : IStateGroupBase<T>
+    {
+        public Task ChangeValueAsync(T value, Func<T?, T, Task>? changingCallbackAsync = null);
     }
 }

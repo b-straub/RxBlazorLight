@@ -65,20 +65,18 @@ namespace RxMudBlazorLightTestBase.Service
             public IState<DateTime> DueDateDate { get; } = service.CreateState(item is null ? DateTime.Now.Date : item.DueDate.Date);
             public IState<TimeSpan> DueDateTime { get; } = service.CreateState(item is null ? DateTime.Now.TimeOfDay : item.DueDate.TimeOfDay);
 
-            private readonly CRUDToDoItem? _item = item;
-
             public async Task SubmitAsync()
             {
-                var newItem = new CRUDToDoItem(Text.Value, DueDateDate.Value + DueDateTime.Value, false, _item?.Id ?? Guid.NewGuid());
+                var newItem = new CRUDToDoItem(Text.Value, DueDateDate.Value + DueDateTime.Value, false, item?.Id ?? Guid.NewGuid());
                 await service.CRUDDBStateCMD.ExecuteAsync(service.AddCRUDItem(newItem));
             }
             public bool CanSubmit()
             {
-                var dateItem = NoSeconds(_item?.DueDate);
+                var dateItem = NoSeconds(item?.DueDate);
                 var dateNew = NoSeconds(DueDateDate.Value.Date + DueDateTime.Value);
 
                 return Text.Value != string.Empty && DueDateDate.Value.Date >= DateTime.Now.Date &&
-                    (Text.Value != _item?.Text || dateNew != dateItem);
+                    (Text.Value != item?.Text || dateNew != dateItem);
             }
 
             public Func<string, bool> CanUpdateText => _ =>
@@ -104,7 +102,7 @@ namespace RxMudBlazorLightTestBase.Service
             public Func<TimeSpan, StateValidation> ValidateDueDateTime => v =>
             {
                 var dateNowNS = NoSeconds(DateTime.Now);
-                var dateNew = _item is null ? NoSeconds(DueDateDate.Value.Date + v) : dateNowNS;
+                var dateNew = item is null ? NoSeconds(DueDateDate.Value.Date + v) : dateNowNS;
 
                 return new("DueDate can not be in the past!", dateNew < dateNowNS);
             };

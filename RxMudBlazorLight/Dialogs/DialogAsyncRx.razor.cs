@@ -26,10 +26,10 @@ namespace RxMudBlazorLight.Dialogs
         public required IStateCommandAsync StateCommand { get; init; }
 
         [Parameter, EditorRequired]
-        public required Func<IStateCommandAsync, Task> ExecuteCommandAsync { get; init; }
+        public required Func<IStateCommandAsync, Task> ExecuteAsyncCallback { get; init; }
 
         [Parameter]
-        public Func<bool>? CanChange { get; init; }
+        public Func<bool>? CanChangeCallback { get; init; }
 
         [Parameter]
         public string? CancelText { get; set; }
@@ -45,15 +45,15 @@ namespace RxMudBlazorLight.Dialogs
         private bool _canceled = false;
 
         public static async Task<bool> Show(IDialogService dialogService,
-           IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeCommandAsync, string title,
+           IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeAsyncCallback, string title,
            string message, string confirmButton, string cancelButton, bool successOnConfirm, string cancelText, Color? cancelColor = null, bool hasProgress = true,
            Func<bool>? canChange = null)
         {
             var parameters = new DialogParameters
             {
                 ["StateCommand"] = stateCommand,
-                ["ExecuteCommandAsync"] = executeCommandAsync,
-                ["CanChange"] = canChange,
+                ["ExecuteAsyncCallback"] = executeAsyncCallback,
+                ["CanChangeCallback"] = canChange,
                 ["CancelColor"] = cancelColor,
                 ["CancelText"] = cancelText,
                 ["HasProgress"] = hasProgress,

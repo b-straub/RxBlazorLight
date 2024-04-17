@@ -8,7 +8,7 @@
     public required IState<T> State { get; init; }
 
     [Parameter]
-    public Func<T, bool>? CanChange { get; init; }
+    public Func<T, bool>? CanChangeCallback { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
@@ -24,7 +24,7 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChange is not null && !CanChange(State.Value));
+        Disabled = (CanChangeCallback is not null && !CanChangeCallback(State.Value));
         Value = State.Value;
 
         base.OnParametersSet();

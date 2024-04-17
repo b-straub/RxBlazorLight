@@ -5,9 +5,9 @@
         <EditForm Model=@_scope OnValidSubmit="OnValidSubmit">
             <MudCard>
                 <MudCardContent>
-                    <MudTextFieldRx State=@_scope.Text Validation=@CrudService.CrudItemInput.ValidateText CanChange=@_scope.CanUpdateText AutoFocus ="true" Immediate="true" Label="ToDo" />
-                    <MudDatePickerRx State=@_scope.DueDateDate Validation=@CrudService.CrudItemInput.ValidateDueDate CanChange=@_scope.CanUpdateDueDate Label="Due Date" Editable="true" />
-                    <MudTimePickerRx PickerVariant=@PickerVariant.Dialog State=@_scope.DueDateTime Validation=@_scope.ValidateDueDateTime CanChange=@_scope.CanUpdateTime />
+                    <MudTextFieldRx State=@_scope.Text Validation=@CrudService.CrudItemInput.ValidateText CanChangeCallback=@_scope.CanUpdateText AutoFocus ="true" Immediate="true" Label="ToDo" />
+                    <MudDatePickerRx State=@_scope.DueDateDate Validation=@CrudService.CrudItemInput.ValidateDueDate CanChangeCallback=@_scope.CanUpdateDueDate Label="Due Date" Editable="true" />
+                    <MudTimePickerRx PickerVariant=@PickerVariant.Dialog State=@_scope.DueDateTime Validation=@_scope.ValidateDueDateTime CanChangeCallback=@_scope.CanUpdateTime />
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Disabled=@(!_scope.CanSubmit()) ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color=@Color.Success Class="ml-auto">Save</MudButton>

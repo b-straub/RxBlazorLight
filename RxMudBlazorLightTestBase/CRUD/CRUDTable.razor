@@ -16,12 +16,12 @@
         </CardHeaderContent>
         <CardHeaderActions>
             <MudStack Row=@true>
-                <MudSelectRx StateGroup=@Service.CRUDDBRoleGroup CanChange=@CrudService.CanChangeRole FullWidth=@false />
+                <MudSelectRx StateGroup=@Service.CRUDDBRoleGroup CanChangeCallback=@CrudService.CanChangeRole FullWidth=@false />
                 <CRUDItemAddOrUpdate AddMode=@true Item=@null />
                 <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.AutoDelete" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.Completed))
-                               StateCommand=@Service.CRUDDBStateCMD CanChange=@Service.CanRemoveCompletedCRUDItems ExecuteCommandAsync=@(Service.RemoveCompletedCRUDItems()) />
+                               StateCommand=@Service.CRUDDBStateCMD CanChangeCallback=@Service.CanRemoveCompletedCRUDItems ExecuteAsyncCallback=@(Service.RemoveCompletedCRUDItems()) />
                 <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.All))
-                               StateCommand=@Service.CRUDDBStateCMD CanChange=@Service.CanRemoveAllCRUDItems ExecuteCommandAsync=@(Service.RemoveAllCRUDItems()) />
+                               StateCommand=@Service.CRUDDBStateCMD CanChangeCallback=@Service.CanRemoveAllCRUDItems ExecuteAsyncCallback=@(Service.RemoveAllCRUDItems()) />
             </MudStack>
         </CardHeaderActions>
     </MudCardHeader>
@@ -56,14 +56,14 @@
                 <MudTd DataLabel="DueDate"><MudText Style=@ColorForItem(context)>@DateTimeForItem(context)</MudText></MudTd>
                 <MudTd DataLabel="Completed" Style="text-align:center">
                     <MudIconButtonAsyncRx Icon=@(context.Completed ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank) StateCommand=@Service.CRUDDBStateCMDCancel
-                                                HasProgress=@false CanChange=@Service.CanToggleCRUDItemCompleted ExecuteCommandAsync=@(Service.ToggleCRUDItemCompletedAsync(context)) />
+                                                HasProgress=@false CanChangeCallback=@Service.CanToggleCRUDItemCompleted ExecuteAsyncCallback=@(Service.ToggleCRUDItemCompletedAsync(context)) />
                 </MudTd>
                 <MudTd DataLabel="Edit" Style="text-align:center">
                     <CRUDItemAddOrUpdate AddMode=@false Item=@context />
                 </MudTd>
                 <MudTd DataLabel="DeleteItem" Style="text-align:center">
-                    <MudIconButtonAsyncRx Color="Color.Error" Icon=@Icons.Material.Filled.Delete StateCommand=@Service.CRUDDBStateCMD CanChange=@Service.CanRemoveCRUDItem
-                                          ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.One)) ExecuteCommandAsync=@(Service.RemoveCRUDItem(context)) />
+                    <MudIconButtonAsyncRx Color="Color.Error" Icon=@Icons.Material.Filled.Delete StateCommand=@Service.CRUDDBStateCMD CanChangeCallback=@Service.CanRemoveCRUDItem
+                                          ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.One)) ExecuteAsyncCallback=@(Service.RemoveCRUDItem(context)) />
                 </MudTd>
             </RowTemplate>
         </MudTable>

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
 
 namespace RxBlazorLightCore
 {
@@ -17,7 +18,7 @@ namespace RxBlazorLightCore
         public ValueTask OnContextReadyAsync();
     }
 
-    public interface IRxBLService : IObservable<ServiceChangeReason>
+    public interface IRxBLService : IObservable<ServiceChangeReason>, IObserver<Unit>
     {
         public ValueTask OnContextReadyAsync();
         public bool Initialized { get; }
@@ -25,6 +26,9 @@ namespace RxBlazorLightCore
         public void ResetExceptions();
         public Guid ID { get; }
         public void StateHasChanged();
+        public IStateCommand Command { get; }
+        public IStateCommandAsync CommandAsync { get; }
+        public IStateCommandAsync CancellableCommandAsync { get; }
     }
 
     public enum StatePhase
@@ -77,11 +81,11 @@ namespace RxBlazorLightCore
 
     public interface IStateGroup<T> : IStateGroupBase<T>
     {
-        public void ChangeValue(T value, Action<T?, T>? changingCallback = null);
+        public void ChangeValue(T value, Action<T, T>? changingCallback = null);
     }
 
     public interface IStateGroupAsync<T> : IStateGroupBase<T>
     {
-        public Task ChangeValueAsync(T value, Func<T?, T, Task>? changingCallbackAsync = null);
+        public Task ChangeValueAsync(T value, Func<T, T, Task>? changingCallbackAsync = null);
     }
 }

@@ -221,8 +221,10 @@ namespace RxBlazorLightCore
         {
         }
 
-        public void ChangeValue(T value, Action<T?, T>? changingCallback)
+        public void ChangeValue(T value, Action<T, T>? changingCallback)
         {
+            ArgumentNullException.ThrowIfNull(Value);
+
             try
             {
                 if (changingCallback is not null)
@@ -251,8 +253,10 @@ namespace RxBlazorLightCore
         {
         }
 
-        public async Task ChangeValueAsync(T value, Func<T?, T, Task>? changingCallbackAsync)
+        public async Task ChangeValueAsync(T value, Func<T, T, Task>? changingCallbackAsync)
         {
+            ArgumentNullException.ThrowIfNull(Value);
+
             try
             {
                 PhaseChanged(false);

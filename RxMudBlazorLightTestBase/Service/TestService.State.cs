@@ -55,7 +55,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public bool AddModeCanChange(bool _)
         {
-            return !CounterCMD.Changing() && !CounterCMDAsync.Changing();
+            return !Command.Changing() && !CommandAsync.Changing();
         }
 
         public bool IncrementStateCanChangeCheck()

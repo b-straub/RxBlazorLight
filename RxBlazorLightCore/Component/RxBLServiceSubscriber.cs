@@ -16,15 +16,35 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
         base.OnInitialized();
         Service
             .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Subscribe(cr =>
+            .Select(async cr =>
             {
-                OnServiceStateHasChanged(cr);
-                InvokeAsync(StateHasChanged);
-            });
+                await ServiceStateHasChangedAsync(cr);
+                ServiceStateHasChanged(cr);
+                await InvokeAsync(StateHasChanged);
+            })
+            .Subscribe();
     }
 
-    protected virtual void OnServiceStateHasChanged(ServiceChangeReason cr)
+    protected virtual void ServiceStateHasChanged(ServiceChangeReason cr)
     {
+    }
+
+    protected virtual Task ServiceStateHasChangedAsync(ServiceChangeReason cr)
+    {
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!Service.Initialized)
+            {
+                await Service.OnContextReadyAsync();
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 }
 
@@ -44,12 +64,39 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
         base.OnInitialized();
         Observable.Merge(Service1, Service2)
             .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Subscribe(ServiceStateHasChanged);
+            .Select(async cr =>
+            {
+                await ServiceStateHasChangedAsync(cr);
+                ServiceStateHasChanged(cr);
+                await InvokeAsync(StateHasChanged);
+            })
+            .Subscribe();
     }
 
     protected virtual void ServiceStateHasChanged(ServiceChangeReason cr)
     {
-        InvokeAsync(StateHasChanged);
+    }
+
+    protected virtual Task ServiceStateHasChangedAsync(ServiceChangeReason cr)
+    {
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!Service1.Initialized)
+            {
+                await Service1.OnContextReadyAsync();
+            }
+            if (!Service2.Initialized)
+            {
+                await Service2.OnContextReadyAsync();
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 }
 
@@ -72,11 +119,42 @@ public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLS
         base.OnInitialized();
         Observable.Merge(Service1, Service2, Service3)
             .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Subscribe(ServiceStateHasChanged);
+            .Select(async cr =>
+             {
+                 await ServiceStateHasChangedAsync(cr);
+                 ServiceStateHasChanged(cr);
+                 await InvokeAsync(StateHasChanged);
+             })
+            .Subscribe();
     }
 
     protected virtual void ServiceStateHasChanged(ServiceChangeReason cr)
     {
-        InvokeAsync(StateHasChanged);
+    }
+
+    protected virtual Task ServiceStateHasChangedAsync(ServiceChangeReason cr)
+    {
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!Service1.Initialized)
+            {
+                await Service1.OnContextReadyAsync();
+            }
+            if (!Service2.Initialized)
+            {
+                await Service2.OnContextReadyAsync();
+            }
+            if (!Service3.Initialized)
+            {
+                await Service2.OnContextReadyAsync();
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 }

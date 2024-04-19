@@ -10,8 +10,8 @@
     </RxBLStateScope>
     <MudText id="result" Class="mb-4">Current count: @Service.Counter</MudText>
     <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() ChangingAsyncCallback=@TestService.ChangePizzaAsync />
-    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ExecuteCallback=@Service.IncrementCounter>Increment</MudButtonRx>
-    <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.CounterCMD ExecuteCallback=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
+    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@Service.IncrementCounter>Increment</MudButtonRx>
+    <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Count State Changes {_countStateChanges}")</MudText>
 
     <MudGrid>
@@ -31,9 +31,9 @@
 
     private long _countStateChanges = 0;
 
-    protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
+    protected override void ServiceStateHasChanged(ServiceChangeReason cr)
     {
-        if (cr.ID == Service.CounterCMD.ID && Service.CounterCMD.Changed())
+        if (cr.ID == Service.Command.ID && Service.Command.Changed())
         {
             _countStateChanges++;
         }

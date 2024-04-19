@@ -1,4 +1,5 @@
-﻿using System.Reactive;
+﻿using System;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -29,8 +30,10 @@ namespace RxBlazorLightCore
     {
         public bool Initialized { get; private set; }
         public Guid ID { get; }
-
         public IEnumerable<ServiceException> Exceptions => _serviceExceptions;
+        public IStateCommand Command { get; }
+        public IStateCommandAsync CommandAsync { get; }
+        public IStateCommandAsync CancellableCommandAsync { get; }
 
         private readonly Subject<ServiceChangeReason> _changedSubject = new();
         private readonly IObservable<ServiceChangeReason> _changedObservable;
@@ -38,6 +41,9 @@ namespace RxBlazorLightCore
 
         public RxBLService()
         {
+            Command = this.CreateStateCommand();
+            CommandAsync = this.CreateStateCommandAsync();
+            CancellableCommandAsync = this.CreateStateCommandAsync(true);
             _changedObservable = _changedSubject.Publish().RefCount();
             _serviceExceptions = [];
             Initialized = false;
@@ -86,6 +92,22 @@ namespace RxBlazorLightCore
         public void ResetExceptions()
         {
             _serviceExceptions.Clear();
+        }
+
+        public void OnCompleted()
+        {
+            
+        }
+
+        public void OnError(Exception error)
+        {
+            _serviceExceptions.Add(new(ID, error));
+            _changedSubject.OnNext(new(ID, ChangeReason.EXCEPTION));
+        }
+
+        public void OnNext(Unit value)
+        {
+            _changedSubject.OnNext(new(ID, ChangeReason.STATE));
         }
     }
 }

@@ -61,10 +61,10 @@ namespace RxMudBlazorLightTestBase.Service
         {
             public int Counter { get; set; }
 
-            public IStateCommand CounterCMD = service.CreateStateCommand();
+            public IStateCommand Command = service.CreateStateCommand();
 
-            public IStateCommandAsync CounterCMDAsync = service.CreateStateCommandAsync();
-            public IStateCommandAsync CounterCMDAsyncCancel = service.CreateStateCommandAsync(true);
+            public IStateCommandAsync CommandAsync = service.CreateStateCommandAsync();
+            public IStateCommandAsync CancellableCommandAsync = service.CreateStateCommandAsync(true);
 
             public override ValueTask OnContextReadyAsync()
             {
@@ -126,11 +126,6 @@ namespace RxMudBlazorLightTestBase.Service
 
         public int Counter { get; set; }
 
-        public IStateCommand CounterCMD { get; }
-
-        public IStateCommandAsync CounterCMDAsync { get; }
-        public IStateCommandAsync CounterCMDAsyncCancel { get; }
-
         public IState<bool> AddMode { get; }
 
         public IState<int> NumericState { get; }
@@ -148,11 +143,6 @@ namespace RxMudBlazorLightTestBase.Service
         public TestService(IServiceProvider sp) : base(sp)
         {
             Console.WriteLine("TestService Create");
-
-            CounterCMD = this.CreateStateCommand();
-            CounterCMDAsync = this.CreateStateCommandAsync();
-            CounterCMDAsyncCancel = this.CreateStateCommandAsync(true);
-
             CanIncrementCheck = this.CreateState(false);
             AddMode = this.CreateState(false);
             NumericState = this.CreateState(10);

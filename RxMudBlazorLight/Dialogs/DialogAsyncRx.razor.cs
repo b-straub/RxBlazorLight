@@ -46,7 +46,7 @@ namespace RxMudBlazorLight.Dialogs
 
         public static async Task<bool> Show(IDialogService dialogService,
            IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeAsyncCallback, string title,
-           string message, string confirmButton, string cancelButton, bool successOnConfirm, string cancelText, Color? cancelColor = null, bool hasProgress = true,
+           string message, string confirmButton, string cancelButton, bool successOnConfirm, string? cancelText = null, Color? cancelColor = null, bool hasProgress = true,
            Func<bool>? canChange = null)
         {
             var parameters = new DialogParameters
@@ -95,7 +95,7 @@ namespace RxMudBlazorLight.Dialogs
             }
         }
 
-        protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
+        protected override void ServiceStateHasChanged(ServiceChangeReason cr)
         {
             if (cr.Reason is ChangeReason.STATE && _buttonRef is not null && cr.ID == _buttonRef.StateCommand.ID)
             {

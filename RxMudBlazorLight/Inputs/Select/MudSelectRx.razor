@@ -11,7 +11,7 @@
     public Func<T>? InitializeCallback { get; init; }
 
     [Parameter]
-    public Action<T?, T>? ChangingCallback { get; init; }
+    public Action<T, T>? ChangingCallback { get; init; }
 
     [Parameter]
     public Func<T, bool>? CanChangeCallback { get; init; }

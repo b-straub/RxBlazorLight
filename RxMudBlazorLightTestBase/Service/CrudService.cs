@@ -3,7 +3,6 @@ using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
 {
-
     public record CRUDToDoItem
     (
         string Text,
@@ -68,7 +67,7 @@ namespace RxMudBlazorLightTestBase.Service
             public async Task SubmitAsync()
             {
                 var newItem = new CRUDToDoItem(Text.Value, DueDateDate.Value + DueDateTime.Value, false, item?.Id ?? Guid.NewGuid());
-                await service.CRUDDBStateCMD.ExecuteAsync(service.AddCRUDItem(newItem));
+                await service.CommandAsync.ExecuteAsync(service.AddCRUDItem(newItem));
             }
             public bool CanSubmit()
             {
@@ -126,17 +125,12 @@ namespace RxMudBlazorLightTestBase.Service
 
         public IEnumerable<CRUDToDoItem> CRUDItems => _db.Values;
 
-        public IStateCommandAsync CRUDDBStateCMD { get; }
-        public IStateCommandAsync CRUDDBStateCMDCancel { get; }
-
         public IStateGroup<DBRole> CRUDDBRoleGroup { get; }
 
         private readonly Dictionary<Guid, CRUDToDoItem> _db;
         public CrudService()
         {
             _db = [];
-            CRUDDBStateCMD = this.CreateStateCommandAsync();
-            CRUDDBStateCMDCancel = this.CreateStateCommandAsync(true);
             CRUDDBRoleGroup = this.CreateStateGroup([DBRole.Admin, DBRole.User, DBRole.Guest], DBRole.Admin);
         }
 

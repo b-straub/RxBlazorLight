@@ -14,7 +14,7 @@
     public Action<T, T>? ChangingCallback { get; init; }
 
     [Parameter]
-    public Func<T, bool>? CanChangeCallback { get; init; }
+    public Func<bool>? CanChangeCallback { get; init; }
 
     [Parameter]
     public Func<int, bool> ItemDisabledCallback { get; set; } = _ => false;
@@ -74,7 +74,7 @@
     {
         if (StateGroup.HasValue())
         {
-            Disabled = (CanChangeCallback is not null && !CanChangeCallback(StateGroup.Value));
+            Disabled = (CanChangeCallback is not null && !CanChangeCallback());
             Value = StateGroup.Value;
 
             if (Validation is Func<T, StateValidation> validate)

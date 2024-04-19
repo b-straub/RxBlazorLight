@@ -1,7 +1,7 @@
 ﻿@inherits MudFab
 
-<MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetBadgeIcon(StateCommand, IconVariant, CancelText is null) != string.Empty)
-          Icon=@_buttonRx!.GetBadgeIcon(StateCommand, IconVariant, CancelText is null) Color=@Color Overlap="true" OnClick=@OnClick>
+<MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetBadgeIcon(StateCommand, IconVariant) != string.Empty)
+          Icon=@_buttonRx!.GetBadgeIcon(StateCommand, IconVariant) Color=@Color Overlap="true" OnClick=@OnClick>
     @RenderBase()
 </MudBadge>
 
@@ -47,7 +47,7 @@
         ArgumentNullException.ThrowIfNull(_buttonRx);
         _buttonRx.SetParameter(StateCommand, ExecuteAsyncCallback, CanChangeCallback, DeferredNotification);
 
-        var parameters = _buttonRx.GetFabParameters(StateCommand, StartIcon, EndIcon, Label, IconVariant, StateCommand.CanCancel);
+        var parameters = _buttonRx.GetFabParameters(StateCommand, StartIcon, EndIcon, Label, IconVariant);
 
         StartIcon = parameters.StartIcon;
         EndIcon = parameters.EndIcon;

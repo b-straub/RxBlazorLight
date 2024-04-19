@@ -37,10 +37,18 @@ namespace RxMudBlazorLight.ButtonBase
                 ChildContent = stateCommand.Changing() && _hasProgress ? RenderProgress() : _buttonChildContent;
             }
 
-            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => stateCommand.Execute(executeCallback));
-            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => stateCommand.Execute(executeCallback));
+            OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteStateCommand(stateCommand, executeCallback));
+            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteStateCommand(stateCommand, executeCallback));
 
             Disabled = stateCommand.Changing() || (canChangeCallback is not null && !canChangeCallback());
+        }
+
+        private async Task ExecuteStateCommand(IStateCommand stateCommand, Action executeCallback)
+        {
+            if (_confirmExecutionAsync is null || await _confirmExecutionAsync())
+            {
+                stateCommand.Execute(executeCallback);
+            }
         }
 
         [MemberNotNull(nameof(OnClick))]

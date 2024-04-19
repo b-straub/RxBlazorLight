@@ -139,7 +139,7 @@ namespace RxMudBlazorLightTestBase.Service
             return new CrudItemInput(this, item);
         }
 
-        public static Func<DBRole, bool> CanChangeRole => _ => true;
+        public static Func<bool> CanChangeRole => () => true;
 
         public Func<bool> CanAdd => () => CRUDDBRoleGroup.CanAdd();
         public Func<bool> CanUpdate(CRUDToDoItem? item) => () => (CanUpdateText || CanUpdateDueDate) && !(item is not null && item.Completed);

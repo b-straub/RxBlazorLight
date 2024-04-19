@@ -14,7 +14,7 @@
     public Func<T, T, Task>? ChangingAsyncCallback { get; init; }
 
     [Parameter]
-    public Func<T, bool>? CanChangeCallback { get; init; }
+    public Func<bool>? CanChangeCallback { get; init; }
 
     [Parameter]
     public Func<int, bool> ItemDisabledCallback { get; set; } = _ => false;
@@ -74,7 +74,7 @@
     {
         if (StateGroupAsync.HasValue())
         {
-            Disabled = (CanChangeCallback is not null && !CanChangeCallback(StateGroupAsync.Value)) || StateGroupAsync.Changing();
+            Disabled = (CanChangeCallback is not null && !CanChangeCallback()) || StateGroupAsync.Changing();
 
             if (StateGroupAsync.Done())
             {

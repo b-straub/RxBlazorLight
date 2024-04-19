@@ -43,6 +43,8 @@
     </MudStack>
 
     <RxBLStateScope TScope=@TestService.Scope TService=@TestService ScopeFactory=@Service.CreateScope>
+        <MudIconButtonAsyncRx Color="Color.Secondary" StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@DoPrepareAddRemoveAsync
+                        Icon=@(Service.AddMode.Value ? @Icons.Material.Filled.Add : Icons.Material.Filled.Remove) CancelColor=@Color.Error />
         <IconButtons />
     </RxBLStateScope>
 

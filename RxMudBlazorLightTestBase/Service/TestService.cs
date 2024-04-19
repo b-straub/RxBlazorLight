@@ -118,7 +118,7 @@ namespace RxMudBlazorLightTestBase.Service
                 };
             }
 
-            public static Func<TestColor, bool> CanChangeTestColor(int context) => c =>
+            public static Func<bool> CanChangeTestColor(int context) => () =>
             {
                 return context != 1;
             };

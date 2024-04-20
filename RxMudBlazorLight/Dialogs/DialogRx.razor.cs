@@ -83,7 +83,7 @@ namespace RxMudBlazorLight.Dialogs
             }
         }
 
-        protected override void ServiceStateHasChanged(ServiceChangeReason cr)
+        protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
         {
             if (cr.Reason is ChangeReason.STATE && _buttonRef is not null && cr.ID == _buttonRef.StateCommand.ID)
             {

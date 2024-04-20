@@ -53,7 +53,7 @@ namespace RxMudBlazorLightTestBase.Service
             return index == 1 && CanIncrementCheck.Value;
         }
 
-        public bool AddModeCanChange(bool _)
+        public bool AddModeCanChange()
         {
             return !Command.Changing() && !CommandAsync.Changing();
         }

@@ -31,7 +31,7 @@
 
     private long _countStateChanges = 0;
 
-    protected override void ServiceStateHasChanged(ServiceChangeReason cr)
+    protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
     {
         if (cr.ID == Service.Command.ID && Service.Command.Changed())
         {

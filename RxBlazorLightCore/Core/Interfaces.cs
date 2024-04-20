@@ -18,13 +18,12 @@ namespace RxBlazorLightCore
         public ValueTask OnContextReadyAsync();
     }
 
-    public interface IRxBLService : IObservable<ServiceChangeReason>, IObserver<Unit>
+    public interface IRxBLService : IObservable<ServiceChangeReason>, IObserver<Unit>, IStateInformation
     {
         public ValueTask OnContextReadyAsync();
         public bool Initialized { get; }
         public IEnumerable<ServiceException> Exceptions { get; }
         public void ResetExceptions();
-        public Guid ID { get; }
         public void StateHasChanged();
         public IStateCommand Command { get; }
         public IStateCommandAsync CommandAsync { get; }
@@ -43,6 +42,7 @@ namespace RxBlazorLightCore
     {
         public StatePhase Phase { get; }
         public Guid ID { get; }
+        public bool Disabled { get; }
     }
 
     public interface IState<T> : IStateInformation

@@ -42,7 +42,7 @@
               ToggledIcon="@Icons.Material.Outlined.CheckCircle" ToggledColor="@Color.Success" ToggledTitle="On" />
     <span>CanIncrementCheck is @(Service.CanIncrementCheck.Value ? "On" : "Off")</span>
     <MudNumericFieldRx State=@Service.NumericState Label="" Variant="Variant.Text" Min="0" Max="50" />
-    <MudSliderRx State=@Service.NumericState Variant="Variant.Text" Min="0" Max="50" Immediate=@false CanChangeCallback=@(_ => Service.NumericState.Value < 20)>IncrementValue</MudSliderRx>
+    <MudSliderRx State=@Service.NumericState Variant="Variant.Text" Min="0" Max="50" Immediate=@false CanChangeCallback=@(() => Service.NumericState.Value < 20)>IncrementValue</MudSliderRx>
     <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
     <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(Service.Counter))>Add Count</MudButtonRx>
 
@@ -82,7 +82,7 @@
         SetImageSource();
     }
 
-    protected override async Task ServiceStateHasChangedAsync(ServiceChangeReason cr)
+    protected override async Task OnServiceStateHasChangedAsync(ServiceChangeReason cr)
     {
         if (cr.ID == Service.CanIncrementCheck.ID)
         {

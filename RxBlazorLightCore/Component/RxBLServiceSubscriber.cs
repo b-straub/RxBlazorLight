@@ -18,33 +18,20 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
             .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
             .Select(async cr =>
             {
-                await ServiceStateHasChangedAsync(cr);
-                ServiceStateHasChanged(cr);
+                await OnServiceStateHasChangedAsync(cr);
+                OnServiceStateHasChanged(cr);
                 await InvokeAsync(StateHasChanged);
             })
             .Subscribe();
     }
 
-    protected virtual void ServiceStateHasChanged(ServiceChangeReason cr)
+    protected virtual void OnServiceStateHasChanged(ServiceChangeReason cr)
     {
     }
 
-    protected virtual Task ServiceStateHasChangedAsync(ServiceChangeReason cr)
+    protected virtual Task OnServiceStateHasChangedAsync(ServiceChangeReason cr)
     {
         return Task.CompletedTask;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            if (!Service.Initialized)
-            {
-                await Service.OnContextReadyAsync();
-            }
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
     }
 }
 

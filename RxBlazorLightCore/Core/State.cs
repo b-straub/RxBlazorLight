@@ -2,17 +2,20 @@
 
 namespace RxBlazorLightCore
 {
-    public class StateBase
+    public class StateBase : IStateInformation
     {
         public StatePhase Phase { get; private set; } = StatePhase.CHANGED;
         public Guid ID { get; } = Guid.NewGuid();
+        public bool Disabled => _independent ? Phase is StatePhase.CHANGING : _service.Changing();
 
         protected readonly RxBLService _service;
         private bool _notifyChanging = true;
+        private bool _independent = true;
 
-        protected StateBase(RxBLService service)
+        protected StateBase(RxBLService service, bool independent)
         {
             _service = service;
+            _independent = independent;
         }
 
         public void NotifyChanging()
@@ -53,7 +56,7 @@ namespace RxBlazorLightCore
 
             if (notify || _notifyChanging || exception is not null)
             {
-                _service.StateHasChanged(ID, exception);
+                _service.StateHasChanged(this, exception);
                 _notifyChanging = notify;
             }
         }
@@ -73,7 +76,7 @@ namespace RxBlazorLightCore
 
         private T _value;
 
-        protected State(RxBLService service, T value) : base(service)
+        protected State(RxBLService service, T value, bool independent) : base(service, independent)
         {
             _value = value;
         }
@@ -89,15 +92,15 @@ namespace RxBlazorLightCore
             return Value is not null;
         }
 
-        public static IState<T> Create(RxBLService service, T value)
+        public static IState<T> Create(RxBLService service, T value, bool independent)
         {
-            return new State<T>(service, value);
+            return new State<T>(service, value, independent);
         }
     }
 
     public class StateCommand : StateBase, IStateCommand
     {
-        protected StateCommand(RxBLService service) : base(service)
+        protected StateCommand(RxBLService service, bool independent) : base(service, independent)
         {
         }
 
@@ -114,9 +117,9 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateCommand Create(RxBLService service)
+        public static IStateCommand Create(RxBLService service, bool independent)
         {
-            return new StateCommand(service);
+            return new StateCommand(service, independent);
         }
     }
 
@@ -127,7 +130,7 @@ namespace RxBlazorLightCore
         public CancellationToken CancellationToken { get; private set; }
         public Guid? ChangeCallerID { get; private set; }
 
-        protected StateCommandAsync(RxBLService service, bool canCancel) : base(service) 
+        protected StateCommandAsync(RxBLService service, bool canCancel, bool independent) : base(service, independent) 
         {
             CanCancel = canCancel;
             if (CanCancel)
@@ -182,9 +185,9 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateCommandAsync Create(RxBLService service, bool canCancel)
+        public static IStateCommandAsync Create(RxBLService service, bool canCancel, bool independent)
         {
-            return new StateCommandAsync(service, canCancel);
+            return new StateCommandAsync(service, canCancel, independent);
         }
     }
 
@@ -195,8 +198,8 @@ namespace RxBlazorLightCore
 
         private readonly T[] _items;
 
-        protected StateGroupBase(RxBLService service, T? value, T[] items) :
-            base(service)
+        protected StateGroupBase(RxBLService service, T? value, T[] items, bool independent) :
+            base(service, independent)
         {
             Value = value;
             _items = items;
@@ -216,8 +219,8 @@ namespace RxBlazorLightCore
 
     public class StateGroup<T> : StateGroupBase<T>, IStateGroup<T>
     {
-        protected StateGroup(RxBLService service, T? value, T[] items) :
-            base(service, value, items)
+        protected StateGroup(RxBLService service, T? value, T[] items, bool independent) :
+            base(service, value, items, independent)
         {
         }
 
@@ -240,16 +243,16 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateGroup<T> Create(RxBLService service, T[] items, T? value = default)
+        public static IStateGroup<T> Create(RxBLService service, T[] items, T? value, bool independent)
         {
-            return new StateGroup<T>(service, value, items);
+            return new StateGroup<T>(service, value, items, independent);
         }
     }
 
     public class StateGroupAsync<T> : StateGroupBase<T>, IStateGroupAsync<T>
     {
-        protected StateGroupAsync(RxBLService service, T? value, T[] items) :
-            base(service, value, items)
+        protected StateGroupAsync(RxBLService service, T? value, T[] items, bool independent) :
+            base(service, value, items, independent)
         {
         }
 
@@ -273,9 +276,9 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateGroupAsync<T> Create(RxBLService service, T[] items, T? value = default)
+        public static IStateGroupAsync<T> Create(RxBLService service, T[] items, T? value, bool independent)
         {
-            return new StateGroupAsync<T>(service, value, items);
+            return new StateGroupAsync<T>(service, value, items, independent);
         }
     }
 }

@@ -65,7 +65,7 @@
     {
         if (StateGroup.HasValue())
         {
-            Disabled = (CanChangeCallback is not null && !CanChangeCallback());
+            Disabled = StateGroup.Disabled || (CanChangeCallback is not null && !CanChangeCallback());
             Value = StateGroup.Value;
             Text = Value?.ToString();
 

@@ -7,7 +7,7 @@
     public required IState<DateTime> State { get; init; }
 
     [Parameter]
-    public Func<DateTime, bool>? CanChangeCallback { get; init; }
+    public Func<bool>? CanChangeCallback { get; init; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 
@@ -26,7 +26,7 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChangeCallback is not null && !CanChangeCallback(State.Value));
+        Disabled = State.Disabled || (CanChangeCallback is not null && !CanChangeCallback());
         Date = State.Value;
         if (Validation is Func<DateTime, StateValidation> validate)
         {

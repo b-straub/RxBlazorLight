@@ -13,7 +13,7 @@ namespace RxBlazorLightCore
 
         private readonly List<Type> _serviceTypes = [];
 
-        internal void AddService<T>(T service) where T : IRxBLService
+        internal void AddService(IRxBLService service)
         {
             _services.Add(service);
         }
@@ -37,8 +37,6 @@ namespace RxBlazorLightCore
         {
             var service = new T();
             services.AddSingleton(service);
-            collector.AddService(service);
-
             return services;
         }
 
@@ -49,7 +47,6 @@ namespace RxBlazorLightCore
             services.AddSingleton(sp =>
             {
                 var service = serviceFactory(sp);
-                collector.AddService(service);
                 return service;
             });
 

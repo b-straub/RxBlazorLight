@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reactive;
+﻿using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -34,6 +33,8 @@ namespace RxBlazorLightCore
         public IStateCommand Command { get; }
         public IStateCommandAsync CommandAsync { get; }
         public IStateCommandAsync CancellableCommandAsync { get; }
+        public StatePhase Phase { get; private set; } = StatePhase.CHANGED;
+        public bool Disabled => Phase is not StatePhase.CHANGING;
 
         private readonly Subject<ServiceChangeReason> _changedSubject = new();
         private readonly IObservable<ServiceChangeReason> _changedObservable;
@@ -52,19 +53,28 @@ namespace RxBlazorLightCore
 
         public void StateHasChanged()
         {
-            StateHasChanged(ID);
+            StateHasChanged(this);
         }
 
-        internal void StateHasChanged(Guid id, Exception? exception = null)
+        internal void StateHasChanged(IStateInformation stateInfo, Exception? exception = null)
         {
             if (exception is not null)
             {
-                _serviceExceptions.Add(new(id, exception));
-                _changedSubject.OnNext(new(id, ChangeReason.EXCEPTION));
+                _serviceExceptions.Add(new(stateInfo.ID, exception));
+                _changedSubject.OnNext(new(stateInfo.ID, ChangeReason.EXCEPTION));
             }
             else
             {
-                _changedSubject.OnNext(new(id, ChangeReason.STATE));
+                _changedSubject.OnNext(new(stateInfo.ID, ChangeReason.STATE));
+            }
+
+            if (stateInfo.Changing())
+            {
+                Phase = StatePhase.CHANGING;
+            }
+            else
+            {
+                Phase = StatePhase.CHANGED;
             }
         }
 
@@ -81,7 +91,7 @@ namespace RxBlazorLightCore
             }
             await ContextReadyAsync();
             Initialized = true;
-            StateHasChanged(ID);
+            StateHasChanged(this);
         }
 
         protected virtual ValueTask ContextReadyAsync()

@@ -38,9 +38,9 @@ namespace RxMudBlazorLight.ButtonBase
             }
 
             OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteStateCommand(stateCommand, executeCallback));
-            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteStateCommand(stateCommand, executeCallback));
+            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => stateCommand.Execute(executeCallback));
 
-            Disabled = stateCommand.Changing() || (canChangeCallback is not null && !canChangeCallback());
+            Disabled = stateCommand.Disabled || (canChangeCallback is not null && !canChangeCallback());
         }
 
         private async Task ExecuteStateCommand(IStateCommand stateCommand, Action executeCallback)
@@ -111,7 +111,7 @@ namespace RxMudBlazorLight.ButtonBase
                 OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () =>
                         ExecuteStateCommandAsync(stateCommand, executeAsyncCallback, deferredNotification));
 
-                Disabled = canChangeCallback is not null && !canChangeCallback();
+                Disabled = stateCommand.Disabled || (canChangeCallback is not null && !canChangeCallback());
             }
 
             OnClick ??= EventCallback.Factory.Create<MouseEventArgs>(this, _ => { });

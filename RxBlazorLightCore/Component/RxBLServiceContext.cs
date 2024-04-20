@@ -17,7 +17,9 @@ public class RxBLServiceContext : ComponentBase
         {
             foreach (var type in ServiceCollector.ServiceTypes)
             {
-                ActivatorUtilities.CreateInstance(ServiceProvider, type);
+                var service = ActivatorUtilities.CreateInstance(ServiceProvider, type) as IRxBLService;
+                ArgumentNullException.ThrowIfNull(service);
+                ServiceCollector.AddService(service);
             }
         }
         base.OnInitialized();
@@ -29,7 +31,10 @@ public class RxBLServiceContext : ComponentBase
         {
             foreach (var service in ServiceCollector.Services)
             {
-                await service.OnContextReadyAsync();
+                if (!service.Initialized)
+                {
+                    await service.OnContextReadyAsync();
+                }
             }
         }
 

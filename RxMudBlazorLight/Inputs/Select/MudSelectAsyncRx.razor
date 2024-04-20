@@ -65,7 +65,7 @@
     {
         if (StateGroupAsync.HasValue())
         {
-            Disabled = (CanChangeCallback is not null && !CanChangeCallback()) || StateGroupAsync.Changing();
+            Disabled = StateGroupAsync.Disabled || (CanChangeCallback is not null && !CanChangeCallback());
 
             if (StateGroupAsync.Done())
             {

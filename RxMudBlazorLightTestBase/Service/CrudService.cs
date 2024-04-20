@@ -78,12 +78,12 @@ namespace RxMudBlazorLightTestBase.Service
                     (Text.Value != item?.Text || dateNew != dateItem);
             }
 
-            public Func<string, bool> CanUpdateText => _ =>
+            public Func<bool> CanUpdateText => () =>
             {
                 return service.CanUpdateText;
             };
 
-            public Func<DateTime, bool> CanUpdateDueDate => _ =>
+            public Func<bool> CanUpdateDueDate => () =>
             {
                 return service.CanUpdateDueDate;
             };
@@ -106,7 +106,7 @@ namespace RxMudBlazorLightTestBase.Service
                 return new("DueDate can not be in the past!", dateNew < dateNowNS);
             };
 
-            public Func<TimeSpan, bool> CanUpdateTime => _ =>
+            public Func<bool> CanUpdateTime => () =>
             {
                 return service.CanUpdateDueDate;
             };

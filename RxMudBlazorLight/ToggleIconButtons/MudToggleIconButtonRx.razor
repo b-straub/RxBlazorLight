@@ -7,7 +7,7 @@
     public required IState<bool> State { get; init; }
 
     [Parameter]
-    public Func<bool, bool>? CanChangeCallback { get; init; }
+    public Func<bool>? CanChangeCallback { get; init; }
 
     [Parameter]
     public Func<Task<bool>>? ConfirmExecution { get; set; }
@@ -32,7 +32,7 @@
 
     protected override void OnParametersSet()
     {
-        Disabled = (CanChangeCallback is not null && !CanChangeCallback(State.Value));
+        Disabled = State.Disabled || (CanChangeCallback is not null && !CanChangeCallback());
         Toggled = State.Value;
 
         base.OnParametersSet();

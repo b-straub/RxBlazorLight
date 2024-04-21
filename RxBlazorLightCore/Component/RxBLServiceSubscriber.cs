@@ -33,6 +33,19 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
     {
         return Task.CompletedTask;
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!Service.Initialized)
+            {
+                await Service.OnContextReadyAsync();
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
 }
 
 public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLService where T2 : IRxBLService

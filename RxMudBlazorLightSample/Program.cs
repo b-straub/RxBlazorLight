@@ -13,10 +13,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddMudServices();
 
-var collector = builder.Services.AddRxBLServiceCollector();
-builder.Services.AddRxBLService(collector, sp => new TestService(sp));
-builder.Services.AddRxBLService<TimerService>(collector);
-builder.Services.AddRxBLService<StateService>(collector);
-builder.Services.AddRxBLService<CrudService>(collector);
+builder.Services.AddSingleton(sp => new TestService(sp));
+builder.Services.AddSingleton<TimerService>();
+builder.Services.AddSingleton<StateService>();
+builder.Services.AddSingleton<CrudService>();
 
 await builder.Build().RunAsync();

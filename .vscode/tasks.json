@@ -7,9 +7,9 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/RxBlazorLightSample/RxBlazorLightSample.csproj",
+                "${workspaceFolder}/RxBlazorLight.sln",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -19,9 +19,9 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/RxMudBlazorLightSample/RxMudBlazorLightSample.csproj",
+                "${workspaceFolder}/RxBlazorLight.sln",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/RxMudBlazorLightSample/RxMudBlazorLightSample.csproj"
+                "${workspaceFolder}/RxBlazorLight.sln"
             ],
             "problemMatcher": "$msCompile"
         }

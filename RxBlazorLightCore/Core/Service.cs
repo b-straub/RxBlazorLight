@@ -35,6 +35,7 @@ namespace RxBlazorLightCore
         public IStateCommandAsync CancellableCommandAsync { get; }
         public StatePhase Phase { get; private set; } = StatePhase.CHANGED;
         public bool Disabled => Phase is not StatePhase.CHANGING;
+        public bool Independent { get; set; }
 
         private readonly Subject<ServiceChangeReason> _changedSubject = new();
         private readonly IObservable<ServiceChangeReason> _changedObservable;
@@ -68,7 +69,7 @@ namespace RxBlazorLightCore
                 _changedSubject.OnNext(new(stateInfo.ID, ChangeReason.STATE));
             }
 
-            if (stateInfo.Changing())
+            if (!Independent && !stateInfo.Independent && stateInfo.Changing())
             {
                 Phase = StatePhase.CHANGING;
             }
@@ -106,7 +107,7 @@ namespace RxBlazorLightCore
 
         public void OnCompleted()
         {
-            
+
         }
 
         public void OnError(Exception error)

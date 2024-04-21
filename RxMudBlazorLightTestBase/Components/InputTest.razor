@@ -33,6 +33,7 @@
 
     <MudRadioGroupAsyncRx StateGroupAsync=@Service.GetPizzas2() ChangingAsyncCallback=@TestService.ChangePizzaAsync />
     <MudSelectAsyncRx StateGroupAsync=@Service.GetPizzas2() ChangingAsyncCallback=@TestService.ChangePizzaAsync HideDisabled=@true />
+    <MudSelectAsyncRx StateGroupAsync=@Service.GetPizzasIndependent() ChangingAsyncCallback=@TestService.ChangePizzaAsync HideDisabled=@true />
 
     <MudRatingRx State=@Service.RatingValue />
     <MudRatingRx State=@Service.RatingValue />

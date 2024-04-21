@@ -1,6 +1,6 @@
 ﻿@inherits MudFab
 
-<MudBadge Visible=@(_buttonRx is not null && _buttonRx.GetBadgeIcon(StateCommand, IconVariant) != string.Empty)
+<MudBadge Visible=@(_buttonRx is not null && CancelText is null && _buttonRx.GetBadgeIcon(StateCommand, IconVariant) != string.Empty)
           Icon=@_buttonRx!.GetBadgeIcon(StateCommand, IconVariant) Color=@Color Overlap="true" OnClick=@OnClick>
     @RenderBase()
 </MudBadge>

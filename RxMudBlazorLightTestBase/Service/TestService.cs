@@ -136,7 +136,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         private readonly IStateGroup<Pizza> _pizzaState1;
         private readonly IStateGroupAsync<Pizza> _pizzaState2;
-
+        private readonly IStateGroupAsync<Pizza> _pizzaStateIndependent;
         private readonly IStateGroup<TestColor> _radioTestExtended;
         private bool _canIncrement = false;
 
@@ -152,6 +152,8 @@ namespace RxMudBlazorLightTestBase.Service
 
             _pizzaState1 = this.CreateStateGroup(Pizzas);
             _pizzaState2 = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);
+            _pizzaStateIndependent = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);
+            _pizzaStateIndependent.Independent = true;
             _radioTestExtended = this.CreateStateGroup(Colors, Colors[0]);
         }
 
@@ -186,6 +188,11 @@ namespace RxMudBlazorLightTestBase.Service
         public IStateGroupAsync<Pizza> GetPizzas2()
         {
             return _pizzaState2;
+        }
+
+        public IStateGroupAsync<Pizza> GetPizzasIndependent()
+        {
+            return _pizzaStateIndependent;
         }
 
         public IStateGroup<TestColor> GetRadio()

@@ -6,106 +6,111 @@
     <MudText Class="mb-4">Current count Async: @Service.Counter</MudText>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled"
-                          StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync HasProgress=@false>
+        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CommandAsync
+            ExecuteAsyncCallback=@Service.IncrementCounterAsync HasProgress=@false>
             Increment
         </MudButtonAsyncRx>
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled"
-                          StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync>
+        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CommandAsync
+            ExecuteAsyncCallback=@Service.IncrementCounterAsync>
             Increment+Progress
         </MudButtonAsyncRx>
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled"
-                          StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                                CancelText="Cancel Add" CancelColor=Color.Error>
+        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CancellableCommandAsync
+            ExecuteAsyncCallback=@Service.AddToCounterAsync(10) CancelText="Cancel Add" CancelColor=Color.Error>
             Cancel+Text+Color+Progress
         </MudButtonAsyncRx>
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled"
-                          StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                                CancelText="Cancel Add" CancelColor=Color.Error HasProgress=@false>
+        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CancellableCommandAsync
+            ExecuteAsyncCallback=@Service.AddToCounterAsync(10) CancelText="Cancel Add" CancelColor=Color.Error
+            HasProgress=@false>
             Cancel+Text+Color
         </MudButtonAsyncRx>
 
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled"
-                          StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                                CancelText="Cancel Add">
+        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CancellableCommandAsync
+            ExecuteAsyncCallback=@Service.AddToCounterAsync(10) CancelText="Cancel Add">
             Cancel+Text+Progress
         </MudButtonAsyncRx>
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
-                       StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync />
+            StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync />
         <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.PlusOne"
-                       StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync HasProgress=@true />
+            StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync HasProgress=@true />
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             CancelText="Cancel Add 10" CancelColor=Color.Error Label="Cancel+Text+Color+Progress" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10) />
         <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             CancelText="Cancel Add 10" CancelColor=Color.Error HasProgress=@false Label="Cancel+Text+Color" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10) HasProgress=@false />
+        <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            CancelText="Cancel Add 10" CancelColor=Color.Error Label="Cancel+Text+Color+Progress" />
+        <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            CancelText="Cancel Add 10" CancelColor=Color.Error HasProgress=@false Label="Cancel+Text+Color" />
 
         <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             CancelText="Cancel Add 10" Label="Cancel+Text+Progress" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            CancelText="Cancel Add 10" Label="Cancel+Text+Progress" />
 
         <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             Label="Cancel+Progress" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            Label="Cancel+Progress" />
         <MudFabAsyncRx Color="Color.Secondary" EndIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             HasProgress=@false Label="Cancel" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            HasProgress=@false Label="Cancel" />
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             CancelText="Cancel Add 10" CancelColor=Color.Error Label="Cancel+Text+Color+Progress" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            CancelText="Cancel Add 10" CancelColor=Color.Error Label="Cancel+Text+Color+Progress" />
         <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             CancelText="Cancel Add 10" CancelColor=Color.Error HasProgress=@false Label="Cancel+Text+Color" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            CancelText="Cancel Add 10" CancelColor=Color.Error HasProgress=@false Label="Cancel+Text+Color" />
 
         <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             CancelText="Cancel Add 10" Label="Cancel+Text+Progress" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            CancelText="Cancel Add 10" Label="Cancel+Text+Progress" />
 
         <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             Label="Cancel+Progress" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            Label="Cancel+Progress" />
         <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             HasProgress=@false Label="Cancel" />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            HasProgress=@false Label="Cancel" />
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" EndIcon="@Icons.Material.Filled.PlusOne"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             CancelText="Cancel Add 10" HasProgress=@false CancelColor=Color.Error Label="SI+EI+Cancel+Text+Color" />
-        <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" EndIcon="@Icons.Material.Filled.PlusOne"
-                       StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                             CancelColor=Color.Error HasProgress=@false Label="SI+EI+Cancel+Color" />
+        <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add"
+            EndIcon="@Icons.Material.Filled.PlusOne" StateCommand=@Service.CancellableCommandAsync
+            ExecuteAsyncCallback=@Service.AddToCounterAsync(10) CancelText="Cancel Add 10" HasProgress=@false
+            CancelColor=Color.Error Label="SI+EI+Cancel+Text+Color" />
+        <MudFabAsyncRx Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add"
+            EndIcon="@Icons.Material.Filled.PlusOne" StateCommand=@Service.CancellableCommandAsync
+            ExecuteAsyncCallback=@Service.AddToCounterAsync(10) CancelColor=Color.Error HasProgress=@false
+            Label="SI+EI+Cancel+Color" />
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne"
-                              StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync />
+            StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync />
         <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne"
-                              StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync HasProgress=@true />
+            StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync HasProgress=@true />
     </MudStack>
 
     <MudStack Row=@true AlignItems=@AlignItems.Center>
         <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                              StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
-                                    CancelColor=Color.Error HasProgress=@false />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            CancelColor=Color.Error HasProgress=@false />
         <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                              StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10) CancelColor=Color.Error />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10)
+            CancelColor=Color.Error />
         <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.Add"
-                              StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10) />
+            StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@Service.AddToCounterAsync(10) />
     </MudStack>
 </MudStack>
 

@@ -33,7 +33,10 @@
 
         ValueChanged = EventCallback.Factory.Create<T>(this, async v =>
         {
-            await StateGroupAsync.ChangeValueAsync(v, ChangingAsyncCallback);
+            if (v != null && !v.Equals(StateGroupAsync.Value))
+            {
+                await StateGroupAsync.ChangeValueAsync(v, ChangingAsyncCallback);
+            }
         });
 
         if (ChildContent is null)

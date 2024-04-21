@@ -43,6 +43,7 @@ namespace RxBlazorLightCore
         public StatePhase Phase { get; }
         public Guid ID { get; }
         public bool Disabled { get; }
+        public bool Independent { get; set; }
     }
 
     public interface IState<T> : IStateInformation

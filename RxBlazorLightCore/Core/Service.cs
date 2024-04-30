@@ -120,5 +120,15 @@ namespace RxBlazorLightCore
         {
             _changedSubject.OnNext(new(ID, ChangeReason.STATE));
         }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

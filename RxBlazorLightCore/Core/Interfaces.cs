@@ -18,7 +18,7 @@ namespace RxBlazorLightCore
         public ValueTask OnContextReadyAsync();
     }
 
-    public interface IRxBLService : IObservable<ServiceChangeReason>, IObserver<Unit>, IStateInformation
+    public interface IRxBLService : IObservable<ServiceChangeReason>, IObserver<Unit>, IStateInformation, IDisposable
     {
         public ValueTask OnContextReadyAsync();
         public bool Initialized { get; }

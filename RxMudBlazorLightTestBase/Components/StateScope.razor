@@ -1,14 +1,12 @@
-﻿@inherits RxBLServiceSubscriber<StateService>
-
-<PageTitle>SimpleState</PageTitle>
+﻿@inherits RxBLScopedServiceSubscriber<StateService>
 
 <MudStack>
     <MudText Class="mb-4">Current count: @Service.Counter.Value</MudText>
-    <MudText Class="mb-4">Current count Async: @Service.CounterAsync</MudText>
-
+ 
     <MudSlider @bind-Value=@Service.Counter.Value />
     <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudButton Disabled=@(!StateService.CounterCanChange(Service.CounterAsync)) OnClick=@(() => Service.Counter.Value++)>Increment</MudButton>
+        <MudButtonRx StateCommand=@Service.Command ExecuteCallback=@Service.Increment CanChangeCallback=@Service.CounterCanChange>Increment</MudButtonRx>
         <MudButtonAsyncRx StateCommand=@Service.CounterAsyncCMDCancel ExecuteAsyncCallback=Service.AddAsync(10) CanChangeCallback=@Service.CounterAsyncCanChange CancelText="Cancel Add">Add</MudButtonAsyncRx>
     </MudStack>
+    <StateSubScope Service=@Service></StateSubScope>
 </MudStack>

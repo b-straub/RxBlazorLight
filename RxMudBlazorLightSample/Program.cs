@@ -15,7 +15,7 @@ builder.Services.AddMudServices();
 
 builder.Services.AddSingleton(sp => new TestService(sp));
 builder.Services.AddSingleton<TimerService>();
-builder.Services.AddSingleton<StateService>();
+builder.Services.AddScoped<StateService>();
 builder.Services.AddSingleton<CrudService>();
 
 await builder.Build().RunAsync();

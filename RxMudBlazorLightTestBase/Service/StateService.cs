@@ -5,7 +5,6 @@ namespace RxMudBlazorLightTestBase.Service
     public class StateService : RxBLService
     {
         public IState<int> Counter { get; }
-        public int CounterAsync { get; private set; }
 
         public IStateCommandAsync CounterAsyncCMD { get; }
         public IStateCommandAsync CounterAsyncCMDCancel { get; }
@@ -17,20 +16,20 @@ namespace RxMudBlazorLightTestBase.Service
             CounterAsyncCMDCancel = this.CreateStateCommandAsync(true);
         }
 
-        public static Func<int, bool> CounterCanChange => v => v < 20;
-        public Func<bool> CounterAsyncCanChange => () => CounterAsync < 10;
+        public Func<bool> CounterCanChange => () => Counter.Value < 20;
+        public Func<bool> CounterAsyncCanChange => () => Counter.Value < 10;
 
-        public Action  Increment => () => CounterAsync++;
+        public Action  Increment => () => Counter.Value++;
 
         public Action Add(int value)
         {
-            return () => CounterAsync += value;
+            return () => Counter.Value += value;
         }
 
         public Func<Task> IncrementAsync => async () =>
         {
             await Task.Delay(1000);
-            CounterAsync++;
+            Counter.Value++;
         };
 
         public Func<IStateCommandAsync, Task> AddAsync(int value)
@@ -38,7 +37,7 @@ namespace RxMudBlazorLightTestBase.Service
             return async c =>
             {
                 await Task.Delay(1000, c.CancellationToken);
-                CounterAsync += value;
+                Counter.Value += value;
             };
         }
     }

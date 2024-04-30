@@ -8,8 +8,6 @@ public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : I
     [Parameter]
     public double SampleRateMS { get; set; } = 100;
 
-    private bool _serviceDisposed;
-
     protected override void OnInitialized()
     {
         base.OnInitialized();

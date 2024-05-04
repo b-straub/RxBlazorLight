@@ -81,7 +81,7 @@ namespace RxBlazorLightCore
             _value = value;
         }
 
-        public void Update(T value)
+        public void Set(T value)
         {
             _value = value;
         }

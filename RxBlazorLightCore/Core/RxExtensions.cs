@@ -36,6 +36,13 @@ namespace RxBlazorLightCore
             return service.Where(cr => cr.ID == state.ID).Select(_ => Unit.Default);
         }
 
+        public static IObservable<T> AsChangedObservable<T>(this RxBLService service, IState<T> state)
+        {
+            return service
+                .Where(cr => cr.ID == state.ID && state.Changed())
+                .Select(_ => state.Value);
+        }
+
         public static bool Changing(this IStateInformation state)
         {
             return state.Phase is StatePhase.CHANGING;

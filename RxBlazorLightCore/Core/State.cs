@@ -143,7 +143,6 @@ namespace RxBlazorLightCore
                 CancellationToken = CancellationToken.None;
             }
         }
-
      
         public async Task ExecuteAsync(Func<IStateCommandAsync, Task> changeCallbackAsync, bool deferredNotification = false, Guid? changeCallerID = null)
         {

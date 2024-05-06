@@ -430,6 +430,32 @@ namespace RxBlazorLightCoreTests
         }
 
         [Fact]
+        public async Task TestAsObservable()
+        {
+            ServiceFixture fixture = new();
+            var asObservableCount = 0;
+            var changedValue = 0;
+          
+            var disposableO = fixture.AsObservable(fixture.IntCommandAsync)
+                .Subscribe(_ => asObservableCount++);
+
+            var disposableOC = fixture.AsChangedObservable(fixture.IntState)
+                .Subscribe(v => changedValue += v);
+
+            await fixture.IntCommandAsync.ExecuteAsync(fixture.AddAsync(1));
+            await fixture.IntCommandAsync.ExecuteAsync(fixture.AddAsync(1));
+
+            fixture.IntState.Value = 1;
+            fixture.IntState.Value = 1;
+
+            disposableO.Dispose();
+            disposableOC.Dispose();
+
+            Assert.Equal(4, asObservableCount);
+            Assert.Equal(2, changedValue);
+        }
+
+        [Fact]
         public async Task TestCRUDList()
         {
             ServiceFixture fixture = new();

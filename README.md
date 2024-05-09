@@ -8,7 +8,7 @@ Build the [RxMudBlazorLightSample](https://github.com/b-straub/RxBlazorLight/tre
 
 **The API can change anytime!**
 
-Currently I use this library for my [DexieNETCloudSample](https://github.com/b-straub/DexieNET/tree/cloud/DexieNETCloudSample).
+Currently I use this library for my [DexieNETCloudSample](https://github.com/b-straub/DexieNET/tree/master/DexieNETCloudSample).
 
 Comments about other use cases and feature requests are very welcome!
 

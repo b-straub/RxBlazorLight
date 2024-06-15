@@ -17,7 +17,7 @@
         <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@Service.IncrementCounter CanChangeCallback=@Service.IncrementStateCanChange ConfirmExecutionAsync=@ConfirmIncrement>Increment</MudButtonRx>
         <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
         <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync CanChangeCallback=@Service.IncrementStateCanChange>IncrementAsync</MudButtonAsyncRx>
-        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@(Service.AddToCounterAsync(2)) CanChangeCallback=@(Service.CounterCanChangeLowerBound(4)) CancelText="Cancel Increment">Add Async 2</MudButtonAsyncRx>
+        <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@(Service.AddToCounterAsync(2)) CanChangeCallback=@(Service.CounterCanChangeLowerBound(4)) CancelText="Cancel Add">Add Async 2</MudButtonAsyncRx>
         <MudButtonAsyncRx Color="Color.Secondary" Variant="Variant.Filled" StateCommand=@Service.CancellableCommandAsync ExecuteAsyncCallback=@DoPrepareAddAsync DeferredNotification=@true CancelColor=Color.Error CancelText="Cancel Add">
             AddWithConfirmAsync 10
         </MudButtonAsyncRx>

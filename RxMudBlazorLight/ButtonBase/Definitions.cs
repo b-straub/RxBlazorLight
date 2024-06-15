@@ -5,8 +5,7 @@ internal enum MBButtonType
     DEFAULT,
     FAB,
     ICON,
-    MENU,
-    TOGGLEICON
+    MENU
 }
 
 public enum MBIconVariant

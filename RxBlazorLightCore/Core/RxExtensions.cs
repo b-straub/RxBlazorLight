@@ -43,6 +43,11 @@ namespace RxBlazorLightCore
                 .Select(_ => state.Value);
         }
 
+        public static bool Contains(this IEnumerable<ServiceChangeReason> crList, IStateInformation stateInformation)
+        {
+            return crList.Any(cr => cr.ID == stateInformation.ID);
+        }
+        
         public static bool Changing(this IStateInformation state)
         {
             return state.Phase is StatePhase.CHANGING;

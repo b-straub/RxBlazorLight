@@ -41,13 +41,13 @@ namespace RxMudBlazorLight.Dialogs
         public bool HasProgress { get; set; } = false;
 
         private MudButtonAsyncRx? _buttonRef;
-        private IDisposable? _buttonDisposable;
-        private bool _canceled = false;
+        private bool _closing;
 
         public static async Task<bool> Show(IDialogService dialogService,
-           IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeAsyncCallback, string title,
-           string message, string confirmButton, string cancelButton, bool successOnConfirm, string? cancelText = null, Color? cancelColor = null, bool hasProgress = true,
-           Func<bool>? canChange = null)
+            IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeAsyncCallback, string title,
+            string message, string confirmButton, string cancelButton, bool successOnConfirm, string? cancelText = null,
+            Color? cancelColor = null, bool hasProgress = true,
+            Func<bool>? canChange = null)
         {
             var parameters = new DialogParameters
             {
@@ -95,22 +95,20 @@ namespace RxMudBlazorLight.Dialogs
             }
         }
 
-        protected override void OnServiceStateHasChanged(ServiceChangeReason cr)
+        protected override void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
         {
-            if (cr.Reason is ChangeReason.STATE && _buttonRef is not null && cr.ID == _buttonRef.StateCommand.ID)
+            if (_closing || _buttonRef is null || !_buttonRef.StateCommand.Done() || StateCommand.Canceled())
             {
-                if (_buttonRef.StateCommand.Done())
-                {
-                    _canceled = StateCommand.Canceled();
-                    if (!_canceled)
-                    {
-                        _buttonDisposable?.Dispose();
-                        _buttonDisposable = null;
-
-                        MudDialog?.Close(DialogResult.Ok(true));
-                    }
-                }
+                return;
             }
+
+            if (!crList.Exist(_buttonRef.StateCommand) || !_buttonRef.StateCommand.Done() || StateCommand.Canceled())
+            {
+                return;
+            }
+
+            _closing = true;
+            MudDialog?.Close(DialogResult.Ok(true));
         }
     }
 }

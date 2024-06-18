@@ -15,21 +15,22 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
     {
         base.OnInitialized();
         Service
-            .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Select(async cr =>
+            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Select(crList => Observable.FromAsync(async () =>
             {
-                await OnServiceStateHasChangedAsync(cr);
-                OnServiceStateHasChanged(cr);
+                await OnServiceStateHasChangedAsync(crList);
+                OnServiceStateHasChanged(crList);
                 await InvokeAsync(StateHasChanged);
-            })
+            }))
+            .Concat()
             .Subscribe();
     }
 
-    protected virtual void OnServiceStateHasChanged(ServiceChangeReason cr)
+    protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(ServiceChangeReason cr)
+    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList)
     {
         return Task.CompletedTask;
     }
@@ -63,21 +64,22 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
     {
         base.OnInitialized();
         Observable.Merge(Service1, Service2)
-            .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Select(async cr =>
+            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Select(crList => Observable.FromAsync(async () =>
             {
-                await ServiceStateHasChangedAsync(cr);
-                ServiceStateHasChanged(cr);
+                await OnServiceStateHasChangedAsync(crList);
+                OnServiceStateHasChanged(crList);
                 await InvokeAsync(StateHasChanged);
-            })
+            }))
+            .Concat()
             .Subscribe();
     }
 
-    protected virtual void ServiceStateHasChanged(ServiceChangeReason cr)
+    protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task ServiceStateHasChangedAsync(ServiceChangeReason cr)
+    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList)
     {
         return Task.CompletedTask;
     }
@@ -118,21 +120,22 @@ public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLS
     {
         base.OnInitialized();
         Observable.Merge(Service1, Service2, Service3)
-            .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Select(async cr =>
-             {
-                 await ServiceStateHasChangedAsync(cr);
-                 ServiceStateHasChanged(cr);
-                 await InvokeAsync(StateHasChanged);
-             })
+            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Select(crList => Observable.FromAsync(async () =>
+            {
+                await OnServiceStateHasChangedAsync(crList);
+                OnServiceStateHasChanged(crList);
+                await InvokeAsync(StateHasChanged);
+            }))
+            .Concat()
             .Subscribe();
     }
 
-    protected virtual void ServiceStateHasChanged(ServiceChangeReason cr)
+    protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task ServiceStateHasChangedAsync(ServiceChangeReason cr)
+    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList)
     {
         return Task.CompletedTask;
     }

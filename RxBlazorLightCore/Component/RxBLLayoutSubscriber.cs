@@ -15,21 +15,22 @@ public class RxBLLayoutSubscriber<T> : LayoutComponentBase where T : IRxBLServic
     {
         base.OnInitialized();
         Service
-            .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Select(async cr =>
+            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Select(crList => Observable.FromAsync(async () =>
             {
-                await OnServiceStateHasChangedAsync(cr);
-                OnServiceStateHasChanged(cr);
+                await OnServiceStateHasChangedAsync(crList);
+                OnServiceStateHasChanged(crList);
                 await InvokeAsync(StateHasChanged);
-            })
+            }))
+            .Concat()
             .Subscribe();
     }
 
-    protected virtual void OnServiceStateHasChanged(ServiceChangeReason cr)
+    protected virtual void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(ServiceChangeReason cr)
+    protected virtual Task OnServiceStateHasChangedAsync(IList<ServiceChangeReason> crList)
     {
         return Task.CompletedTask;
     }

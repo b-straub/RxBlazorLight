@@ -9,7 +9,7 @@ public partial class RxBLStateSubscriber<T> : ComponentBase
     public required T Service { get; init; }
 
     [Parameter]
-    public Guid[] IDs { get; init; } = [];
+    public required IStateInformation[] Filter { get; init; } = [];
 
     [Parameter]
     public required RenderFragment ChildContent { get; init; }
@@ -20,17 +20,26 @@ public partial class RxBLStateSubscriber<T> : ComponentBase
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        
         Service
-            .Sample(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(cr => IDs.Length == 0 || IDs.Any(i => i == cr.ID))
-            .Subscribe(cr =>
+            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .SelectMany(crList => crList.Where(cr => Filter.Select(f => f.ID).Contains(cr.ID)))
+            .Select(cr => Observable.FromAsync(async () =>
             {
+                await OnServiceStateHasChangedAsync(cr);
                 OnServiceStateHasChanged(cr);
-                InvokeAsync(StateHasChanged);
-            });
+                await InvokeAsync(StateHasChanged);
+            }))
+            .Concat()
+            .Subscribe();
     }
 
     protected virtual void OnServiceStateHasChanged(ServiceChangeReason cr)
     {
+    }
+    
+    protected virtual Task OnServiceStateHasChangedAsync(ServiceChangeReason cr)
+    {
+        return Task.CompletedTask;
     }
 }

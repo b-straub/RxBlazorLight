@@ -49,7 +49,7 @@ namespace RxBlazorLightCore
     public interface IState<T> : IStateInformation
     {
         public T Value { get; set; }
-        public void Set(T value);
+        public void SetValue(T value);
 
         [MemberNotNullWhen(true, nameof(Value))]
         public bool HasValue();

@@ -1,0 +1,41 @@
+﻿@typeparam T where T : IRxBLService
+@inherits RxBLServiceSubscriber<T>
+
+<MudElement>
+    <MudDialog>
+        <DialogContent>
+            <MudStack>
+                @Message
+                @if (StateObserver.Exception is not null)
+                {
+                    <MudText Typo=@Typo.body2 Color=@Color.Error>@StateObserver.Exception.Message</MudText>
+                }
+                else if (StateObserver.Changing())
+                {
+                    <MudProgressLinear Rounded=@true Color=@Color.Primary Indeterminate=@(StateObserver.Value < 0) Value=@StateObserver.Value Size=@Size.Large/>
+                }
+            </MudStack>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
+            @if (StateObserver.Changing())
+            {
+                @if (CancelText is not null)
+                {
+                    <MudButton Variant=@Variant.Filled Color=@(CancelColor ?? Color.Warning) OnClick=@StateObserver.Cancel>@CancelText</MudButton>
+                }
+                else
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color=@(CancelColor ?? Color.Warning) OnClick=@StateObserver.Cancel></MudIconButton>
+                }
+            }
+            else
+            {
+                <MudButton @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
+                           OnClick=@(() => StateObserver.ExecuteAsync(obs => ExecuteAsyncCallback(obs)))>
+                    @ConfirmButton
+                </MudButton>
+            }
+        </DialogActions>
+    </MudDialog>
+</MudElement>

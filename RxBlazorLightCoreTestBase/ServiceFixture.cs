@@ -1,4 +1,5 @@
 ﻿
+using System.Reactive;
 using RxBlazorLightCore;
 using System.Runtime.CompilerServices;
 
@@ -29,11 +30,13 @@ namespace RxBlazorLightCoreTestBase
         public Dictionary<Guid, CRUDTest> CRUDDict { get; } = [];
         public IStateCommandAsync CRUDDictCommand { get; }
 
+        public IStateObserverAsync CancellableObserverAsync { get; }
+        public IStateObserverAsync CancellableObserverHandleErrorAsync { get; }
         public IStateGroup<TestEnum> EnumStateGroup { get; }
         public TestEnum? EnumStateGroupOldValue { get; private set; }
         public IStateGroupAsync<TestEnum> EnumStateGroupAsync { get; }
         public TestEnum? EnumStateGroupAsyncOldValue { get; private set; }
-
+        
         public ServiceFixture()
         {
             IntState = this.CreateState(-1);
@@ -43,6 +46,8 @@ namespace RxBlazorLightCoreTestBase
 
             CRUDListCommand = this.CreateStateCommandAsync(true);
             CRUDDictCommand = this.CreateStateCommandAsync(true);
+            CancellableObserverAsync = this.CreateStateObserverAsync(false);
+            CancellableObserverHandleErrorAsync = this.CreateStateObserverAsync();
             EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE);
             EnumStateGroupAsync = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE);
         }

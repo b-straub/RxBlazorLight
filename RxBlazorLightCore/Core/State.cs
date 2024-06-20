@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
 
 namespace RxBlazorLightCore
 {
@@ -30,7 +31,7 @@ namespace RxBlazorLightCore
             }
         }
 
-        protected void PhaseChanged(bool changed, bool notify = true, Exception? exception = null)
+        protected void PhaseChanged(bool changed, bool notify = true, Exception? exception = null, bool submitException = true)
         {
             var changePhase = changed ? StatePhase.CHANGED : StatePhase.CHANGING;
 
@@ -49,6 +50,10 @@ namespace RxBlazorLightCore
                 else
                 {
                     changePhase = StatePhase.EXCEPTION;
+                    if (!submitException)
+                    {
+                        exception = null;
+                    }
                 }
             }
 
@@ -130,7 +135,7 @@ namespace RxBlazorLightCore
         public CancellationToken CancellationToken { get; private set; }
         public Guid? ChangeCallerID { get; private set; }
 
-        protected StateCommandAsync(RxBLService service, bool canCancel) : base(service) 
+        protected StateCommandAsync(RxBLService service, bool canCancel) : base(service)
         {
             CanCancel = canCancel;
             if (CanCancel)
@@ -143,8 +148,9 @@ namespace RxBlazorLightCore
                 CancellationToken = CancellationToken.None;
             }
         }
-     
-        public async Task ExecuteAsync(Func<IStateCommandAsync, Task> changeCallbackAsync, bool deferredNotification = false, Guid? changeCallerID = null)
+
+        public async Task ExecuteAsync(Func<IStateCommandAsync, Task> changeCallbackAsync,
+            bool deferredNotification = false, Guid? changeCallerID = null)
         {
             try
             {
@@ -169,7 +175,8 @@ namespace RxBlazorLightCore
         {
             if (_cancellationTokenSource is null)
             {
-                throw new InvalidOperationException(@"Command can not be cancelled. Create with ""CanCancel"" set to true!");
+                throw new InvalidOperationException(
+                    @"Command can not be cancelled. Create with ""CanCancel"" set to true!");
             }
 
             _cancellationTokenSource.Cancel();
@@ -190,6 +197,84 @@ namespace RxBlazorLightCore
         }
     }
 
+    public class StateObserverAsync : State<long>, IStateObserverAsync
+    {
+        public Exception? Exception { get; private set; }
+        
+        private bool _deferredNotification;
+        private IDisposable? _disposable;
+        private readonly bool _handleError;
+        
+        private StateObserverAsync(RxBLService service, bool handleError) : base(service, 0)
+        {
+            _handleError = handleError;
+        }
+
+        public void ResetException()
+        {
+            Exception = null;
+        }
+
+        public void ExecuteAsync(Func<IStateObserverAsync, IDisposable> executeCallbackAsync, bool deferredNotification = false)
+        {
+            _deferredNotification = deferredNotification;
+            Reset();
+            _disposable = executeCallbackAsync(this);
+        }
+
+        public void Cancel()
+        {
+            if (_disposable is null) return;
+
+            _disposable.Dispose();
+            Complete();
+            PhaseChanged(true, true, new TaskCanceledException());
+        }
+
+        public void OnCompleted()
+        {
+            Complete();
+            PhaseChanged(true);
+        }
+
+        public void OnError(Exception error)
+        {
+            Complete();
+            
+            if (_handleError)
+            {
+                Exception = error;
+            }
+            
+            PhaseChanged(true, true, error, !_handleError);
+        }
+
+        public void OnNext(long value)
+        {
+            SetValue(value);
+            PhaseChanged(false, !_deferredNotification);
+        }
+
+        private void Reset()
+        {
+            SetValue(0);
+            _disposable = null;
+            _deferredNotification = false;
+            Exception = null;
+        }
+
+        private void Complete()
+        {
+            _disposable = null;
+            SetValue(100);
+        }
+
+        public static IStateObserverAsync Create(RxBLService service, bool handleError)
+        {
+            return new StateObserverAsync(service, handleError);
+        }
+    }
+
     public class StateGroupBase<T> : StateBase, IStateGroupBase<T>
     {
         public T? Value { get; protected set; }
@@ -206,7 +291,7 @@ namespace RxBlazorLightCore
 
         public void Update(T value)
         {
-            Value = value; 
+            Value = value;
         }
 
         [MemberNotNullWhen(true, nameof(Value))]
@@ -233,6 +318,7 @@ namespace RxBlazorLightCore
                 {
                     changingCallback(Value, value);
                 }
+
                 Value = value;
                 PhaseChanged(true);
             }
@@ -266,6 +352,7 @@ namespace RxBlazorLightCore
                 {
                     await changingCallbackAsync(Value, value);
                 }
+
                 Value = value;
                 PhaseChanged(true);
             }

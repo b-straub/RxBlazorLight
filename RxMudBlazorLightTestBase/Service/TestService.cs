@@ -134,7 +134,12 @@ namespace RxMudBlazorLightTestBase.Service
         public IState<string> TextValue { get; }
         public IState<int> RatingValue { get; }
         public IState<bool> DarkMode { get; }
-
+        
+        
+        public IStateObserverAsync IncrementObserver { get; }
+        public IStateObserverAsync IncrementDialogObserver { get; }
+        public IStateObserverAsync AddObserver { get; }
+        
         private readonly IStateGroup<Pizza> _pizzaState1;
         private readonly IStateGroupAsync<Pizza> _pizzaState2;
         private readonly IStateGroupAsync<Pizza> _pizzaStateIndependent;
@@ -151,6 +156,10 @@ namespace RxMudBlazorLightTestBase.Service
             TextValue = this.CreateState("No Text");
             RatingValue = this.CreateState(0);
             DarkMode = this.CreateState(false);
+
+            IncrementObserver = this.CreateStateObserverAsync();
+            AddObserver = this.CreateStateObserverAsync();
+            IncrementDialogObserver = this.CreateStateObserverAsync();
             
             _pizzaState1 = this.CreateStateGroup(Pizzas);
             _pizzaState2 = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);

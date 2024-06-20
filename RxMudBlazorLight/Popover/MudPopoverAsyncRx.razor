@@ -1,0 +1,73 @@
+<MudPopover Open=@_isOpen OverflowBehavior=@OverflowBehavior.FlipAlways AnchorOrigin=@AnchorOrigin TransformOrigin=@TransformOrigin >
+    <MudPaper Class=@_class  Elevation="1" Outlined=@true>
+        <MudStack Spacing=@(CancelText is null ? 1 : 3)>
+            <MudText Align=@Align.Center Typo=@Typo.button>@Header</MudText>
+            @if (StateObserver.Exception is not null)
+            {
+                <MudStack Row=@true AlignItems=@AlignItems.Center>
+                    <MudText Color=@Color.Error>@StateObserver.Exception.Message</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick=@(() => _isOpen = false)></MudIconButton>
+                </MudStack>
+            }
+            else
+            {
+                <MudStack Row=@true AlignItems=@AlignItems.Center>
+                    <MudProgressLinear Style="width: 100px" Rounded=@true Color=@Color.Primary Indeterminate=@(StateObserver.Value < 0) Value=@StateObserver.Value Size=@Size.Large/>
+                    @if (CancelText is not null)
+                    {
+                        <MudButton Variant=@Variant.Filled Color=@(CancelColor ?? Color.Warning) OnClick=@StateObserver.Cancel>@CancelText</MudButton>
+                    }
+                    else
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color=@(CancelColor ?? Color.Warning) OnClick=@StateObserver.Cancel></MudIconButton>
+                    }
+                </MudStack>
+            }
+        </MudStack>
+    </MudPaper>
+</MudPopover>
+
+@code {
+    [Parameter, EditorRequired]
+    public required IStateObserverAsync StateObserver { get; init; }
+
+    [Parameter, EditorRequired]
+    public required string Header { get; init; }
+    
+    [Parameter]
+    public string? CancelText { get; set; }
+
+    [Parameter]
+    public Color? CancelColor { get; set; }
+
+    [Parameter]
+    public Origin AnchorOrigin { get; set; } = Origin.TopCenter;
+
+    [Parameter]
+    public Origin TransformOrigin { get; set; } = Origin.BottomCenter;
+
+    private bool _isOpen;
+    private string _class = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _class = CancelText is null ? "py-1 px-3" : "py-3 px-3";
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_isOpen && StateObserver.Done() && StateObserver.Phase is not StatePhase.EXCEPTION)
+        {
+            _isOpen = false;
+        }
+
+        if (!_isOpen && StateObserver.Changing())
+        {
+            _isOpen = true;
+        }
+
+        base.OnParametersSet();
+    }
+}

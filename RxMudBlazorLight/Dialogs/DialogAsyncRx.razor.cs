@@ -8,7 +8,7 @@ namespace RxMudBlazorLight.Dialogs
     public partial class DialogAsyncRx<T>
     {
         [CascadingParameter]
-        MudDialogInstance? MudDialog { get; set; }
+        public MudDialogInstance? MudDialog { get; set; }
 
         [Parameter, EditorRequired]
         public required string Message { get; init; }
@@ -102,7 +102,7 @@ namespace RxMudBlazorLight.Dialogs
                 return;
             }
 
-            if (!crList.Exist(_buttonRef.StateCommand) || !_buttonRef.StateCommand.Done() || StateCommand.Canceled())
+            if (!crList.Contains(_buttonRef.StateCommand))
             {
                 return;
             }

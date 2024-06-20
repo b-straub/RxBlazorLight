@@ -20,6 +20,11 @@ namespace RxBlazorLightCore
         {
             return StateCommandAsync.Create(service, canCancel);
         }
+        
+        public static IStateObserverAsync CreateStateObserverAsync(this RxBLService service, bool handleError = true)
+        {
+            return StateObserverAsync.Create(service, handleError);
+        }
 
         public static IStateGroup<T> CreateStateGroup<T>(this RxBLService service, T[] items, T? value = default)
         {

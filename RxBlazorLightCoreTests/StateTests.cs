@@ -711,5 +711,235 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(TestEnum.ONE, fixture.EnumStateGroupAsyncOldValue);
             Assert.Equal(2, stateChangeCount);
         }
+        
+        [Fact]
+        public async Task TestStateObserver()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                _output.WriteLine($"CC {stateChangeCount} Reason {sc.Reason}, ID {sc.ID}, VPID {fixture.CancellableObserverAsync.ID}");
+
+                if (sc.ID == fixture.CancellableObserverAsync.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                if (fixture.CancellableObserverAsync.Done())
+                {
+                    done = true;
+                }
+            });
+
+            fixture.CancellableObserverAsync.ExecuteAsync(fixture.ObserveState);
+            while (!done)
+            {
+                await Task.Delay(5);
+            }
+            
+            Assert.Equal(3, stateChangeCount);
+        }
+        
+        [Fact]
+        public async void TestStateObserverCancel()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                _output.WriteLine($"CC {stateChangeCount} Reason {sc.Reason}, ID {sc.ID}, VPID {fixture.CancellableObserverAsync.ID}");
+
+                if (sc.ID == fixture.CancellableObserverAsync.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                if (fixture.CancellableObserverAsync.Changing())
+                {
+                    fixture.CancellableObserverAsync.Cancel();
+                }
+
+                if (fixture.CancellableObserverAsync.Done())
+                {
+                    done = true;
+                }
+            });
+            
+            fixture.CancellableObserverAsync.ExecuteAsync(fixture.ObserveState);
+            while (!done)
+            {
+                await Task.Delay(5);
+            }
+            Assert.Equal(2, stateChangeCount);
+        }
+        
+        [Fact]
+        public async Task TestStateObserverComplex()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                _output.WriteLine($"Value {fixture.CancellableObserverAsync.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.ID}, VPID {fixture.CancellableObserverAsync.ID}");
+
+                if (sc.ID == fixture.CancellableObserverAsync.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                if (fixture.CancellableObserverAsync.Done())
+                {
+                    done = true;
+                }
+            });
+
+            fixture.CancellableObserverAsync.ExecuteAsync(obs => fixture.ObserveStateComplex(obs, _output));
+            while (!done)
+            {
+                await Task.Delay(5);
+            }
+            
+            Assert.Equal(7, stateChangeCount);
+            Assert.Equal(20, fixture.IntState.Value);
+        }
+        
+        [Fact]
+        public async void TestStateObserverComplexCancel()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool done = false;
+
+            fixture.Subscribe(sc =>
+            {
+                _output.WriteLine($"Value {fixture.CancellableObserverAsync.Value}, CC {stateChangeCount} Reason {sc.Reason}, ID {sc.ID}, VPID {fixture.CancellableObserverAsync.ID}");
+
+                if (sc.ID == fixture.CancellableObserverAsync.ID)
+                {
+                    stateChangeCount++;
+                }
+
+                if (fixture.CancellableObserverAsync.Changing() && stateChangeCount == 2)
+                {
+                    fixture.CancellableObserverAsync.Cancel();
+                }
+
+                if (fixture.CancellableObserverAsync.Done())
+                {
+                    done = true;
+                }
+            });
+            
+            fixture.CancellableObserverAsync.ExecuteAsync(obs => fixture.ObserveStateComplex(obs, _output));
+            while (!done)
+            {
+                await Task.Delay(5);
+            }
+            Assert.Equal(3, stateChangeCount);
+            Assert.Equal(10, fixture.IntState.Value);
+        }
+        
+        [Fact]
+        public async void TestStateObserverThrow()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool exception = false;
+            bool done = false;
+
+            IDisposable subscribeTest()
+            {
+                done = false;
+                stateChangeCount = 0;
+
+                return fixture.Subscribe(sc =>
+                {
+                    if (!done && sc.ID == fixture.CancellableObserverAsync.ID)
+                    {
+                        stateChangeCount++;
+                    }
+
+                    if (fixture.CancellableObserverAsync.Phase is StatePhase.EXCEPTION &&
+                        fixture.Exceptions.First().Exception.GetType() == typeof(TimeoutException))
+                    {
+                        exception = true;
+                    }
+
+                    _output.WriteLine($"Done {fixture.CancellableObserverAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CancellableObserverAsync.Phase}, ID {sc.ID}, VPID {fixture.IntCommandAsync.ID}");
+
+                    if (fixture.CancellableObserverAsync.Done())
+                    {
+                        done = true;
+                    }
+                });
+            }
+
+            var disposable = subscribeTest();
+            fixture.ResetExceptions();
+            fixture.CancellableObserverAsync.ExecuteAsync(fixture.ObserveStateThrow);
+            while (!done)
+            {
+                await Task.Delay(5);
+            }
+            Assert.True(exception);
+            Assert.Equal(1, stateChangeCount);
+            Assert.Single(fixture.Exceptions);
+            disposable.Dispose();
+        }
+        
+        [Fact]
+        public async void TestStateObserverHandleErrorThrow()
+        {
+            ServiceFixture fixture = new();
+            var stateChangeCount = 0;
+            bool exception = false;
+            bool done = false;
+
+            IDisposable subscribeTest()
+            {
+                done = false;
+                stateChangeCount = 0;
+
+                return fixture.Subscribe(sc =>
+                {
+                    if (!done && sc.ID == fixture.CancellableObserverHandleErrorAsync.ID)
+                    {
+                        stateChangeCount++;
+                    }
+
+                    if (fixture.CancellableObserverHandleErrorAsync.Phase is StatePhase.EXCEPTION &&
+                        fixture.CancellableObserverHandleErrorAsync.Exception?.GetType() == typeof(TimeoutException))
+                    {
+                        exception = true;
+                    }
+
+                    _output.WriteLine($"Done {fixture.CancellableObserverHandleErrorAsync.Done()}, CC {stateChangeCount} Reason {sc.Reason}, Phase {fixture.CancellableObserverHandleErrorAsync.Phase}, ID {sc.ID}, VPID {fixture.IntCommandAsync.ID}");
+
+                    if (fixture.CancellableObserverHandleErrorAsync.Done())
+                    {
+                        done = true;
+                    }
+                });
+            }
+
+            var disposable = subscribeTest();
+            fixture.ResetExceptions();
+            fixture.CancellableObserverHandleErrorAsync.ExecuteAsync(fixture.ObserveStateThrow);
+            while (!done)
+            {
+                await Task.Delay(5);
+            }
+            Assert.True(exception);
+            Assert.Equal(1, stateChangeCount);
+            Assert.Empty(fixture.Exceptions);
+            disposable.Dispose();
+        }
     }
 }

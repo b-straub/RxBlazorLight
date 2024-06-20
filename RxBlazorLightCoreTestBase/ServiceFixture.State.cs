@@ -1,5 +1,7 @@
-﻿
+﻿using System.Reactive;
+using System.Reactive.Linq;
 using RxBlazorLightCore;
+using Xunit.Abstractions;
 
 namespace RxBlazorLightCoreTestBase
 {
@@ -9,7 +11,12 @@ namespace RxBlazorLightCoreTestBase
         public Func<bool> CanChangeBelow(int upperBound) => () => IntStateResult < upperBound;
 
         public Action Reset => () => IntStateResult = 0;
-        public Func<IStateCommandAsync, Task<bool>> ResetAsync => _ => { IntStateResult = 0; return Task.FromResult(true); };
+
+        public Func<IStateCommandAsync, Task<bool>> ResetAsync => _ =>
+        {
+            IntStateResult = 0;
+            return Task.FromResult(true);
+        };
 
         public Action Increment => () => IntStateResult++;
 
@@ -50,12 +57,20 @@ namespace RxBlazorLightCoreTestBase
 
         public async Task IncrementStateAsync(IState<int> state)
         {
-            await IntCommandAsync.ExecuteAsync(async _ => { await Task.Delay(10); state.Value++; });
+            await IntCommandAsync.ExecuteAsync(async _ =>
+            {
+                await Task.Delay(10);
+                state.Value++;
+            });
         }
 
         public async Task IncrementStateAsyncC(IState<int> state)
         {
-            await IntCommandAsync.ExecuteAsync(async c => { await Task.Delay(10, c.CancellationToken); state.Value++; });
+            await IntCommandAsync.ExecuteAsync(async c =>
+            {
+                await Task.Delay(10, c.CancellationToken);
+                state.Value++;
+            });
         }
 
         public void ValueChanging(TestEnum oldValue, TestEnum newValue)
@@ -151,6 +166,65 @@ namespace RxBlazorLightCoreTestBase
 
                 await Task.Delay(5, c.CancellationToken);
             };
+        }
+
+        public IDisposable ObserveState(IStateObserverAsync observer)
+        {
+            return Observable
+                .Interval(TimeSpan.FromSeconds(1))
+                .Take(2)
+                .Subscribe(observer);
+        }
+
+        public IDisposable ObserveStateComplex(IStateObserverAsync observer, ITestOutputHelper outputHelper)
+        {
+            var startObservable = Observable
+                .Return(false)
+                .Select(_ => Observable.DeferAsync(async token =>
+                {
+                    outputHelper.WriteLine("StartFirstWork");
+                    await Task.Delay(1000, token);
+                    IntState.SetValue(10);
+                    outputHelper.WriteLine("StopFirstWork");
+                    return Observable.Timer(TimeSpan.FromSeconds(1));
+                }))
+                .Switch();
+            
+            var stopObservable = Observable
+                .Return(false)
+                .Select(_ => Observable.DeferAsync(async token =>
+                {
+                    outputHelper.WriteLine("StartLastWork");
+                    await Task.Delay(1000, token);
+                    IntState.SetValue(20);
+                    outputHelper.WriteLine("StopLastWork");
+                    return Observable.Return(0);
+                }))
+                .Switch();
+
+            long progress = 0;
+            
+            return Observable
+                .Interval(TimeSpan.FromMilliseconds(500))
+                .TakeUntil(startObservable)
+                .Concat(
+                    Observable
+                        .Interval(TimeSpan.FromMilliseconds(500))
+                        .TakeUntil(stopObservable)
+                    )
+                .Select(_ => progress++)
+                .Subscribe(observer);
+        }
+
+        public IDisposable ObserveStateThrow(IStateObserverAsync observer)
+        {
+            var error = new InvalidOperationException("ObserveStateException");
+
+            return Observable
+                .Interval(TimeSpan.FromSeconds(2))
+                .Timeout(TimeSpan.FromSeconds(1))
+                .Take(2)
+                .Subscribe(observer);
         }
     }
 }

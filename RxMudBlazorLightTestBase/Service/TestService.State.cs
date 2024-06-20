@@ -1,4 +1,5 @@
-﻿using RxBlazorLightCore;
+﻿using System.Reactive.Linq;
+using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -32,6 +33,80 @@ namespace RxMudBlazorLightTestBase.Service
                 Counter += value;
             };
         }
+
+        public Func<IStateObserverAsync, IDisposable> IncrementCounterObservable => observer =>
+        {
+            var stopObservable = Observable
+                .Return(false)
+                .Select(_ => Observable.DeferAsync(async ct =>
+                {
+                    await Task.Delay(2000, ct);
+                    Counter++;
+                    return Observable.Timer(TimeSpan.FromSeconds(1));
+                }))
+                .Switch();
+
+            return Observable
+                .Interval(TimeSpan.FromMilliseconds(100))
+                .TakeUntil(stopObservable)
+                .Select(_ => -1L)
+                .Subscribe(observer);
+        };
+        
+        public Func<IStateObserverAsync, IDisposable> IncrementCounterTimeoutObservable => observer =>
+        {
+            var stopObservable = Observable
+                .Return(false)
+                .Select(_ => Observable.DeferAsync(async ct =>
+                {
+                    await Task.Delay(2000, ct);
+                    Counter++;
+                    return Observable.Timer(TimeSpan.FromSeconds(1));
+                }))
+                .Switch();
+
+            return Observable
+                .Interval(TimeSpan.FromMilliseconds(100))
+                .TakeUntil(stopObservable)
+                .Select(i => i > 10 ? throw new TimeoutException() : -1L)
+                .Subscribe(observer);
+        };
+        
+        public Func<IStateObserverAsync, IDisposable> AddCounterObservable => observer =>
+        {
+            var startObservable = Observable
+                .Return(false)
+                .Select(_ => Observable.DeferAsync(async token =>
+                {
+                    await Task.Delay(1000, token);
+                    Counter += 10;
+                    return Observable.Timer(TimeSpan.FromSeconds(1));
+                }))
+                .Switch();
+            
+            var stopObservable = Observable
+                .Return(false)
+                .Select(_ => Observable.DeferAsync(async token =>
+                {
+                    await Task.Delay(1000, token);
+                    Counter += 10;
+                    return Observable.Return(0);
+                }))
+                .Switch();
+
+            long progress = 0;
+            
+            return Observable
+                .Interval(TimeSpan.FromMilliseconds(30))
+                .TakeUntil(startObservable)
+                .Concat(
+                    Observable
+                        .Interval(TimeSpan.FromMilliseconds(30))
+                        .TakeUntil(stopObservable)
+                )
+                .Select(_ => progress++)
+                .Subscribe(observer);
+        };
 
         private static readonly Pizza[] Pizzas =
         [

@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RxBlazorLightCore;
-using RxMudBlazorLight.Buttons;
 
 namespace RxMudBlazorLight.Dialogs
 {
-    public partial class DialogRx<T>
+    public partial class DialogAsyncORx<T>
     {
         [CascadingParameter]
-        MudDialogInstance? MudDialog { get; set; }
+        public MudDialogInstance? MudDialog { get; set; }
 
         [Parameter, EditorRequired]
         public required string Message { get; init; }
@@ -23,34 +22,39 @@ namespace RxMudBlazorLight.Dialogs
         public bool SuccessOnConfirm { get; set; } = false;
 
         [Parameter, EditorRequired]
-        public required IStateCommand StateCommand { get; init; }
+        public required IStateObserverAsync StateObserver { get; init; }
 
         [Parameter, EditorRequired]
-        public required Action ExecuteCallback { get; init; }
+        public required Func<IStateObserverAsync, IDisposable> ExecuteAsyncCallback { get; init; }
+    
+        [Parameter]
+        public string? CancelText { get; set; }
 
         [Parameter]
-        public Func<bool>? CanChangeCallback { get; init; }
+        public Color? CancelColor { get; set; }
 
-        private MudButtonRx? _buttonRef;
+        private MudButton? _buttonRef;
         private bool _closing;
 
         public static async Task<bool> Show(IDialogService dialogService,
-            IStateCommand stateCommand, Action executeCallback, string title,
-            string message, string confirmButton, string cancelButton, bool successOnConfirm,
-            Func<bool>? canChange = null)
+            IStateObserverAsync stateObserver, Func<IStateObserverAsync, IDisposable> executeAsyncCallback, string title,
+            string message, string confirmButton, string cancelButton, bool successOnConfirm, string? cancelText = null,
+            Color? cancelColor = null)
         {
             var parameters = new DialogParameters
             {
-                ["StateCommand"] = stateCommand,
-                ["ExecuteCallback"] = executeCallback,
-                ["CanChangeCallback"] = canChange,
+                ["StateObserver"] = stateObserver,
+                ["ExecuteAsyncCallback"] = executeAsyncCallback,
+                ["CancelColor"] = cancelColor,
+                ["CancelText"] = cancelText,
                 ["Message"] = message,
                 ["ConfirmButton"] = confirmButton,
                 ["CancelButton"] = cancelButton,
                 ["SuccessOnConfirm"] = successOnConfirm
             };
 
-            var dialog = dialogService.Show<DialogRx<T>>(title, parameters);
+            stateObserver.ResetException();
+            var dialog = await dialogService.ShowAsync<DialogAsyncORx<T>>(title, parameters);
 
             var res = await dialog.Result;
 
@@ -64,19 +68,12 @@ namespace RxMudBlazorLight.Dialogs
 
         private bool CanNotCancel()
         {
-            if (_buttonRef?.StateCommand is null)
-            {
-                return false;
-            }
-
-            return _buttonRef.StateCommand.Changing();
+            return StateObserver.Changing();
         }
 
         private void Cancel()
         {
-            ArgumentNullException.ThrowIfNull(_buttonRef?.StateCommand);
-
-            if (!_buttonRef.StateCommand.Changing())
+            if (!StateObserver.Changing())
             {
                 MudDialog?.Cancel();
             }
@@ -84,12 +81,12 @@ namespace RxMudBlazorLight.Dialogs
 
         protected override void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
         {
-            if (_closing || _buttonRef is null || !_buttonRef.StateCommand.Done() || StateCommand.Canceled())
+            if (_closing || _buttonRef is null || !StateObserver.Done() || StateObserver.Canceled())
             {
                 return;
             }
 
-            if (!crList.Contains(_buttonRef.StateCommand) || !_buttonRef.StateCommand.Done() || StateCommand.Canceled())
+            if (!crList.Contains(StateObserver) || StateObserver.Phase is StatePhase.EXCEPTION)
             {
                 return;
             }

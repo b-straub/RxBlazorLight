@@ -4,28 +4,36 @@
 
 <MudStack AlignItems="AlignItems.Center">
     <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
-    <TimerComponent Name="Gobal" />
+    <TimerComponent Name="Gobal"/>
     <RxBLStateScope TScope=@TimerService.TimerStateScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
-        <TimerComponent Name="TestPlayground" />
+        <TimerComponent Name="TestPlayground"/>
     </RxBLStateScope>
     <MudText id="result" Class="mb-4">Current count: @Service.Counter</MudText>
-    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() ChangingAsyncCallback=@TestService.ChangePizzaAsync />
-    <MudButtonRx id="button1" Color=" Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@Service.IncrementCounter>Increment</MudButtonRx>
+    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() ChangingAsyncCallback=@TestService.ChangePizzaAsync/>
+    <MudButtonRx id="button1" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@Service.IncrementCounter>Increment</MudButtonRx>
     <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Count State Changes {_countStateChanges}")</MudText>
-
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.AddObserver.ExecuteAsync(Service.IncrementCounterObservable))>
+        Increment Observable
+        <MudPopoverAsyncRx Header="Increment Counter" StateObserver=@Service.IncrementObserver></MudPopoverAsyncRx>
+    </MudButton>
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.AddObserver.ExecuteAsync(Service.AddCounterObservable))>
+        Add Observable
+        <MudPopoverAsyncRx Header="Add 2x10 to Counter" StateObserver=@Service.AddObserver CancelText="Cancel Add" CancelColor=@Color.Error></MudPopoverAsyncRx>
+    </MudButton>
     <MudGrid>
         @if (Service.Exceptions.Any())
-    {
-        <MudItem xs="12">
-            <MudText Typo="Typo.h5" GutterBottom="true">@GetExceptions()</MudText>
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.ResetExceptions())>Reset Exceptions</MudButton>
-        </MudItem>
-    }
+        {
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" GutterBottom="true">@GetExceptions()</MudText>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.ResetExceptions())>Reset Exceptions</MudButton>
+            </MudItem>
+        }
     </MudGrid>
 </MudStack>
 
 @code {
+
     [Inject]
     public required TimerService TimerService { get; init; }
 
@@ -43,4 +51,5 @@
     {
         return Service.Exceptions.Aggregate("", (p, n) => p + $"{n.Exception.Message} - {n.ID}, ").TrimEnd(new[] { ' ', ',' });
     }
+
 }

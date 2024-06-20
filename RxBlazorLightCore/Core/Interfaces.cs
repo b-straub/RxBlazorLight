@@ -59,17 +59,28 @@ namespace RxBlazorLightCore
     {
         public void Execute(Action executeCallback);
     }
-
-    public interface IStateCommandAsync : IStateCommand
+    
+    public interface IStateCommandBaseAsync
     {
-        public bool CanCancel { get; }
-        public CancellationToken CancellationToken { get; }
-        public Guid? ChangeCallerID { get; }
         public void NotifyChanging();
-        public Task ExecuteAsync(Func<IStateCommandAsync, Task> executeCallbackAsync, bool deferredNotification = false, Guid? changeCallerID = null);
         public void Cancel();
     }
-
+    
+    public interface IStateCommandAsync : IStateCommandBaseAsync, IStateCommand
+    {
+        public bool CanCancel { get; }
+        public Guid? ChangeCallerID { get; }
+        public CancellationToken CancellationToken { get; }
+        public Task ExecuteAsync(Func<IStateCommandAsync, Task> executeCallbackAsync, bool deferredNotification = false, Guid? changeCallerID = null);
+    }
+    
+    public interface IStateObserverAsync : IStateCommandBaseAsync, IState<long>, IObserver<long>
+    {
+        public Exception? Exception { get; }
+        public void ResetException();
+        public void ExecuteAsync(Func<IStateObserverAsync, IDisposable> executeCallbackAsync, bool deferredNotification = false);
+    }
+    
     public interface IStateGroupBase<T> : IStateInformation
     {
         public T? Value { get; }

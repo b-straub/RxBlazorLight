@@ -10,4 +10,8 @@
     <ProjectReference Include="..\RxBlazorLightCore\RxBlazorLightCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="xunit.abstractions" Version="2.0.3" />
+  </ItemGroup>
+
 </Project>

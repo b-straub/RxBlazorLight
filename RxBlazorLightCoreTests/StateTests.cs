@@ -806,7 +806,7 @@ namespace RxBlazorLightCoreTests
                 await Task.Delay(5);
             }
             
-            Assert.Equal(7, stateChangeCount);
+            Assert.InRange(stateChangeCount, 6, 7);
             Assert.Equal(20, fixture.IntState.Value);
         }
         

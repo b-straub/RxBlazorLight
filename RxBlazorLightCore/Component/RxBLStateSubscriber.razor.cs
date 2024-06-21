@@ -23,7 +23,7 @@ public partial class RxBLStateSubscriber<T> : ComponentBase
         
         Service
             .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
-            .SelectMany(crList => crList.Where(cr => Filter.Select(f => f.ID).Contains(cr.ID)))
+            .SelectMany(crList => crList.Where(cr => Filter.Length == 0 || Filter.Select(f => f.ID).Contains(cr.ID)))
             .Select(cr => Observable.FromAsync(async () =>
             {
                 await OnServiceStateHasChangedAsync(cr);

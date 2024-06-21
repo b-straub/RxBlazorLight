@@ -179,28 +179,24 @@ namespace RxBlazorLightCoreTestBase
         public IDisposable ObserveStateComplex(IStateObserverAsync observer, ITestOutputHelper outputHelper)
         {
             var startObservable = Observable
-                .Return(false)
-                .Select(_ => Observable.DeferAsync(async token =>
+                .FromAsync(async ct =>
                 {
                     outputHelper.WriteLine("StartFirstWork");
-                    await Task.Delay(1000, token);
+                    await Task.Delay(1000, ct);
                     IntState.SetValue(10);
                     outputHelper.WriteLine("StopFirstWork");
                     return Observable.Timer(TimeSpan.FromSeconds(1));
-                }))
-                .Switch();
-            
+                });
+
             var stopObservable = Observable
-                .Return(false)
-                .Select(_ => Observable.DeferAsync(async token =>
+                .FromAsync(async ct =>
                 {
                     outputHelper.WriteLine("StartLastWork");
-                    await Task.Delay(1000, token);
+                    await Task.Delay(1000, ct);
                     IntState.SetValue(20);
                     outputHelper.WriteLine("StopLastWork");
                     return Observable.Return(0);
-                }))
-                .Switch();
+                });
 
             long progress = 0;
             
@@ -216,10 +212,8 @@ namespace RxBlazorLightCoreTestBase
                 .Subscribe(observer);
         }
 
-        public IDisposable ObserveStateThrow(IStateObserverAsync observer)
+        public static IDisposable ObserveStateThrow(IStateObserverAsync observer)
         {
-            var error = new InvalidOperationException("ObserveStateException");
-
             return Observable
                 .Interval(TimeSpan.FromSeconds(2))
                 .Timeout(TimeSpan.FromSeconds(1))

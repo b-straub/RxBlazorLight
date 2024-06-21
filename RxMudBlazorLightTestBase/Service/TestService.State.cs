@@ -1,4 +1,5 @@
-﻿using System.Reactive.Linq;
+﻿using System.Reactive;
+using System.Reactive.Linq;
 using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
@@ -9,10 +10,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Action IncrementCounter => () => Counter++;
 
-        public static Action IncrementCounterIndirect(int value, Action<int> setter) => () =>
-        {
-            setter(++value);
-        };
+        public static Action IncrementCounterIndirect(int value, Action<int> setter) => () => { setter(++value); };
 
         public Func<IStateCommandAsync, Task> IncrementCounterAsync => async _ =>
         {
@@ -20,10 +18,7 @@ namespace RxMudBlazorLightTestBase.Service
             Counter++;
         };
 
-        public Action AddToCounter(int value) => () =>
-        {
-            Counter += value;
-        };
+        public Action AddToCounter(int value) => () => { Counter += value; };
 
         public Func<IStateCommandAsync, Task> AddToCounterAsync(int value)
         {
@@ -37,14 +32,12 @@ namespace RxMudBlazorLightTestBase.Service
         public Func<IStateObserverAsync, IDisposable> IncrementCounterObservable => observer =>
         {
             var stopObservable = Observable
-                .Return(false)
-                .Select(_ => Observable.DeferAsync(async ct =>
+                .FromAsync(async ct =>
                 {
                     await Task.Delay(2000, ct);
                     Counter++;
                     return Observable.Timer(TimeSpan.FromSeconds(1));
-                }))
-                .Switch();
+                });
 
             return Observable
                 .Interval(TimeSpan.FromMilliseconds(100))
@@ -52,18 +45,16 @@ namespace RxMudBlazorLightTestBase.Service
                 .Select(_ => -1L)
                 .Subscribe(observer);
         };
-        
+
         public Func<IStateObserverAsync, IDisposable> IncrementCounterTimeoutObservable => observer =>
         {
             var stopObservable = Observable
-                .Return(false)
-                .Select(_ => Observable.DeferAsync(async ct =>
+                .FromAsync(async ct =>
                 {
                     await Task.Delay(2000, ct);
                     Counter++;
                     return Observable.Timer(TimeSpan.FromSeconds(1));
-                }))
-                .Switch();
+                });
 
             return Observable
                 .Interval(TimeSpan.FromMilliseconds(100))
@@ -71,38 +62,48 @@ namespace RxMudBlazorLightTestBase.Service
                 .Select(i => i > 10 ? throw new TimeoutException() : -1L)
                 .Subscribe(observer);
         };
-        
+
         public Func<IStateObserverAsync, IDisposable> AddCounterObservable => observer =>
         {
             var startObservable = Observable
-                .Return(false)
-                .Select(_ => Observable.DeferAsync(async token =>
+                .FromAsync(async ct =>
                 {
-                    await Task.Delay(1000, token);
+                    await Task.Delay(1000, ct);
                     Counter += 10;
-                    return Observable.Timer(TimeSpan.FromSeconds(1));
-                }))
-                .Switch();
-            
+                    return Observable.Return(Unit.Default);
+                });
+
             var stopObservable = Observable
-                .Return(false)
-                .Select(_ => Observable.DeferAsync(async token =>
+                .FromAsync(async ct =>
                 {
-                    await Task.Delay(1000, token);
+                    await Task.Delay(1000, ct);
                     Counter += 10;
-                    return Observable.Return(0);
-                }))
-                .Switch();
+                    return Observable.Return(Unit.Default);
+                });
+            
+            var triggerObservable = Observable
+                .Interval(TimeSpan.FromMilliseconds(100))
+                .Select(i =>
+                {
+                    Console.WriteLine($"Interval: {i}");
+                    return i;
+                })
+                .TakeUntil(i => i > 2000);
 
             long progress = 0;
-            
+
             return Observable
-                .Interval(TimeSpan.FromMilliseconds(30))
+                .Interval(TimeSpan.FromMilliseconds(40))
                 .TakeUntil(startObservable)
                 .Concat(
                     Observable
-                        .Interval(TimeSpan.FromMilliseconds(30))
-                        .TakeUntil(stopObservable)
+                        .Interval(TimeSpan.FromMilliseconds(40))
+                        .TakeUntil(triggerObservable)
+                        .Concat(
+                            Observable
+                                .Interval(TimeSpan.FromMilliseconds(40))
+                                .TakeUntil(stopObservable)
+                        )
                 )
                 .Select(_ => progress++)
                 .Subscribe(observer);
@@ -151,10 +152,10 @@ namespace RxMudBlazorLightTestBase.Service
         }
 
         public static Func<Pizza, Pizza, Task> ChangePizzaAsync => async (o, n) =>
-            {
-                await Task.Delay(1000);
-                Console.WriteLine($"{o}, {n}");
-            };
+        {
+            await Task.Delay(1000);
+            Console.WriteLine($"{o}, {n}");
+        };
 
         public static Action<Pizza, Pizza> ChangePizza(string value)
         {

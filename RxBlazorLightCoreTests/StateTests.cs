@@ -806,7 +806,7 @@ namespace RxBlazorLightCoreTests
                 await Task.Delay(5);
             }
             
-            Assert.InRange(stateChangeCount, 6, 7);
+            Assert.InRange(stateChangeCount, 4, 5);
             Assert.Equal(20, fixture.IntState.Value);
         }
         
@@ -883,7 +883,7 @@ namespace RxBlazorLightCoreTests
 
             var disposable = subscribeTest();
             fixture.ResetExceptions();
-            fixture.CancellableObserverAsync.ExecuteAsync(fixture.ObserveStateThrow);
+            fixture.CancellableObserverAsync.ExecuteAsync(ServiceFixture.ObserveStateThrow);
             while (!done)
             {
                 await Task.Delay(5);
@@ -931,7 +931,7 @@ namespace RxBlazorLightCoreTests
 
             var disposable = subscribeTest();
             fixture.ResetExceptions();
-            fixture.CancellableObserverHandleErrorAsync.ExecuteAsync(fixture.ObserveStateThrow);
+            fixture.CancellableObserverHandleErrorAsync.ExecuteAsync(ServiceFixture.ObserveStateThrow);
             while (!done)
             {
                 await Task.Delay(5);

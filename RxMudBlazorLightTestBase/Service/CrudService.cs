@@ -58,7 +58,7 @@ namespace RxMudBlazorLightTestBase.Service
 
     public class CrudService : RxBLService
     {
-        public sealed partial class CrudItemInput(CrudService service, CRUDToDoItem? item)
+        public sealed class CrudItemInput(CrudService service, CRUDToDoItem? item)
         {
             public IState<string> Text { get; } = service.CreateState(item is null ? string.Empty : item.Text);
             public IState<DateTime> DueDateDate { get; } = service.CreateState(item is null ? DateTime.Now.Date : item.DueDate.Date);

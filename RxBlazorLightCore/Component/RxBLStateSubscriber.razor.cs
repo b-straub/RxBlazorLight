@@ -23,6 +23,7 @@ public partial class RxBLStateSubscriber<T> : ComponentBase
         
         Service
             .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Count > 0)
             .SelectMany(crList => crList.Where(cr => Filter.Length == 0 || Filter.Select(f => f.ID).Contains(cr.ID)))
             .Select(cr => Observable.FromAsync(async () =>
             {

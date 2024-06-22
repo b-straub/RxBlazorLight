@@ -16,6 +16,7 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
         base.OnInitialized();
         Service
             .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Count > 0)
             .Select(crList => Observable.FromAsync(async () =>
             {
                 await OnServiceStateHasChangedAsync(crList);
@@ -65,6 +66,7 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
         base.OnInitialized();
         Observable.Merge(Service1, Service2)
             .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Count > 0)
             .Select(crList => Observable.FromAsync(async () =>
             {
                 await OnServiceStateHasChangedAsync(crList);
@@ -121,6 +123,7 @@ public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLS
         base.OnInitialized();
         Observable.Merge(Service1, Service2, Service3)
             .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Count > 0)
             .Select(crList => Observable.FromAsync(async () =>
             {
                 await OnServiceStateHasChangedAsync(crList);

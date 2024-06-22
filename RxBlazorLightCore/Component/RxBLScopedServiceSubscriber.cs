@@ -13,6 +13,7 @@ public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : I
         base.OnInitialized();
         Service
             .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Count > 0)
             .Select(crList => Observable.FromAsync(async () =>
             {
                 await OnServiceStateHasChangedAsync(crList);

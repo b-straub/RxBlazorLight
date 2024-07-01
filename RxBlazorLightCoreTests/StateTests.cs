@@ -744,7 +744,7 @@ namespace RxBlazorLightCoreTests
         }
         
         [Fact]
-        public async void TestStateObserverCancel()
+        public async Task TestStateObserverCancel()
         {
             ServiceFixture fixture = new();
             var stateChangeCount = 0;
@@ -811,7 +811,7 @@ namespace RxBlazorLightCoreTests
         }
         
         [Fact]
-        public async void TestStateObserverComplexCancel()
+        public async Task TestStateObserverComplexCancel()
         {
             ServiceFixture fixture = new();
             var stateChangeCount = 0;
@@ -847,7 +847,7 @@ namespace RxBlazorLightCoreTests
         }
         
         [Fact]
-        public async void TestStateObserverThrow()
+        public async Task TestStateObserverThrow()
         {
             ServiceFixture fixture = new();
             var stateChangeCount = 0;
@@ -895,14 +895,27 @@ namespace RxBlazorLightCoreTests
         }
         
         [Fact]
-        public async void TestStateObserverHandleErrorThrow()
+        public async Task TestStateObserverHandleErrorThrow()
         {
             ServiceFixture fixture = new();
             var stateChangeCount = 0;
             bool exception = false;
             bool done = false;
 
-            IDisposable subscribeTest()
+            var disposable = SubscribeTest();
+            fixture.ResetExceptions();
+            fixture.CancellableObserverHandleErrorAsync.ExecuteAsync(ServiceFixture.ObserveStateThrow);
+            while (!done)
+            {
+                await Task.Delay(5);
+            }
+            Assert.True(exception);
+            Assert.Equal(1, stateChangeCount);
+            Assert.Empty(fixture.Exceptions);
+            disposable.Dispose();
+            return;
+
+            IDisposable SubscribeTest()
             {
                 done = false;
                 stateChangeCount = 0;
@@ -928,18 +941,6 @@ namespace RxBlazorLightCoreTests
                     }
                 });
             }
-
-            var disposable = subscribeTest();
-            fixture.ResetExceptions();
-            fixture.CancellableObserverHandleErrorAsync.ExecuteAsync(ServiceFixture.ObserveStateThrow);
-            while (!done)
-            {
-                await Task.Delay(5);
-            }
-            Assert.True(exception);
-            Assert.Equal(1, stateChangeCount);
-            Assert.Empty(fixture.Exceptions);
-            disposable.Dispose();
         }
     }
 }

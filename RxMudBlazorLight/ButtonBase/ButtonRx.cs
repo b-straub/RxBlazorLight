@@ -9,7 +9,6 @@ namespace RxMudBlazorLight.ButtonBase
     internal class ButtonRx : ButtonBaseRx
     {
         public EventCallback<MouseEventArgs>? OnClick { get; private set; }
-        public EventCallback<TouchEventArgs>? OnTouch { get; private set; }
 
         private readonly Func<Task<bool>>? _confirmExecutionAsync;
 
@@ -27,7 +26,6 @@ namespace RxMudBlazorLight.ButtonBase
         }
 
         [MemberNotNull(nameof(OnClick))]
-        [MemberNotNull(nameof(OnTouch))]
         public void SetParameter(IStateCommand stateCommand, Action executeCallback, Func<bool>? canChangeCallback)
         {
             VerifyButtonParameters();
@@ -38,7 +36,6 @@ namespace RxMudBlazorLight.ButtonBase
             }
 
             OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteStateCommand(stateCommand, executeCallback));
-            OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () => ExecuteStateCommand(stateCommand, executeCallback));
             Disabled = stateCommand.Disabled || (canChangeCallback is not null && !canChangeCallback());
         }
 
@@ -51,7 +48,6 @@ namespace RxMudBlazorLight.ButtonBase
         }
 
         [MemberNotNull(nameof(OnClick))]
-        [MemberNotNull(nameof(OnTouch))]
         public void SetParameter(IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeAsyncCallback, Func<bool>? canChangeCallback, bool deferredNotification)
         {
             VerifyButtonParametersAsync(stateCommand);
@@ -70,7 +66,6 @@ namespace RxMudBlazorLight.ButtonBase
                         }
 
                         OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, stateCommand.Cancel);
-                        OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, stateCommand.Cancel);
 
                         if (_buttonType is MBButtonType.ICON)
                         {
@@ -107,14 +102,11 @@ namespace RxMudBlazorLight.ButtonBase
 
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () =>
                         ExecuteStateCommandAsync(stateCommand, executeAsyncCallback, deferredNotification));
-                OnTouch = EventCallback.Factory.Create<TouchEventArgs>(this, () =>
-                        ExecuteStateCommandAsync(stateCommand, executeAsyncCallback, deferredNotification));
-
+               
                 Disabled = stateCommand.Disabled || (canChangeCallback is not null && !canChangeCallback());
             }
 
             OnClick ??= EventCallback.Factory.Create<MouseEventArgs>(this, _ => { });
-            OnTouch ??= EventCallback.Factory.Create<TouchEventArgs>(this, _ => { });
         }
 
         private async Task ExecuteStateCommandAsync(IStateCommandAsync stateCommand, Func<IStateCommandAsync, Task> executeAsyncCallback, bool deferredNotification)

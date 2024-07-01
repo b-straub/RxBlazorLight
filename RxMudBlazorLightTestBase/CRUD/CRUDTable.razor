@@ -86,7 +86,7 @@
 
     private static string ColorForItem(CRUDToDoItem item)
     {
-        return item.Completed ? $"color:{Colors.Grey.Default}" : "color:black";
+        return item.Completed ? $"color:{Colors.Gray.Default}" : "color:black";
     }
 
     private static string DateTimeForItem(CRUDToDoItem item)
@@ -121,15 +121,9 @@
         };
 
         var parameters = new DialogParameters { ["Message"] = message };
-        var dialog = DialogService.Show<ConfirmDialog>("ToDoItem", parameters);
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("ToDoItem", parameters);
 
         var res = await dialog.Result;
-
-        if (res.Canceled)
-        {
-            return false;
-        }
-
-        return true;
+        return res.OK();
     }
 }

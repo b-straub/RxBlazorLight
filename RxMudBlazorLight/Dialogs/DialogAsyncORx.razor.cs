@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RxBlazorLightCore;
+using RxMudBlazorLight.Extensions;
 
 namespace RxMudBlazorLight.Dialogs
 {
@@ -57,13 +58,7 @@ namespace RxMudBlazorLight.Dialogs
             var dialog = await dialogService.ShowAsync<DialogAsyncORx<T>>(title, parameters);
 
             var res = await dialog.Result;
-
-            if (res.Canceled)
-            {
-                return false;
-            }
-
-            return true;
+            return res.OK();
         }
 
         private bool CanNotCancel()

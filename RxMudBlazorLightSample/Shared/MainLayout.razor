@@ -3,6 +3,7 @@
 
 <MudThemeProvider @bind-IsDarkMode=@(Service.DarkMode.Value) Theme="_theme" />
 <MudDialogProvider />
+<MudPopoverProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
@@ -10,8 +11,8 @@
         <MudAppBar Elevation="0">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
             <MudSpacer />
-            <MudToggleIconButtonRx State=@Service.DarkMode Icon="@Icons.Material.Filled.LightMode" Color="@Color.Warning" Title="Light Mode"
-              ToggledIcon="@Icons.Material.Filled.DarkMode" ToggledTitle="Dark Mode" />
+            <MudToggleIconButtonRx State=@Service.DarkMode Icon="@Icons.Material.Filled.LightMode" Color="@Color.Warning"
+              ToggledIcon="@Icons.Material.Filled.DarkMode" title=@(Service.DarkMode.Value ? "Dark Mode" : "Light Mode") />
             <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/b-straub/RxMudBlazorLight/" Target="_blank" />
         </MudAppBar>
         <MudDrawer @bind-Open="_drawerOpen" Elevation="1">

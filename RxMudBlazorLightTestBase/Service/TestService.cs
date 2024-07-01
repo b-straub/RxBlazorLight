@@ -107,21 +107,18 @@ namespace RxMudBlazorLightTestBase.Service
                 new(ColorEnum.BLUE)
             ];
 
-            public IStateGroupAsync<TestColor> TestColors = service.CreateStateGroupAsync(Colors, Colors[0]);
+            public readonly IStateGroupAsync<TestColor> TestColors = service.CreateStateGroupAsync(Colors, Colors[0]);
 
-            public Func<TestColor, Task> ChangeTestColorAsync(int context)
+            public Func<TestColor, TestColor, Task> ChangeTestColorAsync(int context)
             {
-                return async _ =>
+                return async (_, _) =>
                 {
                     await Task.Delay(1000);
                     await TestColors.ChangeValueAsync(Colors[context]);
                 };
             }
 
-            public static Func<bool> CanChangeTestColor(int context) => () =>
-            {
-                return context != 1;
-            };
+            public static Func<bool> CanChangeTestColor(int context) => () => context != 1;
         }
 
         public int Counter { get; set; }

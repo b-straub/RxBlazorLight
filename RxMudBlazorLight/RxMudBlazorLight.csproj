@@ -1,53 +1,57 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-	<PropertyGroup>
-		<Title>RxMudBlazorLight</Title>
-		<Description>A simple reactive wrapper around MudBlazor components.</Description>
-		<Authors>Bernhard Straub</Authors>
-		<Copyright>Bernhard Straub</Copyright>
-		<PackageProjectUrl>https://github.com/b-straub/RxMudBlazorLight</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/b-straub/RxMudBlazorLight</RepositoryUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<RepositoryType>git</RepositoryType>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageOutputPath>..\Nuget</PackageOutputPath>
-		<PackageVersion>0.9.2</PackageVersion>
-	</PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <MudIllegalParameters>V7CaseSensitive</MudIllegalParameters>
+        <MudAllowedAttributePattern>LowerCase</MudAllowedAttributePattern>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="..\README.md" Pack="true" PackagePath="\" />
-	</ItemGroup>
-	
-	<ItemGroup>
-		<SupportedPlatform Include="browser" />
-	</ItemGroup>
+    <PropertyGroup>
+        <Title>RxMudBlazorLight</Title>
+        <Description>A simple reactive wrapper around MudBlazor components.</Description>
+        <Authors>Bernhard Straub</Authors>
+        <Copyright>Bernhard Straub</Copyright>
+        <PackageProjectUrl>https://github.com/b-straub/RxMudBlazorLight</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/b-straub/RxMudBlazorLight</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageOutputPath>..\Nuget</PackageOutputPath>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.2" />
-		<PackageReference Include="MudBlazor" Version="6.16.0" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\RxBlazorLightCore\RxBlazorLightCore.csproj" PrivateAssets="All" Pack="false" />
-	</ItemGroup>
+    <ItemGroup>
+        <SupportedPlatform Include="browser"/>
+    </ItemGroup>
 
-	<PropertyGroup>
-		<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddCoreToOutput</TargetsForTfmSpecificContentInPackage>
-	</PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6"/>
+        <PackageReference Include="MudBlazor" Version="7.0.0"/>
+    </ItemGroup>
 
-	<Target Name="_AddCoreToOutput">
-		<ItemGroup>
-			<TfmSpecificPackageFile Include="$(OutputPath)\RxBlazorLightCore.dll" PackagePath="lib\$(TargetFramework)" />
-		</ItemGroup>
-	</Target>
+    <ItemGroup>
+        <ProjectReference Include="..\RxBlazorLightCore\RxBlazorLightCore.csproj" PrivateAssets="All" Pack="false"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddCoreToOutput</TargetsForTfmSpecificContentInPackage>
+    </PropertyGroup>
+
+    <Target Name="_AddCoreToOutput">
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(OutputPath)\RxBlazorLightCore.dll" PackagePath="lib\$(TargetFramework)"/>
+        </ItemGroup>
+    </Target>
 
 </Project>

@@ -30,7 +30,6 @@
         _buttonRx.SetParameter(StateCommand, ExecuteAsyncCallback, CanChangeCallback, false);
 
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
-        OnTouch = (EventCallback<TouchEventArgs>)_buttonRx.OnTouch;
         Disabled = _buttonRx.Disabled;
 
         base.OnParametersSet();

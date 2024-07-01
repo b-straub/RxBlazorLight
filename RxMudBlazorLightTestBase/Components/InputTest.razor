@@ -11,7 +11,7 @@
 
     <MudText Class="mb-4">Current count: @Service.Counter</MudText>
 
-    <MudImage @bind-Src=@_imageSrc Height="50" />
+    <MudImage @bind-src=@_imageSrc Height="50" />
 
     <MudRadioGroupRx StateGroup=@Service.GetRadio() ChangingCallback=@TestService.ChangeTestColor ItemDisabledCallback=@Service.ColorDisabled DenseCallback=@DenseCallback ColorCallback=@ColorCallback SizeCallback=@(_ => Size.Large) PlacementCallback=@(_ => Placement.Start) />
     <MudSelectRx StateGroup=@Service.GetRadio() ChangingCallback=@TestService.ChangeTestColor ItemDisabledCallback=@Service.ColorDisabled HideDisabled=@true />
@@ -39,8 +39,8 @@
     <MudRatingRx State=@Service.RatingValue />
     <MudSwitchRx State=@Service.CanIncrementCheck Label="Allow Increment" />
     <MudCheckBoxRx State=@Service.CanIncrementCheck Label="Allow Increment" />
-    <MudToggleIconButtonRx State=@Service.CanIncrementCheck Icon="@Icons.Material.Outlined.Circle" Color="@Color.Error" Title="Off"
-              ToggledIcon="@Icons.Material.Outlined.CheckCircle" ToggledColor="@Color.Success" ToggledTitle="On" />
+    <MudToggleIconButtonRx State=@Service.CanIncrementCheck Icon="@Icons.Material.Outlined.Circle" Color="@Color.Error"
+              ToggledIcon="@Icons.Material.Outlined.CheckCircle" ToggledColor="@Color.Success" title=@(Service.CanIncrementCheck.Value ? "On" : "Off") />
     <span>CanIncrementCheck is @(Service.CanIncrementCheck.Value ? "On" : "Off")</span>
     <MudNumericFieldRx State=@Service.NumericState Label="" Variant="Variant.Text" Min="0" Max="50" />
     <MudSliderRx State=@Service.NumericState Variant="Variant.Text" Min="0" Max="50" Immediate=@false CanChangeCallback=@(() => Service.NumericState.Value < 20)>IncrementValue</MudSliderRx>
@@ -118,7 +118,7 @@
     }
 
 
-    private string[] states =
+    private string[] _states =
     {
         "Alabama", "Alaska", "American Samoa", "Arizona",
         "Arkansas", "California", "Colorado", "Connecticut",
@@ -136,15 +136,15 @@
         "Washington", "West Virginia", "Wisconsin", "Wyoming",
     };
 
-    private async Task<IEnumerable<string>> Search(string value)
+    private async Task<IEnumerable<string>> Search(string value, CancellationToken ct)
     {
         // In real life use an asynchronous function for fetching data from an api.
-        await Task.Delay(5);
+        await Task.Delay(5, ct);
 
         // if text is null or empty, show complete list
         if (string.IsNullOrEmpty(value))
-            return states;
-        return states.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+            return _states;
+        return _states.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
 
     private string GetExceptions()

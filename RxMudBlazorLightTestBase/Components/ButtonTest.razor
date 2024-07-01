@@ -28,13 +28,13 @@
             <MudMenu Label="Counter Menu">
                 <MudMenuItemRx StateCommand=@Service.Command ExecuteCallback=@Service.IncrementCounter ConfirmExecutionAsync=@(() => ConfirmExecution())>Increment</MudMenuItemRx>
                 <MudMenuItemRx StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(5))>Add 5</MudMenuItemRx>
-                <MudMenuItem OnAction=@(() => Service.AddObserver.ExecuteAsync(Service.AddCounterObservable))>Add 2x10 to Counter</MudMenuItem>
-                <MudMenuItem OnAction=@(() => Service.IncrementObserver.ExecuteAsync(Service.IncrementCounterTimeoutObservable))>Increment Counter Timeout</MudMenuItem>
-                <MudMenuItem OnAction=@(() => ObservableDialogClick(Service.IncrementCounterObservable))>Dialog Increment Counter</MudMenuItem>
-                <MudMenuItem OnAction=@(() => ObservableDialogClick(Service.IncrementCounterTimeoutObservable))>Dialog Increment Counter Timeout</MudMenuItem>
+                <MudMenuItem OnClick=@(() => Service.AddObserver.ExecuteAsync(Service.AddCounterObservable))>Add 2x10 to Counter</MudMenuItem>
+                <MudMenuItem OnClick=@(() => Service.IncrementObserver.ExecuteAsync(Service.IncrementCounterTimeoutObservable))>Increment Counter Timeout</MudMenuItem>
+                <MudMenuItem OnClick=@(() => ObservableDialogClick(Service.IncrementCounterObservable))>Dialog Increment Counter</MudMenuItem>
+                <MudMenuItem OnClick=@(() => ObservableDialogClick(Service.IncrementCounterTimeoutObservable))>Dialog Increment Counter Timeout</MudMenuItem>
                 <MudMenuItemAsyncRx StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync>IncrementAsync</MudMenuItemAsyncRx>
-                <MudMenuItem OnAction=@(() => CmdDialogClick())>Dialog IncrementAsync</MudMenuItem>
-                <MudMenuItem OnAction=@(() => CmdDialogClick(2))>Dialog AddAsync 2</MudMenuItem>
+                <MudMenuItem OnClick=@(() => CmdDialogClick())>Dialog IncrementAsync</MudMenuItem>
+                <MudMenuItem OnClick=@(() => CmdDialogClick(2))>Dialog AddAsync 2</MudMenuItem>
             </MudMenu>
             <MudPopoverAsyncRx Header="Add 2x10 to Counter" StateObserver=@Service.AddObserver CancelText="Cancel Add" CancelColor=@Color.Error
                                AnchorOrigin=@Origin.BottomCenter TransformOrigin=@Origin.TopCenter>
@@ -113,8 +113,7 @@
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Counter", parameters);
 
         var res = await dialog.Result;
-
-        return !res.Canceled;
+        return res.OK();
     }
 
     private async Task DoPrepareAddAsync(IStateCommandAsync c)
@@ -132,7 +131,7 @@
 
         var res = await dialog.Result;
 
-        if (!res.Canceled)
+        if (res is not null && !res.Canceled)
         {
             c.NotifyChanging();
             await Task.Delay(4000, c.CancellationToken);

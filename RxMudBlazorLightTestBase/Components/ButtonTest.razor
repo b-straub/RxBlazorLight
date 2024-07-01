@@ -131,7 +131,7 @@
 
         var res = await dialog.Result;
 
-        if (res is not null && !res.Canceled)
+        if (res.OK())
         {
             c.NotifyChanging();
             await Task.Delay(4000, c.CancellationToken);

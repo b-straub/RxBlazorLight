@@ -25,7 +25,7 @@ else
         var dialog = await DialogService.ShowAsync<CRUDItemDialog>(AddMode ? "Add ToDo" : "Edit ToDo", parameters);
         var result = await dialog.Result;
 
-        if (result is not null && !result.Canceled)
+        if (result.OK())
         {
             var scope = (CrudService.CrudItemInput?)result.Data;
             if (scope is not null)

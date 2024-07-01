@@ -9,5 +9,17 @@ namespace RxMudBlazorLight.Extensions
         {
             return result is not null && !result.Canceled;
         }
+        
+        public static bool TryGet<T>(this DialogResult? result, [NotNullWhen(true)] out T? data)
+        {
+            data = default;
+            
+            if (result is not null && !result.Canceled)
+            {
+                data = (T?)result.Data;
+            }
+
+            return data is not null;
+        }
     }
 }

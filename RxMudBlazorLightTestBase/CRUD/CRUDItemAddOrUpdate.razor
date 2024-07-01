@@ -25,13 +25,9 @@ else
         var dialog = await DialogService.ShowAsync<CRUDItemDialog>(AddMode ? "Add ToDo" : "Edit ToDo", parameters);
         var result = await dialog.Result;
 
-        if (result.OK())
+        if (result.TryGet<CrudService.CrudItemInput>(out var scope))
         {
-            var scope = (CrudService.CrudItemInput?)result.Data;
-            if (scope is not null)
-            {
-                await scope.SubmitAsync();
-            }
+            await scope.SubmitAsync();
         }
     }
 }

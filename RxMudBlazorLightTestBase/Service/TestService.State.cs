@@ -133,6 +133,17 @@ namespace RxMudBlazorLightTestBase.Service
         {
             return !Command.Changing() && !CommandAsync.Changing();
         }
+        
+        public Func<IStateCommandAsync, Task> ToggleAddModeDelayedAsync => async _ =>
+        {
+            await Task.Delay(1000);
+            Observable.Interval(TimeSpan.FromMilliseconds(1000))
+                .Take(1)
+                .Subscribe(_ =>
+                {
+                    AddMode.Value = !AddMode.Value;
+                });
+        };
 
         public bool IncrementStateCanChangeCheck()
         {

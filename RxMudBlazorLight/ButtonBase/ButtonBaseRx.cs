@@ -170,18 +170,23 @@ namespace RxMudBlazorLight.ButtonBase
             return (startIcon, endIcon, label);
         }
 
-        public string GetIconButtonParameters(IStateCommandAsync stateCommand, string icon, MBIconVariant? iconVariant)
+        public void SetButtonIcon(string icon)
         {
+            _buttonIcon = icon;
+        }
+        
+        public string GetIconButtonParameters(IStateCommandAsync stateCommand, MBIconVariant? iconVariant)
+        {
+            ArgumentNullException.ThrowIfNull(_buttonIcon);
+            var icon = _buttonIcon;
+            
             if (_iconForState is IconForState.None)
             {
                 _iconForState = IconForState.Start;
-                _buttonIcon = icon;
             }
 
             if (!stateCommand.Changing() || stateCommand.ChangeCallerID != _id)
             {
-                ArgumentNullException.ThrowIfNull(_buttonIcon);
-                icon = _buttonIcon;
                 _iconForState = IconForState.None;
             }
             else

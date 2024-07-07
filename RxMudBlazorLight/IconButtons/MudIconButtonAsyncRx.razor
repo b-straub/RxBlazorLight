@@ -44,9 +44,15 @@
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
         ArgumentNullException.ThrowIfNull(Icon);
+
+        if (!StateCommand.Changing())
+        {
+            _buttonRx.SetButtonIcon(Icon);
+        }
+        
         _buttonRx.SetParameter(StateCommand, ExecuteAsyncCallback, CanChangeCallback, DeferredNotification);
 
-        Icon = _buttonRx.GetIconButtonParameters(StateCommand, Icon, IconVariant);
+        Icon = _buttonRx.GetIconButtonParameters(StateCommand, IconVariant);
         Color = _buttonRx.Color;
         OnClick = (EventCallback<MouseEventArgs>)_buttonRx.OnClick;
         Disabled = _buttonRx.Disabled;

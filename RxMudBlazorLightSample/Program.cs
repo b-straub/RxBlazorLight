@@ -11,8 +11,10 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-builder.Services.AddMudServices();
-
+builder.Services.AddMudServices(options =>
+{
+    options.PopoverOptions.ThrowOnDuplicateProvider = false;
+});
 builder.Services.AddSingleton(sp => new TestService(sp));
 builder.Services.AddSingleton<TimerService>();
 builder.Services.AddScoped<StateService>();

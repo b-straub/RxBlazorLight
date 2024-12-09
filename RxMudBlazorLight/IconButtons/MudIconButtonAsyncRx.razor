@@ -19,7 +19,7 @@
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
     [Parameter]
-    public MBIconVariant? IconVariant { get; set; }
+    public MbIconVariant? IconVariant { get; set; }
 
     [Parameter]
     public Color? CancelColor { get; set; }
@@ -35,7 +35,7 @@
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx.Create(MBButtonType.ICON, ConfirmExecutionAsync, Color, null, HasProgress, null, CancelColor);
+        _buttonRx = ButtonRx.Create(MbButtonType.ICON, ConfirmExecutionAsync, Color, null, HasProgress, null, CancelColor);
 
         base.OnInitialized();
     }
@@ -44,12 +44,8 @@
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
         ArgumentNullException.ThrowIfNull(Icon);
-
-        if (!StateCommand.Changing())
-        {
-            _buttonRx.SetButtonIcon(Icon);
-        }
         
+        _buttonRx.SetButtonIcon(StateCommand, Icon);
         _buttonRx.SetParameter(StateCommand, ExecuteAsyncCallback, CanChangeCallback, DeferredNotification);
 
         Icon = _buttonRx.GetIconButtonParameters(StateCommand, IconVariant);

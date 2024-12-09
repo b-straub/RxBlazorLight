@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System.Reactive.Linq;
+using R3;
 
+// ReSharper disable once CheckNamespace -> use same namespace for all components
 namespace RxBlazorLightCore;
 
 public partial class RxBLStateSubscriber<T> : ComponentBase
@@ -21,25 +22,28 @@ public partial class RxBLStateSubscriber<T> : ComponentBase
     {
         base.OnInitialized();
         
-        Service
-            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Count > 0)
-            .SelectMany(crList => crList.Where(cr => Filter.Length == 0 || Filter.Select(f => f.ID).Contains(cr.ID)))
-            .Select(cr => Observable.FromAsync(async () =>
+        Service.AsObservable
+            .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Length > 0)
+            .SubscribeAwait(async (crList, ct) =>
             {
-                await OnServiceStateHasChangedAsync(cr);
-                OnServiceStateHasChanged(cr);
-                await InvokeAsync(StateHasChanged);
-            }))
-            .Concat()
-            .Subscribe();
+                foreach (var cr in crList)
+                {
+                    if (Filter.Length == 0 || Filter.Select(f => f.ID).Contains(cr.ID))
+                    {
+                        await OnServiceStateHasChangedAsync(cr, ct);
+                        OnServiceStateHasChanged(cr);
+                        await InvokeAsync(StateHasChanged);
+                    }
+                }
+            });
     }
 
     protected virtual void OnServiceStateHasChanged(ServiceChangeReason cr)
     {
     }
     
-    protected virtual Task OnServiceStateHasChangedAsync(ServiceChangeReason cr)
+    protected virtual Task OnServiceStateHasChangedAsync(ServiceChangeReason cr, CancellationToken ct)
     {
         return Task.CompletedTask;
     }

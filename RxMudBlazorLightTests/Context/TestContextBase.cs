@@ -1,6 +1,5 @@
 ﻿
 using MudBlazor.Services;
-using RxBlazorLightCore;
 using RxMudBlazorLightTestBase.Service;
 
 namespace RxMudBlazorLightTests.Context
@@ -11,7 +10,7 @@ namespace RxMudBlazorLightTests.Context
         {
             Services.AddMudServices();
 
-            Services.AddSingleton(sp => new TestService(sp));
+            Services.AddSingleton<TestService>();
             Services.AddSingleton<TimerService>();
 
             JSInterop.Mode = JSRuntimeMode.Loose;

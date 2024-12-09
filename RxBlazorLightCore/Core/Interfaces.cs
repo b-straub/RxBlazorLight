@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
+using R3;
 
+// ReSharper disable once CheckNamespace -> use same namespace for interface
 namespace RxBlazorLightCore
 {
     public enum ChangeReason
@@ -18,8 +19,10 @@ namespace RxBlazorLightCore
         public ValueTask OnContextReadyAsync();
     }
 
-    public interface IRxBLService : IObservable<ServiceChangeReason>, IObserver<Unit>, IStateInformation, IDisposable
+    public interface IRxBLService : IStateInformation, IDisposable
     {
+        public Observable<ServiceChangeReason> AsObservable { get; }
+        public Observer<Unit> AsObserver { get; }
         public ValueTask OnContextReadyAsync();
         public bool Initialized { get; }
         public IEnumerable<ServiceException> Exceptions { get; }
@@ -74,11 +77,15 @@ namespace RxBlazorLightCore
         public Task ExecuteAsync(Func<IStateCommandAsync, Task> executeCallbackAsync, bool deferredNotification = false, Guid? changeCallerID = null);
     }
     
-    public interface IStateObserverAsync : IStateCommandBaseAsync, IState<long>, IObserver<long>
+    public interface IStateProgressObserverAsync : IStateCommandBaseAsync, IState<double>
     {
+        public const double InterminateValue = -1.0;
+        public const double MinValue = 0;
+        public const double MaxValue = 100.0;
+        public Observer<double> AsObserver { get; }
         public Exception? Exception { get; }
         public void ResetException();
-        public void ExecuteAsync(Func<IStateObserverAsync, IDisposable> executeCallbackAsync, bool deferredNotification = false);
+        public void ExecuteAsync(Func<IStateProgressObserverAsync, IDisposable> executeCallbackAsync);
     }
     
     public interface IStateGroupBase<T> : IStateInformation

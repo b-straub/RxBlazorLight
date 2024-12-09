@@ -19,10 +19,10 @@
     public string ConfirmButton { get; set; } = "Delete";
 
     [Parameter]
-    public bool SuccessOnConfirm { get; set; } = false;
+    public bool SuccessOnConfirm { get; set; }
 
-    void Submit() => MudDialog?.Close(DialogResult.Ok(true));
-    void Cancel() => MudDialog?.Cancel();
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
 
     protected override void OnInitialized()
     {

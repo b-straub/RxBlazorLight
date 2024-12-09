@@ -9,7 +9,7 @@
 <MudLayout>
     <RxBLStateScope TScope=@TimerService.TimerStateScope TService=@TimerService ScopeFactory=@TimerService.CreateScope>
         <MudAppBar Elevation="0">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(_ => DrawerToggle())" />
             <MudSpacer />
             <MudToggleIconButtonRx State=@Service.DarkMode Icon="@Icons.Material.Filled.LightMode" Color="@Color.Warning"
               ToggledIcon="@Icons.Material.Filled.DarkMode" title=@(Service.DarkMode.Value ? "Dark Mode" : "Light Mode") />

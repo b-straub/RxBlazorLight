@@ -6,33 +6,33 @@
         <DialogContent>
             <MudStack>
                 @Message
-                @if (StateObserver.Exception is not null)
+                @if (ProgressStateObserver.Exception is not null)
                 {
-                    <MudText Typo=@Typo.body2 Color=@Color.Error>@StateObserver.Exception.Message</MudText>
+                    <MudText Typo=@Typo.body2 Color=@Color.Error>@ProgressStateObserver.Exception.Message</MudText>
                 }
-                else if (StateObserver.Changing())
+                else if (ProgressStateObserver.Changing())
                 {
-                    <MudProgressLinear Rounded=@true Color=@Color.Primary Indeterminate=@(StateObserver.Value < 0) Value=@StateObserver.Value Size=@Size.Large/>
+                    <MudProgressLinear Rounded=@true Color=@Color.Primary Indeterminate=@(ProgressStateObserver.Value < 0) Value=@ProgressStateObserver.Value Size=@Size.Large/>
                 }
             </MudStack>
         </DialogContent>
         <DialogActions>
             <MudButton Disabled=@CanNotCancel() Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Error : Color.Success) OnClick="Cancel">Cancel</MudButton>
-            @if (StateObserver.Changing())
+            @if (ProgressStateObserver.Changing())
             {
                 @if (CancelText is not null)
                 {
-                    <MudButton Variant=@Variant.Filled Color=@(CancelColor ?? Color.Warning) OnClick=@StateObserver.Cancel>@CancelText</MudButton>
+                    <MudButton Variant=@Variant.Filled Color=@(CancelColor ?? Color.Warning) OnClick=@ProgressStateObserver.Cancel>@CancelText</MudButton>
                 }
                 else
                 {
-                    <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color=@(CancelColor ?? Color.Warning) OnClick=@StateObserver.Cancel></MudIconButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color=@(CancelColor ?? Color.Warning) OnClick=@ProgressStateObserver.Cancel></MudIconButton>
                 }
             }
             else
             {
                 <MudButton @ref=_buttonRef Variant="Variant.Filled" Color=@(SuccessOnConfirm ? Color.Success : Color.Error)
-                           OnClick=@(() => StateObserver.ExecuteAsync(obs => ExecuteAsyncCallback(obs)))>
+                           OnClick=@(() => ProgressStateObserver.ExecuteAsync(obs => ExecuteAsyncCallback(obs)))>
                     @ConfirmButton
                 </MudButton>
             }

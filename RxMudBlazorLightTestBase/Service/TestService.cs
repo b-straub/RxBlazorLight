@@ -12,7 +12,7 @@ namespace RxMudBlazorLightTestBase.Service
             return other?.Name == Name;
         }
 
-        public override int GetHashCode() => Name?.GetHashCode() ?? 0;
+        public override int GetHashCode() => Name.GetHashCode();
 
         public override string ToString() => Name;
     }
@@ -41,12 +41,12 @@ namespace RxMudBlazorLightTestBase.Service
 
     public record StateInfo(string State);
 
-    public partial class TestServiceBase : RxBLService
+    public class TestServiceBase : RxBLService
     {
         public StateInfo ServiceState { get; protected set; }
         public IStateCommand ServiceStateCMD { get; }
 
-        public TestServiceBase(IServiceProvider _)
+        public TestServiceBase()
         {
             Console.WriteLine("TestService Create");
 
@@ -100,13 +100,6 @@ namespace RxMudBlazorLightTestBase.Service
 
         public class ColorsStateScope(TestService service) : RxBLStateScope<TestService>(service)
         {
-            private static readonly TestColor[] Colors =
-            [
-                new(ColorEnum.RED),
-                new(ColorEnum.GREEN),
-                new(ColorEnum.BLUE)
-            ];
-
             public readonly IStateGroupAsync<TestColor> TestColors = service.CreateStateGroupAsync(Colors, Colors[0]);
 
             public Func<TestColor, TestColor, Task> ChangeTestColorAsync(int context)
@@ -133,17 +126,17 @@ namespace RxMudBlazorLightTestBase.Service
         public IState<bool> DarkMode { get; }
         
         
-        public IStateObserverAsync IncrementObserver { get; }
-        public IStateObserverAsync IncrementDialogObserver { get; }
-        public IStateObserverAsync AddObserver { get; }
+        public IStateProgressObserverAsync IncrementObserver { get; }
+        public IStateProgressObserverAsync IncrementDialogObserver { get; }
+        public IStateProgressObserverAsync AddObserver { get; }
         
         private readonly IStateGroup<Pizza> _pizzaState1;
         private readonly IStateGroupAsync<Pizza> _pizzaState2;
         private readonly IStateGroupAsync<Pizza> _pizzaStateIndependent;
         private readonly IStateGroup<TestColor> _radioTestExtended;
-        private bool _canIncrement = false;
+        private bool _canIncrement;
 
-        public TestService(IServiceProvider sp) : base(sp)
+        public TestService()
         {
             Console.WriteLine("TestService Create");
             CanIncrementCheck = this.CreateState(false);
@@ -185,7 +178,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Action ChangeServiceState(string state) => () =>
         {
-            ServiceState = ServiceState with { State = state };
+            ServiceState = new StateInfo(State: state);
         };
 
         public IStateGroup<Pizza> GetPizzas1()

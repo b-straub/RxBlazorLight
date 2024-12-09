@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System.Reactive.Linq;
+using R3;
 
+// ReSharper disable once CheckNamespace -> use same namespace for all components
 namespace RxBlazorLightCore;
 
 public class RxBLLayoutSubscriber<T> : LayoutComponentBase where T : IRxBLService
@@ -14,24 +15,23 @@ public class RxBLLayoutSubscriber<T> : LayoutComponentBase where T : IRxBLServic
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Service
-            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Count > 0)
-            .Select(crList => Observable.FromAsync(async () =>
+        Service.AsObservable
+            .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Length > 0)
+            .SubscribeAwait(async (crList, ct) =>
             {
-                await OnServiceStateHasChangedAsync(crList);
+                await OnServiceStateHasChangedAsync(crList, ct);
+                // ReSharper disable once MethodHasAsyncOverloadWithCancellation -> call both sync and async version
                 OnServiceStateHasChanged(crList);
                 await InvokeAsync(StateHasChanged);
-            }))
-            .Concat()
-            .Subscribe();
+            });
     }
 
     protected virtual void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(IList<ServiceChangeReason> crList)
+    protected virtual Task OnServiceStateHasChangedAsync(IList<ServiceChangeReason> crList, CancellationToken ct)
     {
         return Task.CompletedTask;
     }

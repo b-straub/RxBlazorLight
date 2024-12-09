@@ -6,7 +6,7 @@ namespace RxMudBlazorLightTests.Extensions
 {
     internal static class TestExtensions
     {
-        private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(5);
 
         public static async Task ClickAsync(this IRenderedFragment fragment, string id)
         {
@@ -20,17 +20,17 @@ namespace RxMudBlazorLightTests.Extensions
 
         public static void VerifyTextContent(this IRenderedFragment fragment, string id, string text)
         {
-            fragment.WaitForState(() => fragment.FindID(id).TextContent.Equals(text, StringComparison.InvariantCultureIgnoreCase), _defaultTimeout);
+            fragment.WaitForState(() => fragment.FindID(id).TextContent.Equals(text, StringComparison.InvariantCultureIgnoreCase), DefaultTimeout);
         }
 
         public static void VerifyMudChecked(this IRenderedFragment fragment, IElement? element)
         {
-            fragment.WaitForState(() => element is not null && !element.HasAttribute("mud-checked"), _defaultTimeout);
+            fragment.WaitForState(() => element is not null && !element.HasAttribute("mud-checked"), DefaultTimeout);
         }
 
         public static void VerifyEnabled(this IRenderedFragment fragment, string id)
         {
-            fragment.WaitForState(() => !fragment.FindID(id).HasAttribute("disabled"), _defaultTimeout);
+            fragment.WaitForState(() => !fragment.FindID(id).HasAttribute("disabled"), DefaultTimeout);
         }
 
         public static IElement FindID(this IRenderedFragment fragment, string id)

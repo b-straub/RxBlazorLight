@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System.Diagnostics.CodeAnalysis;
 
+// ReSharper disable once CheckNamespace -> use same namespace for all components
 namespace RxBlazorLightCore
 {
     public sealed partial class RxBLStateScope<TScope, TService> : ComponentBase, IDisposable

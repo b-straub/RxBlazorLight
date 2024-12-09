@@ -16,14 +16,14 @@
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
     [Parameter]
-    public MBIconVariant? IconVariant { get; set; }
+    public MbIconVariant? IconVariant { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
     private ButtonRx? _buttonRx;
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color);
+        _buttonRx = ButtonRx.Create(MbButtonType.FAB, ConfirmExecutionAsync, Color);
 
         base.OnInitialized();
     }

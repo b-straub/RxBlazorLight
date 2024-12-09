@@ -1,13 +1,13 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using RxBlazorLightCore;
 using RxBlazorLightCoreTest;
-using System.Reactive.Linq;
+using R3;
 
 TestService testService = new();
 
 var done = false;
 
-testService.Subscribe(cr =>
+testService.AsObservable.Subscribe(cr =>
 {
     Console.WriteLine(cr.ID);
     Console.WriteLine(testService.Counter.Value);
@@ -44,10 +44,9 @@ await testService.CounterCommandAsync.ExecuteAsync(testService.IncrementAsync);
 
 await testService.CounterCommandAsync.ExecuteAsync(testService.AddAsyncCancel(10));
 
-var ccCounter = testService.CanChangeT(1);
-ccCounter = testService.CanChangeT(100);
-var ccCounterAsync = testService.CanChangeNV;
-var ccNullString = testService.CanChangeS("TestNotNull");
+testService.CanChangeT(1);
+testService.CanChangeT(100);
+testService.CanChangeS("TestNotNull");
 
 /*ServiceFixture fixture = new();
 
@@ -63,6 +62,6 @@ fixture.Subscribe(cr =>
 
 fixture.IntStateAsyncX.Transform(5);*/
 
-while (!done) { };
+while (!done) { }
 
 Environment.Exit(0);

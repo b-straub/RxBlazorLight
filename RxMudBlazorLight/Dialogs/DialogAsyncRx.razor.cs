@@ -21,7 +21,7 @@ namespace RxMudBlazorLight.Dialogs
         public required string CancelButton { get; set; }
 
         [Parameter]
-        public bool SuccessOnConfirm { get; set; } = false;
+        public bool SuccessOnConfirm { get; set; }
 
         [Parameter, EditorRequired]
         public required IStateCommandAsync StateCommand { get; init; }
@@ -39,7 +39,7 @@ namespace RxMudBlazorLight.Dialogs
         public Color? CancelColor { get; set; }
 
         [Parameter]
-        public bool HasProgress { get; set; } = false;
+        public bool HasProgress { get; set; }
 
         private MudButtonAsyncRx? _buttonRef;
         private bool _closing;

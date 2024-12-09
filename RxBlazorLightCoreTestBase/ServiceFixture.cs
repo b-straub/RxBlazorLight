@@ -1,6 +1,4 @@
-﻿
-using System.Reactive;
-using RxBlazorLightCore;
+﻿using RxBlazorLightCore;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("RxBlazorLightCoreTests")]
@@ -30,8 +28,8 @@ namespace RxBlazorLightCoreTestBase
         public Dictionary<Guid, CRUDTest> CRUDDict { get; } = [];
         public IStateCommandAsync CRUDDictCommand { get; }
 
-        public IStateObserverAsync CancellableObserverAsync { get; }
-        public IStateObserverAsync CancellableObserverHandleErrorAsync { get; }
+        public IStateProgressObserverAsync CancellableObserverAsync { get; }
+        public IStateProgressObserverAsync CancellableObserverHandleErrorAsync { get; }
         public IStateGroup<TestEnum> EnumStateGroup { get; }
         public TestEnum? EnumStateGroupOldValue { get; private set; }
         public IStateGroupAsync<TestEnum> EnumStateGroupAsync { get; }
@@ -48,8 +46,8 @@ namespace RxBlazorLightCoreTestBase
             CRUDDictCommand = this.CreateStateCommandAsync(true);
             CancellableObserverAsync = this.CreateStateObserverAsync(false);
             CancellableObserverHandleErrorAsync = this.CreateStateObserverAsync();
-            EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE);
-            EnumStateGroupAsync = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE], TestEnum.ONE);
+            EnumStateGroup = this.CreateStateGroup([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE]);
+            EnumStateGroupAsync = this.CreateStateGroupAsync([TestEnum.ONE, TestEnum.TWO, TestEnum.THREE]);
         }
     }
 }

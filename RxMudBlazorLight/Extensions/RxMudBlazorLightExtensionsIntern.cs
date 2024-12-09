@@ -4,30 +4,30 @@ namespace RxMudBlazorLight.Extensions
 {
     internal static class RxMudBlazorLightExtensionsIntern
     {
-        public static string GetCancelIcon(this MBIconVariant? iconVariant)
+        public static string GetCancelIcon(this MbIconVariant? iconVariant)
         {
             var icon = iconVariant switch
             {
-                MBIconVariant.Filled => Icons.Material.Filled.Cancel,
-                MBIconVariant.Outlined => Icons.Material.Outlined.Cancel,
-                MBIconVariant.Sharp => Icons.Material.Sharp.Cancel,
-                MBIconVariant.Rounded => Icons.Material.Rounded.Cancel,
-                MBIconVariant.TwoTone => Icons.Material.TwoTone.Cancel,
+                MbIconVariant.FILLED => Icons.Material.Filled.Cancel,
+                MbIconVariant.OUTLINED => Icons.Material.Outlined.Cancel,
+                MbIconVariant.SHARP => Icons.Material.Sharp.Cancel,
+                MbIconVariant.ROUNDED => Icons.Material.Rounded.Cancel,
+                MbIconVariant.TWO_TONE => Icons.Material.TwoTone.Cancel,
                 _ => Icons.Material.Outlined.Cancel
             };
 
             return icon;
         }
 
-        public static string GetProgressIcon(this MBIconVariant? iconVariant)
+        public static string GetProgressIcon(this MbIconVariant? iconVariant)
         {
             var icon = iconVariant switch
             {
-                MBIconVariant.Filled => Icons.Material.Filled.Refresh,
-                MBIconVariant.Outlined => Icons.Material.Outlined.Refresh,
-                MBIconVariant.Sharp => Icons.Material.Sharp.Refresh,
-                MBIconVariant.Rounded => Icons.Material.Rounded.Refresh,
-                MBIconVariant.TwoTone => Icons.Material.TwoTone.Refresh,
+                MbIconVariant.FILLED => Icons.Material.Filled.Refresh,
+                MbIconVariant.OUTLINED => Icons.Material.Outlined.Refresh,
+                MbIconVariant.SHARP => Icons.Material.Sharp.Refresh,
+                MbIconVariant.ROUNDED => Icons.Material.Rounded.Refresh,
+                MbIconVariant.TWO_TONE => Icons.Material.TwoTone.Refresh,
                 _ => Icons.Material.Filled.Refresh
             };
 

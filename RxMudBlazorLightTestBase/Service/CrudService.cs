@@ -13,46 +13,46 @@ namespace RxMudBlazorLightTestBase.Service
 
     public enum DBRole
     {
-        Admin,
-        User,
-        Guest
+        ADMIN,
+        USER,
+        GUEST
     }
 
     public static class CrudServiceExtensions
     {
         public static bool CanAdd(this IStateGroup<DBRole> roleGroup)
         {
-            return roleGroup.Value is DBRole.Admin;
+            return roleGroup.Value is DBRole.ADMIN;
         }
 
         public static bool CanUpdateText(this IStateGroup<DBRole> roleGroup)
         {
-            return roleGroup.Value is DBRole.Admin;
+            return roleGroup.Value is DBRole.ADMIN;
         }
 
         public static bool CanUpdateDueDate(this IStateGroup<DBRole> roleGroup)
         {
-            return roleGroup.Value is DBRole.Admin || roleGroup.Value is DBRole.User;
+            return roleGroup.Value is DBRole.ADMIN || roleGroup.Value is DBRole.USER;
         }
 
         public static bool CanUpdateCompleted(this IStateGroup<DBRole> roleGroup)
         {
-            return roleGroup.Value is DBRole.Admin || roleGroup.Value is DBRole.User;
+            return roleGroup.Value is DBRole.ADMIN || roleGroup.Value is DBRole.USER;
         }
 
         public static bool CanDeleteCompleted(this IStateGroup<DBRole> roleGroup)
         {
-            return roleGroup.Value is DBRole.Admin || roleGroup.Value is DBRole.User;
+            return roleGroup.Value is DBRole.ADMIN || roleGroup.Value is DBRole.USER;
         }
 
         public static bool CanDeleteOne(this IStateGroup<DBRole> roleGroup)
         {
-            return roleGroup.Value is DBRole.Admin || roleGroup.Value is DBRole.User;
+            return roleGroup.Value is DBRole.ADMIN || roleGroup.Value is DBRole.USER;
         }
 
         public static bool CanDeleteAll(this IStateGroup<DBRole> roleGroup)
         {
-            return roleGroup.Value is DBRole.Admin;
+            return roleGroup.Value is DBRole.ADMIN;
         }
     }
 
@@ -100,10 +100,10 @@ namespace RxMudBlazorLightTestBase.Service
 
             public Func<TimeSpan, StateValidation> ValidateDueDateTime => v =>
             {
-                var dateNowNS = NoSeconds(DateTime.Now);
-                var dateNew = item is null ? NoSeconds(DueDateDate.Value.Date + v) : dateNowNS;
+                var dateNowNs = NoSeconds(DateTime.Now);
+                var dateNew = item is null ? NoSeconds(DueDateDate.Value.Date + v) : dateNowNs;
 
-                return new("DueDate can not be in the past!", dateNew < dateNowNS);
+                return new("DueDate can not be in the past!", dateNew < dateNowNs);
             };
 
             public Func<bool> CanUpdateTime => () =>
@@ -125,13 +125,13 @@ namespace RxMudBlazorLightTestBase.Service
 
         public IEnumerable<CRUDToDoItem> CRUDItems => _db.Values;
 
-        public IStateGroup<DBRole> CRUDDBRoleGroup { get; }
+        public IStateGroup<DBRole> CruddbRoleGroup { get; }
 
         private readonly Dictionary<Guid, CRUDToDoItem> _db;
         public CrudService()
         {
             _db = [];
-            CRUDDBRoleGroup = this.CreateStateGroup([DBRole.Admin, DBRole.User, DBRole.Guest], DBRole.Admin);
+            CruddbRoleGroup = this.CreateStateGroup([DBRole.ADMIN, DBRole.USER, DBRole.GUEST]);
         }
 
         public CrudItemInput CreateItemInput(CRUDToDoItem? item = null)
@@ -141,7 +141,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public static Func<bool> CanChangeRole => () => true;
 
-        public Func<bool> CanAdd => () => CRUDDBRoleGroup.CanAdd();
+        public Func<bool> CanAdd => () => CruddbRoleGroup.CanAdd();
         public Func<bool> CanUpdate(CRUDToDoItem? item) => () => (CanUpdateText || CanUpdateDueDate) && !(item is not null && item.Completed);
 
         public Func<IStateCommandAsync, Task> AddCRUDItem(CRUDToDoItem item)
@@ -164,7 +164,7 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<bool> CanToggleCRUDItemCompleted => () => CRUDDBRoleGroup.CanUpdateCompleted();
+        public Func<bool> CanToggleCRUDItemCompleted => () => CruddbRoleGroup.CanUpdateCompleted();
 
         public Func<IStateCommandAsync, Task> ToggleCRUDItemCompletedAsync(CRUDToDoItem item)
         {
@@ -177,7 +177,7 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<bool> CanRemoveCRUDItem => () => CRUDDBRoleGroup.CanDeleteOne();
+        public Func<bool> CanRemoveCRUDItem => () => CruddbRoleGroup.CanDeleteOne();
 
         public Func<IStateCommandAsync, Task> RemoveCRUDItem(CRUDToDoItem item)
         {
@@ -191,7 +191,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Func<bool> CanRemoveCompletedCRUDItems => () =>
         {
-            return _db.Values.Where(x => x.Completed).Any() && CRUDDBRoleGroup.CanDeleteCompleted();
+            return _db.Values.Where(x => x.Completed).Any() && CruddbRoleGroup.CanDeleteCompleted();
         };
 
 
@@ -212,7 +212,7 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Func<bool> CanRemoveAllCRUDItems => () =>
         {
-            return _db.Values.Count != 0 && CRUDDBRoleGroup.CanDeleteAll();
+            return _db.Values.Count != 0 && CruddbRoleGroup.CanDeleteAll();
         };
 
         public Func<IStateCommandAsync, Task> RemoveAllCRUDItems()
@@ -224,7 +224,7 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        private bool CanUpdateText => CRUDDBRoleGroup.CanUpdateText();
-        private bool CanUpdateDueDate => CRUDDBRoleGroup.CanUpdateDueDate();
+        private bool CanUpdateText => CruddbRoleGroup.CanUpdateText();
+        private bool CanUpdateDueDate => CruddbRoleGroup.CanUpdateDueDate();
     }
 }

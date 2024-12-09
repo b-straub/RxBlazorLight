@@ -16,11 +16,11 @@
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Count State Changes {_countStateChanges}")</MudText>
     <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.AddObserver.ExecuteAsync(Service.IncrementCounterObservable))>
         Increment Observable
-        <MudPopoverAsyncRx Header="Increment Counter" StateObserver=@Service.IncrementObserver></MudPopoverAsyncRx>
+        <MudPopoverAsyncRx Header="Increment Counter" ProgressStateObserver=@Service.IncrementObserver></MudPopoverAsyncRx>
     </MudButton>
     <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick=@(() => Service.AddObserver.ExecuteAsync(Service.AddCounterObservable))>
         Add Observable
-        <MudPopoverAsyncRx Header="Add 2x10 to Counter" StateObserver=@Service.AddObserver CancelText="Cancel Add" CancelColor=@Color.Error></MudPopoverAsyncRx>
+        <MudPopoverAsyncRx Header="Add 2x10 to Counter" ProgressStateObserver=@Service.AddObserver CancelText="Cancel Add" CancelColor=@Color.Error></MudPopoverAsyncRx>
     </MudButton>
     <MudGrid>
         @if (Service.Exceptions.Any())

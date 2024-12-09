@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System.Reactive.Linq;
+using R3;
 
+// ReSharper disable once CheckNamespace -> use same namespace for all components
 namespace RxBlazorLightCore;
 
 public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
@@ -14,24 +15,24 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Service
-            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Count > 0)
-            .Select(crList => Observable.FromAsync(async () =>
+        
+        Service.AsObservable
+            .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Length > 0)
+            .SubscribeAwait(async (crList, ct) =>
             {
-                await OnServiceStateHasChangedAsync(crList);
+                await OnServiceStateHasChangedAsync(crList, ct);
+                // ReSharper disable once MethodHasAsyncOverloadWithCancellation -> call both sync and async version
                 OnServiceStateHasChanged(crList);
                 await InvokeAsync(StateHasChanged);
-            }))
-            .Concat()
-            .Subscribe();
+            });
     }
 
     protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList)
+    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList, CancellationToken ct)
     {
         return Task.CompletedTask;
     }
@@ -50,6 +51,7 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
     }
 }
 
+// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global -> Library
 public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLService where T2 : IRxBLService
 {
     [Inject]
@@ -64,24 +66,24 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Observable.Merge(Service1, Service2)
-            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Count > 0)
-            .Select(crList => Observable.FromAsync(async () =>
+        
+        Observable.Merge(Service1.AsObservable, Service2.AsObservable)
+            .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Length > 0)
+            .SubscribeAwait(async (crList, ct) =>
             {
-                await OnServiceStateHasChangedAsync(crList);
+                await OnServiceStateHasChangedAsync(crList, ct);
+                // ReSharper disable once MethodHasAsyncOverloadWithCancellation -> call both sync and async version
                 OnServiceStateHasChanged(crList);
                 await InvokeAsync(StateHasChanged);
-            }))
-            .Concat()
-            .Subscribe();
+            });
     }
 
     protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList)
+    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList, CancellationToken ct)
     {
         return Task.CompletedTask;
     }
@@ -104,6 +106,7 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
     }
 }
 
+// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global -> Library
 public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLService where T2 : IRxBLService where T3 : IRxBLService
 {
     [Inject]
@@ -121,24 +124,23 @@ public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLS
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Observable.Merge(Service1, Service2, Service3)
-            .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Count > 0)
-            .Select(crList => Observable.FromAsync(async () =>
+        Observable.Merge(Service1.AsObservable, Service2.AsObservable, Service3.AsObservable)
+            .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Where(crList => crList.Length > 0)
+            .SubscribeAwait(async (crList, ct) =>
             {
-                await OnServiceStateHasChangedAsync(crList);
+                await OnServiceStateHasChangedAsync(crList, ct);
+                // ReSharper disable once MethodHasAsyncOverloadWithCancellation -> call both sync and async version
                 OnServiceStateHasChanged(crList);
                 await InvokeAsync(StateHasChanged);
-            }))
-            .Concat()
-            .Subscribe();
+            });
     }
 
     protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList)
+    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList, CancellationToken ct)
     {
         return Task.CompletedTask;
     }

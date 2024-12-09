@@ -35,7 +35,7 @@ namespace RxBlazorLightCoreTest
             CounterCommand.Execute(() => state.Value++);
         }
 
-        public bool CanChangeNV => CounterCommandResult < 20;
+        public bool CanChangeNv => CounterCommandResult < 20;
         public bool CanChangeT(int threshold) => CounterCommandResult < threshold;
         public bool CanChangeS(string compare) => NullString != compare;
 

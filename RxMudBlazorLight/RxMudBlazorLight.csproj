@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
@@ -25,7 +25,7 @@
         <PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageOutputPath>..\Nuget</PackageOutputPath>
-        <PackageVersion>0.9.7</PackageVersion>
+        <PackageVersion>0.9.8-beta</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -37,7 +37,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
         <PackageReference Include="MudBlazor" Version="7.15.0" />
     </ItemGroup>
 

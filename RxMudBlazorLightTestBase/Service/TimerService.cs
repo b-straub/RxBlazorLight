@@ -1,5 +1,5 @@
 ﻿using RxBlazorLightCore;
-using System.Reactive.Linq;
+using R3;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -16,7 +16,7 @@ namespace RxMudBlazorLightTestBase.Service
             return new TimerStateScope(this);
         }
 
-        public sealed partial class TimerStateScope(TimerService service) : RxBLStateScope<TimerService>(service)
+        public sealed class TimerStateScope(TimerService service) : RxBLStateScope<TimerService>(service)
         {
             public IState<long> ComponentTimer { get; } = service.CreateState(0L);
 
@@ -29,19 +29,18 @@ namespace RxMudBlazorLightTestBase.Service
             public override ValueTask OnContextReadyAsync()
             {
                 _timerDisposable = Observable.Interval(TimeSpan.FromSeconds(1))
-                  .StartWith(0)
-                  .Subscribe(_ =>
-                  {
-                      if (!Suspended.Value)
-                      {
-                          ComponentTimer.Value++;
+                    .Subscribe(_ =>
+                    {
+                        if (!Suspended.Value)
+                        {
+                            ComponentTimer.Value++;
 
-                          if (ComponentTimer.Value > 20 && TimerState.Value is State.STARTED)
-                          {
-                              TimerState.Value = State.OVER20;
-                          }
-                      }
-                  });
+                            if (ComponentTimer.Value > 20 && TimerState.Value is State.STARTED)
+                            {
+                                TimerState.Value = State.OVER20;
+                            }
+                        }
+                    });
 
                 Console.WriteLine("TimerScope ContextReady");
 

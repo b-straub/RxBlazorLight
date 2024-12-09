@@ -1,7 +1,6 @@
-﻿using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+﻿using R3;
 
+// ReSharper disable once CheckNamespace -> use same namespace for implementation
 namespace RxBlazorLightCore
 {
     public class RxBLStateScope<T>(T service) : IRxBLStateScope where T : IRxBLService
@@ -25,8 +24,10 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class RxBLService : IRxBLService
+    public class RxBLService : Observer<Unit>, IRxBLService
     {
+        public Observable<ServiceChangeReason> AsObservable { get; }
+        public Observer<Unit> AsObserver => this;
         public bool Initialized { get; private set; }
         public Guid ID { get; }
         public IEnumerable<ServiceException> Exceptions => _serviceExceptions;
@@ -38,15 +39,14 @@ namespace RxBlazorLightCore
         public bool Independent { get; set; }
 
         private readonly Subject<ServiceChangeReason> _changedSubject = new();
-        private readonly IObservable<ServiceChangeReason> _changedObservable;
-        private readonly List<ServiceException> _serviceExceptions;
+        private readonly HashSet<ServiceException> _serviceExceptions;
 
-        public RxBLService()
+        protected RxBLService()
         {
             Command = this.CreateStateCommand();
             CommandAsync = this.CreateStateCommandAsync();
             CancellableCommandAsync = this.CreateStateCommandAsync(true);
-            _changedObservable = _changedSubject.Publish().RefCount();
+            AsObservable = _changedSubject.Publish().RefCount();
             _serviceExceptions = [];
             Initialized = false;
             ID = Guid.NewGuid();
@@ -78,12 +78,7 @@ namespace RxBlazorLightCore
                 Phase = StatePhase.CHANGED;
             }
         }
-
-        public IDisposable Subscribe(IObserver<ServiceChangeReason> observer)
-        {
-            return _changedObservable.Subscribe(observer);
-        }
-
+     
         public async ValueTask OnContextReadyAsync()
         {
             if (Initialized)
@@ -104,31 +99,26 @@ namespace RxBlazorLightCore
         {
             _serviceExceptions.Clear();
         }
-
-        public void OnCompleted()
+        
+        protected override void OnErrorResumeCore(Exception error)
         {
-
+            if (_serviceExceptions.Add(new(ID, error)))
+            {
+                _changedSubject.OnNext(new(ID, ChangeReason.EXCEPTION));
+            }
         }
 
-        public void OnError(Exception error)
+        protected override void OnCompletedCore(Result result)
         {
-            _serviceExceptions.Add(new(ID, error));
-            _changedSubject.OnNext(new(ID, ChangeReason.EXCEPTION));
+            if (result.Exception is not null && _serviceExceptions.Add(new(ID, result.Exception)))
+            {
+                _changedSubject.OnNext(new(ID, ChangeReason.EXCEPTION));
+            }
         }
 
-        public void OnNext(Unit value)
+        protected override void OnNextCore(Unit value)
         {
             _changedSubject.OnNext(new(ID, ChangeReason.STATE));
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

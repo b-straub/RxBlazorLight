@@ -19,7 +19,7 @@
     public Func<Task<bool>>? ConfirmExecutionAsync { get; init; }
 
     [Parameter]
-    public MBIconVariant? IconVariant { get; set; }
+    public MbIconVariant? IconVariant { get; set; }
 
     [Parameter]
     public string? CancelText { get; set; }
@@ -38,7 +38,7 @@
 
     protected override void OnInitialized()
     {
-        _buttonRx = ButtonRx.Create(MBButtonType.FAB, ConfirmExecutionAsync, Color, null, HasProgress, CancelText, CancelColor);
+        _buttonRx = ButtonRx.Create(MbButtonType.FAB, ConfirmExecutionAsync, Color, null, HasProgress, CancelText, CancelColor);
         base.OnInitialized();
     }
 

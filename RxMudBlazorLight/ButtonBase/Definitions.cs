@@ -1,6 +1,7 @@
-﻿
+﻿// ReSharper disable once CheckNamespace -> use same namespace for all components
 namespace RxMudBlazorLight;
-internal enum MBButtonType
+
+internal enum MbButtonType
 {
     DEFAULT,
     FAB,
@@ -8,11 +9,11 @@ internal enum MBButtonType
     MENU
 }
 
-public enum MBIconVariant
+public enum MbIconVariant
 {
-    Filled,
-    Outlined,
-    Rounded,
-    Sharp,
-    TwoTone
+    FILLED,
+    OUTLINED,
+    ROUNDED,
+    SHARP,
+    TWO_TONE
 }

@@ -1,7 +1,6 @@
-﻿
-using System.Reactive;
-using System.Reactive.Linq;
+﻿using R3;
 
+// ReSharper disable once CheckNamespace -> use same namespace for extensions
 namespace RxBlazorLightCore
 {
     public static class RxExtensions
@@ -21,9 +20,9 @@ namespace RxBlazorLightCore
             return StateCommandAsync.Create(service, canCancel);
         }
         
-        public static IStateObserverAsync CreateStateObserverAsync(this RxBLService service, bool handleError = true)
+        public static IStateProgressObserverAsync CreateStateObserverAsync(this RxBLService service, bool handleError = true)
         {
-            return StateObserverAsync.Create(service, handleError);
+            return StateProgressObserverAsync.Create(service, handleError);
         }
 
         public static IStateGroup<T> CreateStateGroup<T>(this RxBLService service, T[] items, T? value = default)
@@ -36,14 +35,14 @@ namespace RxBlazorLightCore
             return StateGroupAsync<T>.Create(service, items, value);
         }
 
-        public static IObservable<Unit> AsObservable(this RxBLService service, IStateInformation state)
+        public static Observable<Unit> AsObservable(this RxBLService service, IStateInformation state)
         {
-            return service.Where(cr => cr.ID == state.ID).Select(_ => Unit.Default);
+            return service.AsObservable.Where(cr => cr.ID == state.ID).Select(_ => Unit.Default);
         }
 
-        public static IObservable<T> AsChangedObservable<T>(this RxBLService service, IState<T> state)
+        public static Observable<T> AsChangedObservable<T>(this RxBLService service, IState<T> state)
         {
-            return service
+            return service.AsObservable
                 .Where(cr => cr.ID == state.ID && state.Changed())
                 .Select(_ => state.Value);
         }

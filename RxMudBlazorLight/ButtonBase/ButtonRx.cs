@@ -12,14 +12,14 @@ namespace RxMudBlazorLight.ButtonBase
 
         private readonly Func<Task<bool>>? _confirmExecutionAsync;
 
-        private ButtonRx(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
+        private ButtonRx(MbButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
             RenderFragment? buttonChildContent, bool hasProgress, string? cancelText, Color? cancelColor) :
             base(type, buttonColor, buttonChildContent, hasProgress, cancelText, cancelColor)
         {
             _confirmExecutionAsync = confirmExecutionAsync;
         }
 
-        public static ButtonRx Create(MBButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
+        public static ButtonRx Create(MbButtonType type, Func<Task<bool>>? confirmExecutionAsync, Color buttonColor,
             RenderFragment? buttonChildContent = null, bool hasProgress = false, string? cancelText = null, Color? cancelColor = null)
         {
             return new ButtonRx(type, confirmExecutionAsync, buttonColor, buttonChildContent, hasProgress, cancelText, cancelColor);
@@ -30,9 +30,9 @@ namespace RxMudBlazorLight.ButtonBase
         {
             VerifyButtonParameters();
 
-            if (_buttonType is not MBButtonType.FAB)
+            if (ButtonType is not MbButtonType.FAB)
             {
-                ChildContent = stateCommand.Changing() && _hasProgress ? RenderProgress() : _buttonChildContent;
+                ChildContent = stateCommand.Changing() && HasProgress ? RenderProgress() : ButtonChildContent;
             }
 
             OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => ExecuteStateCommand(stateCommand, executeCallback));
@@ -54,24 +54,24 @@ namespace RxMudBlazorLight.ButtonBase
 
             if (stateCommand.Changing())
             {
-                if (stateCommand.ChangeCallerID == _id)
+                if (stateCommand.ChangeCallerID == ID)
                 {
                     if (stateCommand.CanCancel)
                     {
-                        Color = _cancelColor ?? Color.Warning;
+                        Color = CancelColor ?? Color.Warning;
 
-                        if (_buttonType is not MBButtonType.FAB)
+                        if (ButtonType is not MbButtonType.FAB)
                         {
                             ChildContent = RenderCancel();
                         }
 
                         OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, stateCommand.Cancel);
 
-                        if (_buttonType is MBButtonType.ICON)
+                        if (ButtonType is MbButtonType.ICON)
                         {
                             Disabled = true;
                         }
-                        else if (_buttonType is MBButtonType.FAB && _cancelText is null)
+                        else if (ButtonType is MbButtonType.FAB && CancelText is null)
                         {
                             Disabled = true;
                         }
@@ -82,7 +82,7 @@ namespace RxMudBlazorLight.ButtonBase
                     }
                     else
                     {
-                        if (_buttonType is not MBButtonType.FAB && _hasProgress)
+                        if (ButtonType is not MbButtonType.FAB && HasProgress)
                         {
                             ChildContent = RenderProgress();
                         }
@@ -97,8 +97,8 @@ namespace RxMudBlazorLight.ButtonBase
             }
             else
             {
-                ChildContent = _buttonChildContent;
-                Color = _buttonColor;
+                ChildContent = ButtonChildContent;
+                Color = ButtonColor;
 
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () =>
                         ExecuteStateCommandAsync(stateCommand, executeAsyncCallback, deferredNotification));
@@ -113,7 +113,7 @@ namespace RxMudBlazorLight.ButtonBase
         {
             if (_confirmExecutionAsync is null || await _confirmExecutionAsync())
             {   
-                await stateCommand.ExecuteAsync(executeAsyncCallback, deferredNotification, _id);
+                await stateCommand.ExecuteAsync(executeAsyncCallback, deferredNotification, ID);
             }
         }
     }

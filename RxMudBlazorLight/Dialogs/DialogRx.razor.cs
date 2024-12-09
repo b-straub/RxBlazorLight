@@ -21,7 +21,7 @@ namespace RxMudBlazorLight.Dialogs
         public required string CancelButton { get; set; }
 
         [Parameter]
-        public bool SuccessOnConfirm { get; set; } = false;
+        public bool SuccessOnConfirm { get; set; }
 
         [Parameter, EditorRequired]
         public required IStateCommand StateCommand { get; init; }

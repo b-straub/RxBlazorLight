@@ -20,13 +20,13 @@ namespace RxMudBlazorLight.Dialogs
         public required string CancelButton { get; set; }
 
         [Parameter]
-        public bool SuccessOnConfirm { get; set; } = false;
+        public bool SuccessOnConfirm { get; set; }
 
         [Parameter, EditorRequired]
-        public required IStateObserverAsync StateObserver { get; init; }
+        public required IStateProgressObserverAsync ProgressStateObserver { get; init; }
 
         [Parameter, EditorRequired]
-        public required Func<IStateObserverAsync, IDisposable> ExecuteAsyncCallback { get; init; }
+        public required Func<IStateProgressObserverAsync, IDisposable> ExecuteAsyncCallback { get; init; }
     
         [Parameter]
         public string? CancelText { get; set; }
@@ -38,13 +38,13 @@ namespace RxMudBlazorLight.Dialogs
         private bool _closing;
 
         public static async Task<bool> Show(IDialogService dialogService,
-            IStateObserverAsync stateObserver, Func<IStateObserverAsync, IDisposable> executeAsyncCallback, string title,
+            IStateProgressObserverAsync progressStateObserver, Func<IStateProgressObserverAsync, IDisposable> executeAsyncCallback, string title,
             string message, string confirmButton, string cancelButton, bool successOnConfirm, string? cancelText = null,
             Color? cancelColor = null)
         {
             var parameters = new DialogParameters
             {
-                ["StateObserver"] = stateObserver,
+                ["ProgressStateObserver"] = progressStateObserver,
                 ["ExecuteAsyncCallback"] = executeAsyncCallback,
                 ["CancelColor"] = cancelColor,
                 ["CancelText"] = cancelText,
@@ -54,7 +54,7 @@ namespace RxMudBlazorLight.Dialogs
                 ["SuccessOnConfirm"] = successOnConfirm
             };
 
-            stateObserver.ResetException();
+            progressStateObserver.ResetException();
             var dialog = await dialogService.ShowAsync<DialogAsyncORx<T>>(title, parameters);
 
             var res = await dialog.Result;
@@ -63,12 +63,12 @@ namespace RxMudBlazorLight.Dialogs
 
         private bool CanNotCancel()
         {
-            return StateObserver.Changing();
+            return ProgressStateObserver.Changing();
         }
 
         private void Cancel()
         {
-            if (!StateObserver.Changing())
+            if (!ProgressStateObserver.Changing())
             {
                 MudDialog?.Cancel();
             }
@@ -76,12 +76,12 @@ namespace RxMudBlazorLight.Dialogs
 
         protected override void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
         {
-            if (_closing || _buttonRef is null || !StateObserver.Done() || StateObserver.Canceled())
+            if (_closing || _buttonRef is null || !ProgressStateObserver.Done() || ProgressStateObserver.Canceled())
             {
                 return;
             }
 
-            if (!crList.Contains(StateObserver) || StateObserver.Phase is StatePhase.EXCEPTION)
+            if (!crList.Contains(ProgressStateObserver) || ProgressStateObserver.Phase is StatePhase.EXCEPTION)
             {
                 return;
             }

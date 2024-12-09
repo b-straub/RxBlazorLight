@@ -2,24 +2,24 @@
     <MudPaper Class=@_class  Elevation="1" Outlined=@true>
         <MudStack Spacing=@(CancelText is null ? 1 : 3)>
             <MudText Align=@Align.Center Typo=@Typo.button>@Header</MudText>
-            @if (StateObserver.Exception is not null)
+            @if (ProgressStateObserver.Exception is not null)
             {
                 <MudStack Row=@true AlignItems=@AlignItems.Center>
-                    <MudText Color=@Color.Error>@StateObserver.Exception.Message</MudText>
+                    <MudText Color=@Color.Error>@ProgressStateObserver.Exception.Message</MudText>
                     <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick=@(() => _isOpen = false)></MudIconButton>
                 </MudStack>
             }
             else
             {
                 <MudStack Row=@true AlignItems=@AlignItems.Center>
-                    <MudProgressLinear Style="width: 100px" Rounded=@true Color=@Color.Primary Indeterminate=@(StateObserver.Value < 0) Value=@StateObserver.Value Size=@Size.Large/>
+                    <MudProgressLinear Style="width: 100px" Rounded=@true Color=@Color.Primary Indeterminate=@(ProgressStateObserver.Value < 0) Value=@ProgressStateObserver.Value Size=@Size.Large/>
                     @if (CancelText is not null)
                     {
-                        <MudButton Variant=@Variant.Filled Color=@(CancelColor ?? Color.Warning) OnClick=@StateObserver.Cancel>@CancelText</MudButton>
+                        <MudButton Variant=@Variant.Filled Color=@(CancelColor ?? Color.Warning) OnClick=@ProgressStateObserver.Cancel>@CancelText</MudButton>
                     }
                     else
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color=@(CancelColor ?? Color.Warning) OnClick=@StateObserver.Cancel></MudIconButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color=@(CancelColor ?? Color.Warning) OnClick=@ProgressStateObserver.Cancel></MudIconButton>
                     }
                 </MudStack>
             }
@@ -29,7 +29,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IStateObserverAsync StateObserver { get; init; }
+    public required IStateProgressObserverAsync ProgressStateObserver { get; init; }
 
     [Parameter, EditorRequired]
     public required string Header { get; init; }
@@ -58,12 +58,12 @@
 
     protected override void OnParametersSet()
     {
-        if (_isOpen && StateObserver.Done() && StateObserver.Phase is not StatePhase.EXCEPTION)
+        if (_isOpen && ProgressStateObserver.Done() && ProgressStateObserver.Phase is not StatePhase.EXCEPTION)
         {
             _isOpen = false;
         }
 
-        if (!_isOpen && StateObserver.Changing())
+        if (!_isOpen && ProgressStateObserver.Changing())
         {
             _isOpen = true;
         }

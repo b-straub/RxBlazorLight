@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
+using R3;
 
+// ReSharper disable once CheckNamespace -> use same namespace for implementation
 namespace RxBlazorLightCore
 {
     public class StateBase : IStateInformation
@@ -10,7 +11,7 @@ namespace RxBlazorLightCore
         public bool Disabled => Independent ? Phase is StatePhase.CHANGING : _service.Changing();
         public bool Independent { get; set; }
 
-        protected readonly RxBLService _service;
+        private readonly RxBLService _service;
         private bool _notifyChanging = true;
 
         protected StateBase(RxBLService service)
@@ -31,7 +32,8 @@ namespace RxBlazorLightCore
             }
         }
 
-        protected void PhaseChanged(bool changed, bool notify = true, Exception? exception = null, bool submitException = true)
+        internal void PhaseChanged(bool changed, bool notify = true, Exception? exception = null,
+            bool submitException = true)
         {
             var changePhase = changed ? StatePhase.CHANGED : StatePhase.CHANGING;
 
@@ -42,7 +44,7 @@ namespace RxBlazorLightCore
 
             if (exception is not null)
             {
-                if (exception?.GetType() == typeof(TaskCanceledException))
+                if (exception.GetType() == typeof(TaskCanceledException))
                 {
                     changePhase = StatePhase.CANCELED;
                     exception = null;
@@ -135,7 +137,7 @@ namespace RxBlazorLightCore
         public CancellationToken CancellationToken { get; private set; }
         public Guid? ChangeCallerID { get; private set; }
 
-        protected StateCommandAsync(RxBLService service, bool canCancel) : base(service)
+        private StateCommandAsync(RxBLService service, bool canCancel) : base(service)
         {
             CanCancel = canCancel;
             if (CanCancel)
@@ -197,17 +199,51 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class StateObserverAsync : State<long>, IStateObserverAsync
+    internal class StateObserverCore(StateProgressObserverAsync stateProgressObserverAsync, bool handleError)
+        : Observer<double>
     {
-        public Exception? Exception { get; private set; }
-        
-        private bool _deferredNotification;
-        private IDisposable? _disposable;
+        protected override void OnNextCore(double value)
+        {
+            stateProgressObserverAsync.SetValue(value);
+            stateProgressObserverAsync.PhaseChanged(false);
+        }
+
+        protected override void OnErrorResumeCore(Exception error)
+        {
+            stateProgressObserverAsync.Exception = error;
+            stateProgressObserverAsync.PhaseChanged(true, true, error, !handleError);
+        }
+
+        protected override void OnCompletedCore(Result result)
+        {
+            stateProgressObserverAsync.Complete();
+
+            if (result.Exception is not null && stateProgressObserverAsync.Exception != result.Exception)
+            {
+                stateProgressObserverAsync.Exception = result.Exception;
+                stateProgressObserverAsync.PhaseChanged(true, true, result.Exception, !handleError);
+            }
+            else if (stateProgressObserverAsync.Exception is null)
+            {
+                stateProgressObserverAsync.PhaseChanged(true);
+            }
+        }
+    }
+
+    public class StateProgressObserverAsync : State<double>, IStateProgressObserverAsync
+    {
+        public Exception? Exception { get; internal set; }
+        public Observer<double> AsObserver => _stateObserverCore;
+    
+        private StateObserverCore _stateObserverCore;
         private readonly bool _handleError;
-        
-        private StateObserverAsync(RxBLService service, bool handleError) : base(service, 0)
+        private IDisposable? _disposable;
+
+        private StateProgressObserverAsync(RxBLService service, bool handleError) : base(service,
+            IStateProgressObserverAsync.InterminateValue)
         {
             _handleError = handleError;
+            _stateObserverCore = new(this, _handleError);
         }
 
         public void ResetException()
@@ -215,10 +251,11 @@ namespace RxBlazorLightCore
             Exception = null;
         }
 
-        public void ExecuteAsync(Func<IStateObserverAsync, IDisposable> executeCallbackAsync, bool deferredNotification = false)
+        public void ExecuteAsync(Func<IStateProgressObserverAsync, IDisposable> executeCallbackAsync)
         {
-            _deferredNotification = deferredNotification;
-            Reset();
+            Exception = null;
+            _stateObserverCore = new(this, _handleError);
+            SetValue(IStateProgressObserverAsync.InterminateValue);
             _disposable = executeCallbackAsync(this);
         }
 
@@ -231,62 +268,28 @@ namespace RxBlazorLightCore
             PhaseChanged(true, true, new TaskCanceledException());
         }
 
-        public void OnCompleted()
-        {
-            Complete();
-            PhaseChanged(true);
-        }
-
-        public void OnError(Exception error)
-        {
-            Complete();
-            
-            if (_handleError)
-            {
-                Exception = error;
-            }
-            
-            PhaseChanged(true, true, error, !_handleError);
-        }
-
-        public void OnNext(long value)
-        {
-            SetValue(value);
-            PhaseChanged(false, !_deferredNotification);
-        }
-
-        private void Reset()
-        {
-            SetValue(0);
-            _disposable = null;
-            _deferredNotification = false;
-            Exception = null;
-        }
-
-        private void Complete()
+        internal void Complete()
         {
             _disposable = null;
-            SetValue(100);
+            SetValue(IStateProgressObserverAsync.MaxValue);
         }
 
-        public static IStateObserverAsync Create(RxBLService service, bool handleError)
+        public static IStateProgressObserverAsync Create(RxBLService service, bool handleError)
         {
-            return new StateObserverAsync(service, handleError);
+            return new StateProgressObserverAsync(service, handleError);
         }
     }
 
     public class StateGroupBase<T> : StateBase, IStateGroupBase<T>
     {
         public T? Value { get; protected set; }
-        public T[] Items => _items;
-
-        private readonly T[] _items;
+        public T[] Items { get; }
 
         protected StateGroupBase(RxBLService service, T? value, T[] items) :
             base(service)
         {
             Value = value;
-            _items = items;
+            Items = items;
         }
 
         public void Update(T value)
@@ -303,7 +306,7 @@ namespace RxBlazorLightCore
 
     public class StateGroup<T> : StateGroupBase<T>, IStateGroup<T>
     {
-        protected StateGroup(RxBLService service, T? value, T[] items) :
+        private StateGroup(RxBLService service, T? value, T[] items) :
             base(service, value, items)
         {
         }
@@ -336,7 +339,7 @@ namespace RxBlazorLightCore
 
     public class StateGroupAsync<T> : StateGroupBase<T>, IStateGroupAsync<T>
     {
-        protected StateGroupAsync(RxBLService service, T? value, T[] items) :
+        private StateGroupAsync(RxBLService service, T? value, T[] items) :
             base(service, value, items)
         {
         }

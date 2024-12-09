@@ -83,11 +83,11 @@
         SetImageSource();
     }
 
-    protected override async Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList)
+    protected override async Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList, CancellationToken ct)
     {
         if (crList.Contains(Service.CanIncrementCheck))
         {
-            await Task.Delay(100);
+            await Task.Delay(100, ct);
             SetImageSource();
         }
     }

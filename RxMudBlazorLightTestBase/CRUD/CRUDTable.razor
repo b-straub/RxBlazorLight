@@ -16,11 +16,11 @@
         </CardHeaderContent>
         <CardHeaderActions>
             <MudStack Row=@true>
-                <MudSelectRx StateGroup=@Service.CRUDDBRoleGroup CanChangeCallback=@CrudService.CanChangeRole FullWidth=@false />
+                <MudSelectRx StateGroup=@Service.CruddbRoleGroup CanChangeCallback=@CrudService.CanChangeRole FullWidth=@false />
                 <CRUDItemAddOrUpdate AddMode=@true Item=@null />
-                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.AutoDelete" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.Completed))
+                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.AutoDelete" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.COMPLETED))
                                StateCommand=@Service.CommandAsync CanChangeCallback=@Service.CanRemoveCompletedCRUDItems ExecuteAsyncCallback=@(Service.RemoveCompletedCRUDItems()) />
-                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.All))
+                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.ALL))
                                StateCommand=@Service.CommandAsync CanChangeCallback=@Service.CanRemoveAllCRUDItems ExecuteAsyncCallback=@(Service.RemoveAllCRUDItems()) />
             </MudStack>
         </CardHeaderActions>
@@ -63,7 +63,7 @@
                 </MudTd>
                 <MudTd DataLabel="DeleteItem" Style="text-align:center">
                     <MudIconButtonAsyncRx Color="Color.Error" Icon=@Icons.Material.Filled.Delete StateCommand=@Service.CommandAsync CanChangeCallback=@Service.CanRemoveCRUDItem
-                                          ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.One)) ExecuteAsyncCallback=@(Service.RemoveCRUDItem(context)) />
+                                          ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.ONE)) ExecuteAsyncCallback=@(Service.RemoveCRUDItem(context)) />
                 </MudTd>
             </RowTemplate>
         </MudTable>
@@ -79,9 +79,9 @@
 
     private enum DeleteType
     {
-        All,
-        Completed,
-        One
+        ALL,
+        COMPLETED,
+        ONE
     }
 
     private static string ColorForItem(CRUDToDoItem item)
@@ -97,7 +97,7 @@
 
     private Func<CRUDToDoItem, object> Sort()
     {
-        return new Func<CRUDToDoItem, object>(x =>
+        return x =>
         {
             var completed = x.Completed;
 
@@ -106,17 +106,17 @@
                 completed = !completed;
             }
 
-            return x.Completed ? x.DueDate.Ticks : -(long.MaxValue - x.DueDate.Ticks);
-        });
+            return completed ? x.DueDate.Ticks : -(long.MaxValue - x.DueDate.Ticks);
+        };
     }
 
     private async Task<bool> ConfirmDelete(DeleteType type)
     {
         var message = type switch
         {
-            DeleteType.All => "Delete all items?",
-            DeleteType.Completed => "Delete completed items?",
-            DeleteType.One => "Delete item?",
+            DeleteType.ALL => "Delete all items?",
+            DeleteType.COMPLETED => "Delete completed items?",
+            DeleteType.ONE => "Delete item?",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
 

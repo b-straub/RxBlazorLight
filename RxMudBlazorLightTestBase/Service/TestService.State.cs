@@ -1,5 +1,4 @@
-﻿using System.Reactive;
-using System.Reactive.Linq;
+﻿using R3;
 using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
@@ -29,7 +28,7 @@ namespace RxMudBlazorLightTestBase.Service
             };
         }
 
-        public Func<IStateObserverAsync, IDisposable> IncrementCounterObservable => observer =>
+        public Func<IStateProgressObserverAsync, IDisposable> IncrementCounterObservable => observer =>
         {
             var stopObservable = Observable
                 .FromAsync(async ct =>
@@ -42,11 +41,11 @@ namespace RxMudBlazorLightTestBase.Service
             return Observable
                 .Interval(TimeSpan.FromMilliseconds(100))
                 .TakeUntil(stopObservable)
-                .Select(_ => -1L)
-                .Subscribe(observer);
+                .Select(_ => IStateProgressObserverAsync.InterminateValue)
+                .Subscribe(observer.AsObserver);
         };
 
-        public Func<IStateObserverAsync, IDisposable> IncrementCounterTimeoutObservable => observer =>
+        public Func<IStateProgressObserverAsync, IDisposable> IncrementCounterTimeoutObservable => observer =>
         {
             var stopObservable = Observable
                 .FromAsync(async ct =>
@@ -58,12 +57,13 @@ namespace RxMudBlazorLightTestBase.Service
 
             return Observable
                 .Interval(TimeSpan.FromMilliseconds(100))
+                .Index()
                 .TakeUntil(stopObservable)
-                .Select(i => i > 10 ? throw new TimeoutException() : -1L)
-                .Subscribe(observer);
+                .Select(i => i > 10 ? throw new TimeoutException() : IStateProgressObserverAsync.InterminateValue)
+                .Subscribe(observer.AsObserver);
         };
 
-        public Func<IStateObserverAsync, IDisposable> AddCounterObservable => observer =>
+        public Func<IStateProgressObserverAsync, IDisposable> AddCounterObservable => observer =>
         {
             var startObservable = Observable
                 .FromAsync(async ct =>
@@ -83,14 +83,15 @@ namespace RxMudBlazorLightTestBase.Service
             
             var triggerObservable = Observable
                 .Interval(TimeSpan.FromMilliseconds(100))
+                .Index()
                 .Select(i =>
                 {
                     Console.WriteLine($"Interval: {i}");
                     return i;
                 })
-                .TakeUntil(i => i > 2000);
+                .TakeUntil(i => i > 20);
 
-            long progress = 0;
+            var progress = 0.0;
 
             return Observable
                 .Interval(TimeSpan.FromMilliseconds(40))
@@ -105,8 +106,8 @@ namespace RxMudBlazorLightTestBase.Service
                                 .TakeUntil(stopObservable)
                         )
                 )
-                .Select(_ => progress++)
-                .Subscribe(observer);
+                .Select(_ => progress += 1.0)
+                .Subscribe(observer.AsObserver);
         };
 
         private static readonly Pizza[] Pizzas =
@@ -172,7 +173,6 @@ namespace RxMudBlazorLightTestBase.Service
         {
             return (o, n) =>
             {
-                var context = value;
                 Console.WriteLine($"{o}, {n}");
             };
         }

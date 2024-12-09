@@ -1,5 +1,4 @@
-﻿using System.Reactive;
-using System.Reactive.Linq;
+﻿using R3;
 using RxBlazorLightCore;
 using Xunit.Abstractions;
 
@@ -90,7 +89,7 @@ namespace RxBlazorLightCoreTestBase
             }
         }
 
-        public enum CMD_CRUD
+        public enum CmdCRUD
         {
             ADD,
             UPDATE,
@@ -98,30 +97,30 @@ namespace RxBlazorLightCoreTestBase
             CLEAR
         }
 
-        public Func<IStateCommandAsync, Task> ChangeCrudListAsync((CMD_CRUD CMD, CRUDTest? ITEM) value)
+        public Func<IStateCommandAsync, Task> ChangeCrudListAsync((CmdCRUD CMD, CRUDTest? ITEM) value)
         {
             return async c =>
             {
-                if (value.CMD is CMD_CRUD.ADD)
+                if (value.CMD is CmdCRUD.ADD)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
                     CRUDList.Add(value.ITEM);
                 }
-                else if (value.CMD is CMD_CRUD.UPDATE)
+                else if (value.CMD is CmdCRUD.UPDATE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
-                    var item = CRUDList.Where(i => i.Id == value.ITEM.Id).FirstOrDefault();
+                    var item = CRUDList.FirstOrDefault(i => i.Id == value.ITEM.Id);
                     ArgumentNullException.ThrowIfNull(item);
 
                     CRUDList.Remove(item);
                     CRUDList.Add(value.ITEM);
                 }
-                else if (value.CMD is CMD_CRUD.DELETE)
+                else if (value.CMD is CmdCRUD.DELETE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
                     CRUDList.Remove(value.ITEM);
                 }
-                else if (value.CMD is CMD_CRUD.CLEAR)
+                else if (value.CMD is CmdCRUD.CLEAR)
                 {
                     CRUDList.Clear();
                 }
@@ -134,28 +133,28 @@ namespace RxBlazorLightCoreTestBase
             };
         }
 
-        public Func<IStateCommandAsync, Task> ChangeCrudDictAsync((CMD_CRUD CMD, Guid? ID, CRUDTest? ITEM) value)
+        public Func<IStateCommandAsync, Task> ChangeCrudDictAsync((CmdCRUD CMD, Guid? ID, CRUDTest? ITEM) value)
         {
             return async c =>
             {
-                if (value.CMD is CMD_CRUD.ADD)
+                if (value.CMD is CmdCRUD.ADD)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
                     ArgumentNullException.ThrowIfNull(value.ID);
                     CRUDDict.Add(value.ID.Value, value.ITEM);
                 }
-                else if (value.CMD is CMD_CRUD.UPDATE)
+                else if (value.CMD is CmdCRUD.UPDATE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ITEM);
                     ArgumentNullException.ThrowIfNull(value.ID);
                     CRUDDict[value.ID.Value] = value.ITEM;
                 }
-                else if (value.CMD is CMD_CRUD.DELETE)
+                else if (value.CMD is CmdCRUD.DELETE)
                 {
                     ArgumentNullException.ThrowIfNull(value.ID);
                     CRUDDict.Remove(value.ID.Value);
                 }
-                else if (value.CMD is CMD_CRUD.CLEAR)
+                else if (value.CMD is CmdCRUD.CLEAR)
                 {
                     CRUDDict.Clear();
                 }
@@ -168,15 +167,17 @@ namespace RxBlazorLightCoreTestBase
             };
         }
 
-        public IDisposable ObserveState(IStateObserverAsync observer)
+        public IDisposable ObserveState(IStateProgressObserverAsync observer)
         {
             return Observable
                 .Interval(TimeSpan.FromSeconds(1))
+                .Index()
+                .Select(i => (double)i)
                 .Take(2)
-                .Subscribe(observer);
+                .Subscribe(observer.AsObserver);
         }
 
-        public IDisposable ObserveStateComplex(IStateObserverAsync observer, ITestOutputHelper outputHelper)
+        public IDisposable ObserveStateComplex(IStateProgressObserverAsync observer, ITestOutputHelper outputHelper)
         {
             var startObservable = Observable
                 .FromAsync(async ct =>
@@ -197,28 +198,31 @@ namespace RxBlazorLightCoreTestBase
                     outputHelper.WriteLine("StopLastWork");
                     return Observable.Return(0);
                 });
-
-            long progress = 0;
             
             return Observable
                 .Interval(TimeSpan.FromMilliseconds(500))
+                .Index()
+                .Select(i => (double)i)
                 .TakeUntil(startObservable)
                 .Concat(
                     Observable
                         .Interval(TimeSpan.FromMilliseconds(500))
+                        .Index()
+                        .Select(i => (double)i)
                         .TakeUntil(stopObservable)
                     )
-                .Select(_ => progress++)
-                .Subscribe(observer);
+                .Subscribe(observer.AsObserver);
         }
 
-        public static IDisposable ObserveStateThrow(IStateObserverAsync observer)
+        public static IDisposable ObserveStateThrow(IStateProgressObserverAsync observer)
         {
             return Observable
                 .Interval(TimeSpan.FromSeconds(2))
                 .Timeout(TimeSpan.FromSeconds(1))
+                .Index()
+                .Select(i => (double)i)
                 .Take(2)
-                .Subscribe(observer);
+                .Subscribe(observer.AsObserver);
         }
     }
 }

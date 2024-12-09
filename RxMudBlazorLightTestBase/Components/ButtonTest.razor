@@ -30,16 +30,17 @@
                 <MudMenuItemRx StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(5))>Add 5</MudMenuItemRx>
                 <MudMenuItem OnClick=@(() => Service.AddObserver.ExecuteAsync(Service.AddCounterObservable))>Add 2x10 to Counter</MudMenuItem>
                 <MudMenuItem OnClick=@(() => Service.IncrementObserver.ExecuteAsync(Service.IncrementCounterTimeoutObservable))>Increment Counter Timeout</MudMenuItem>
-                <MudMenuItem OnClick=@(() => ObservableDialogClick(Service.IncrementCounterObservable))>Dialog Increment Counter</MudMenuItem>
-                <MudMenuItem OnClick=@(() => ObservableDialogClick(Service.IncrementCounterTimeoutObservable))>Dialog Increment Counter Timeout</MudMenuItem>
+                <MudMenuItem OnClick=@(() => ObservableDialogClick(Service.AddCounterObservable, false))>Dialog Add Counter</MudMenuItem>
+                <MudMenuItem OnClick=@(() => ObservableDialogClick(Service.IncrementCounterObservable, true))>Dialog Increment Counter</MudMenuItem>
+                <MudMenuItem OnClick=@(() => ObservableDialogClick(Service.IncrementCounterTimeoutObservable, true))>Dialog Increment Counter Timeout</MudMenuItem>
                 <MudMenuItemAsyncRx StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync>IncrementAsync</MudMenuItemAsyncRx>
                 <MudMenuItem OnClick=@(() => CmdDialogClick())>Dialog IncrementAsync</MudMenuItem>
                 <MudMenuItem OnClick=@(() => CmdDialogClick(2))>Dialog AddAsync 2</MudMenuItem>
             </MudMenu>
-            <MudPopoverAsyncRx Header="Add 2x10 to Counter" StateObserver=@Service.AddObserver CancelText="Cancel Add" CancelColor=@Color.Error
+            <MudPopoverAsyncRx Header="Add 2x10 to Counter" ProgressStateObserver=@Service.AddObserver CancelText="Cancel Add" CancelColor=@Color.Error
                                AnchorOrigin=@Origin.BottomCenter TransformOrigin=@Origin.TopCenter>
             </MudPopoverAsyncRx>
-            <MudPopoverAsyncRx Header="Increment Counter" StateObserver=@Service.IncrementObserver
+            <MudPopoverAsyncRx Header="Increment Counter" ProgressStateObserver=@Service.IncrementObserver
                                AnchorOrigin=@Origin.BottomCenter TransformOrigin=@Origin.TopCenter>
             </MudPopoverAsyncRx>
         </MudItem>
@@ -151,10 +152,12 @@
             $"Add {parameter}", $"Add {parameter} to counter?", $"Add {parameter}", "Cancel", true, "Cancel adding!", Color.Error);
     }
     
-    private async Task<bool> ObservableDialogClick(Func<IStateObserverAsync, IDisposable> executeAsyncCallback)
+    private async Task<bool> ObservableDialogClick(Func<IStateProgressObserverAsync, IDisposable> executeAsyncCallback, bool increment)
     {
+        var name = increment ? "Increment" : "Add";
+        
         return await DialogAsyncORx<TestService>.Show(DialogService, Service.IncrementDialogObserver, executeAsyncCallback,
-            $"Increment", $"Increment counter?", $"Increment", "Cancel", true, "Cancel increment!", Color.Error);
+            $"{name}", $"{name} counter?", $"{name}", "Cancel", true, $"Cancel {name}!", Color.Error);
     }
 
     private async Task DoPrepareAddRemoveAsync(IStateCommandAsync c)

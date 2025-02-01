@@ -47,7 +47,7 @@
         ArgumentNullException.ThrowIfNull(_buttonRx);
         _buttonRx.SetParameter(StateCommand, ExecuteAsyncCallback, CanChangeCallback, DeferredNotification);
 
-        var parameters = _buttonRx.GetFabParameters(StateCommand, StartIcon, EndIcon, Label, IconVariant);
+        var parameters = _buttonRx.GetFabParameters(StateCommand, StartIcon, EndIcon, Label, IconVariant, Size == Size.Small);
 
         StartIcon = parameters.StartIcon;
         EndIcon = parameters.EndIcon;

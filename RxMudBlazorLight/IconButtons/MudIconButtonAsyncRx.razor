@@ -44,11 +44,7 @@
     {
         ArgumentNullException.ThrowIfNull(_buttonRx);
         ArgumentNullException.ThrowIfNull(Icon);
-
-        if (!StateCommand.Changing())
-        {
-            _buttonRx.SetButtonIcon(Icon);
-        }
+        _buttonRx.SetButtonIcon(Icon);
         
         _buttonRx.SetParameter(StateCommand, ExecuteAsyncCallback, CanChangeCallback, DeferredNotification);
 

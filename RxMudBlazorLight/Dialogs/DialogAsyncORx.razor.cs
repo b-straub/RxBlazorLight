@@ -8,7 +8,7 @@ namespace RxMudBlazorLight.Dialogs
     public partial class DialogAsyncORx<T>
     {
         [CascadingParameter]
-        public MudDialogInstance? MudDialog { get; set; }
+        public IMudDialogInstance? MudDialog { get; set; }
 
         [Parameter, EditorRequired]
         public required string Message { get; init; }

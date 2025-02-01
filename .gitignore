@@ -399,3 +399,4 @@ FodyWeavers.xsd
 *.bat
 .DS_Store
 .idea
+*.DotSettings

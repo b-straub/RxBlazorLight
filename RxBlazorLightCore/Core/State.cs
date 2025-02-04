@@ -86,7 +86,7 @@ namespace RxBlazorLightCore
             _value = value;
         }
 
-        public void SetValue(T value)
+        public void SetValueSilent(T value)
         {
             _value = value;
         }
@@ -251,13 +251,13 @@ namespace RxBlazorLightCore
 
         public void OnNext(long value)
         {
-            SetValue(value);
+            SetValueSilent(value);
             PhaseChanged(false, !_deferredNotification);
         }
 
         private void Reset()
         {
-            SetValue(0);
+            SetValueSilent(0);
             _disposable = null;
             _deferredNotification = false;
             Exception = null;
@@ -266,7 +266,7 @@ namespace RxBlazorLightCore
         private void Complete()
         {
             _disposable = null;
-            SetValue(100);
+            SetValueSilent(100);
         }
 
         public static IStateObserverAsync Create(RxBLService service, bool handleError)

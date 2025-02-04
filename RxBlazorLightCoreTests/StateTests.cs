@@ -254,7 +254,7 @@ namespace RxBlazorLightCoreTests
             Assert.Equal(0, fixture.IntState.Value);
 
             var disposable = subscribeTest();
-            await fixture.IntCommandAsync.ExecuteAsync(async _ => { await Task.Delay(10); fixture.IntState.SetValue(1); });
+            await fixture.IntCommandAsync.ExecuteAsync(async _ => { await Task.Delay(10); fixture.IntState.SetValueSilent(1); });
             while (!done) ;
             Assert.Equal(1, fixture.IntState.Value);
             Assert.Equal(2, stateChangeCount);

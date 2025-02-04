@@ -1,7 +1,6 @@
 ﻿@inherits RxBLServiceSubscriber<TestService>
 
 <PageTitle>TestPlayground</PageTitle>
-<MudPopoverProvider></MudPopoverProvider>
 
 <MudStack AlignItems="AlignItems.Center">
     <MudText Typo="Typo.h3" GutterBottom="true">@($"InputTest {Service.TextValue.Value} / {Service.GetRadio().Value} / {Service.RatingValue.Value}")</MudText>
@@ -10,7 +9,7 @@
         <TimerComponent Name="TestPlayground"/>
     </RxBLStateScope>
     <MudText id="result" Class="mb-4">Current count: @Service.Counter</MudText>
-    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() ChangingAsyncCallback=@TestService.ChangePizzaAsync/>
+    <MudRadioGroupAsyncRx id="radio" StateGroupAsync=@Service.GetPizzas2() ChangingAsyncCallback=@TestService.ChangePizzaAsync ItemDisabledCallback=@PizzaDisabled/>
     <MudButtonRx id="button1" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@Service.IncrementCounter>Increment</MudButtonRx>
     <MudButtonRx id="button2" Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(5))>Add 5</MudButtonRx>
     <MudText Typo="Typo.h5" GutterBottom="true">@($"Count State Changes {_countStateChanges}")</MudText>
@@ -46,6 +45,11 @@
         {
             _countStateChanges++;
         }
+    }
+
+    private bool PizzaDisabled(int index)
+    {
+        return Service.Counter == 0;
     }
 
     private string GetExceptions()

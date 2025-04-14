@@ -39,7 +39,7 @@
 
     private long _countStateChanges = 0;
 
-    protected override void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
+    protected override void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
     {
         if (crList.Contains(Service.Command) && Service.Command.Changed())
         {

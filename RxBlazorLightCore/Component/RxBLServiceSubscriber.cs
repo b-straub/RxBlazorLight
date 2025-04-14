@@ -27,11 +27,11 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
             .Subscribe();
     }
 
-    protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
+    protected virtual void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList)
+    protected virtual Task OnServiceStateHasChangedAsync(IList<ServiceChangeReason> crList)
     {
         return Task.CompletedTask;
     }

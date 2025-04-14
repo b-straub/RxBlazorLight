@@ -90,7 +90,7 @@ namespace RxMudBlazorLight.Dialogs
             }
         }
 
-        protected override void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
+        protected override void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
         {
             if (_closing || _buttonRef is null || !_buttonRef.StateCommand.Done() || StateCommand.Canceled())
             {

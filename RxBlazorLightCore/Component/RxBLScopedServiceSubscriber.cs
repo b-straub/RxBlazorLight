@@ -8,10 +8,11 @@ public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : I
     [Parameter]
     public double SampleRateMS { get; set; } = 100;
 
+    private IDisposable? _subscription;
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        Service
+        _subscription = Service
             .Buffer(TimeSpan.FromMilliseconds(SampleRateMS))
             .Where(crList => crList.Count > 0)
             .Select(crList => Observable.FromAsync(async () =>
@@ -22,6 +23,17 @@ public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : I
             }))
             .Concat()
             .Subscribe();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _subscription?.Dispose();
+            _subscription = null;
+        }
+        
+        base.Dispose(disposing);
     }
 
     protected virtual void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)

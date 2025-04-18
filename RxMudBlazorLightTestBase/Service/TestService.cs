@@ -1,4 +1,4 @@
-﻿using System.Reactive.Linq;
+﻿using R3;
 using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
@@ -155,7 +155,6 @@ namespace RxMudBlazorLightTestBase.Service
             _pizzaState1 = this.CreateStateGroup(Pizzas);
             _pizzaState2 = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);
             _pizzaStateIndependent = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);
-            _pizzaStateIndependent.Independent = true;
             _radioTestExtended = this.CreateStateGroup(Colors, Colors[0]);
             
             this.AsChangedObservable(TextValue)

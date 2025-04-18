@@ -27,12 +27,18 @@
 
     [NotNull]
     private CrudService.CrudItemInput? Scope { get; set; }
-
-    protected override void OnInitialized()
+    
+    protected override async Task OnInitializedAsync()
     {
         Scope = Service.CreateItemInput(Item);
         ArgumentNullException.ThrowIfNull(Scope);
-
+        
+        var options = MudDialog.Options with
+        {
+            CloseButton = false
+        };
+        
+        await MudDialog.SetOptionsAsync(options);
         await base.OnInitializedAsync();
     }
 

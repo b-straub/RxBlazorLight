@@ -204,7 +204,7 @@ namespace RxBlazorLightCore
     {
         protected override void OnNextCore(double value)
         {
-            stateProgressObserverAsync.SetValue(value);
+            stateProgressObserverAsync.SetValueSilent(value);
             stateProgressObserverAsync.PhaseChanged(false);
         }
 
@@ -255,7 +255,7 @@ namespace RxBlazorLightCore
         {
             Exception = null;
             _stateObserverCore = new(this, _handleError);
-            SetValue(IStateProgressObserverAsync.InterminateValue);
+            SetValueSilent(IStateProgressObserverAsync.InterminateValue);
             _disposable = executeCallbackAsync(this);
         }
 

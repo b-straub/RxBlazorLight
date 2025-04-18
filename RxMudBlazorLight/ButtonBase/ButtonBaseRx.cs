@@ -107,7 +107,7 @@ namespace RxMudBlazorLight.ButtonBase
             }
         };
 
-        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateCommandAsync stateCommand, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool forceOneIcon)
+        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateCommandAsync stateCommand, string? startIcon, string? endIcon, string? label, MbIconVariant? iconVariant, bool forceOneIcon)
         {
             if (_iconForState is IconForState.NONE)
             {
@@ -156,12 +156,12 @@ namespace RxMudBlazorLight.ButtonBase
                     }
                     else
                     {
-                        if (_iconForState is IconForState.Start)
+                        if (_iconForState is IconForState.START)
                         {
                             startIcon = progressIcon;
                         }
 
-                        if (_iconForState is IconForState.End)
+                        if (_iconForState is IconForState.END)
                         {
                             endIcon = progressIcon;
                         }

@@ -399,4 +399,4 @@ FodyWeavers.xsd
 *.bat
 .DS_Store
 .idea
-RxBlazorLight.sln.DotSettings
+*.DotSettings

@@ -184,7 +184,7 @@ namespace RxBlazorLightCoreTestBase
                 {
                     outputHelper.WriteLine("StartFirstWork");
                     await Task.Delay(1000, ct);
-                    IntState.SetValue(10);
+                    IntState.SetValueSilent(10);
                     outputHelper.WriteLine("StopFirstWork");
                     return Observable.Timer(TimeSpan.FromSeconds(1));
                 });
@@ -194,7 +194,7 @@ namespace RxBlazorLightCoreTestBase
                 {
                     outputHelper.WriteLine("StartLastWork");
                     await Task.Delay(1000, ct);
-                    IntState.SetValue(20);
+                    IntState.SetValueSilent(20);
                     outputHelper.WriteLine("StopLastWork");
                     return Observable.Return(0);
                 });

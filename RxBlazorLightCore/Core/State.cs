@@ -88,7 +88,7 @@ namespace RxBlazorLightCore
             _value = value;
         }
 
-        public void SetValue(T value)
+        public void SetValueSilent(T value)
         {
             _value = value;
         }
@@ -271,7 +271,7 @@ namespace RxBlazorLightCore
         internal void Complete()
         {
             _disposable = null;
-            SetValue(IStateProgressObserverAsync.MaxValue);
+            SetValueSilent(IStateProgressObserverAsync.MaxValue);
         }
 
         public static IStateProgressObserverAsync Create(RxBLService service, bool handleError)

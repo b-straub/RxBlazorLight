@@ -1,4 +1,5 @@
-﻿using RxBlazorLightCore;
+﻿using System.Reactive.Linq;
+using RxBlazorLightCore;
 
 namespace RxMudBlazorLightTestBase.Service
 {
@@ -156,6 +157,11 @@ namespace RxMudBlazorLightTestBase.Service
             _pizzaStateIndependent = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);
             _pizzaStateIndependent.Independent = true;
             _radioTestExtended = this.CreateStateGroup(Colors, Colors[0]);
+            
+            this.AsChangedObservable(TextValue)
+                .Take(1)
+                .Select(async _ => await _pizzaState2.ChangeValueAsync(Pizzas[1]))
+                .Subscribe();
         }
 
         public IRxBLStateScope CreateScope()
@@ -173,6 +179,7 @@ namespace RxMudBlazorLightTestBase.Service
             Console.WriteLine("TestService OnContextInitialized");
             await Task.Delay(3000);
             _canIncrement = true;
+            TextValue.Value = "Context Ready";
             ServiceState = new StateInfo("Initialized");
         }
 

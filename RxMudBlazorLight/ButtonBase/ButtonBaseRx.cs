@@ -107,15 +107,10 @@ namespace RxMudBlazorLight.ButtonBase
             }
         };
 
-        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateCommandAsync stateCommand, string? startIcon, string? endIcon, string? label, MbIconVariant? iconVariant)
+        public (string? StartIcon, string? EndIcon, string? Label) GetFabParameters(IStateCommandAsync stateCommand, string? startIcon, string? endIcon, string? label, MBIconVariant? iconVariant, bool forceOneIcon)
         {
             if (_iconForState is IconForState.NONE)
             {
-                if (!string.IsNullOrEmpty(startIcon) && !string.IsNullOrEmpty(endIcon) && HasProgress)
-                {
-                    throw new InvalidOperationException("Async FabButton with progress can not have start and end icon set!");
-                }
-
                 if (string.IsNullOrEmpty(startIcon))
                 {
                     _iconForState = IconForState.START;
@@ -150,14 +145,26 @@ namespace RxMudBlazorLight.ButtonBase
                 {
                     var progressIcon = iconVariant.GetProgressIcon();
 
-                    if (_iconForState is IconForState.START)
+                    if (forceOneIcon)
                     {
                         startIcon = progressIcon;
+                        endIcon = null;
                     }
-
-                    if (_iconForState is IconForState.END)
+                    else if (!string.IsNullOrEmpty(startIcon) && !string.IsNullOrEmpty(endIcon))
                     {
                         endIcon = progressIcon;
+                    }
+                    else
+                    {
+                        if (_iconForState is IconForState.Start)
+                        {
+                            startIcon = progressIcon;
+                        }
+
+                        if (_iconForState is IconForState.End)
+                        {
+                            endIcon = progressIcon;
+                        }
                     }
                 }
 

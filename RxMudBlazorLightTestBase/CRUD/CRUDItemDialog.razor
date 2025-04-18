@@ -20,7 +20,7 @@
 @code {
 
     [CascadingParameter]
-    public required MudDialogInstance MudDialog { get; init; }
+    public required IMudDialogInstance MudDialog { get; init; }
 
     [Parameter]
     public required CRUDToDoItem? Item { get; init; }
@@ -33,10 +33,7 @@
         Scope = Service.CreateItemInput(Item);
         ArgumentNullException.ThrowIfNull(Scope);
 
-        MudDialog.Options.CloseButton = true;
-        MudDialog.SetOptions(MudDialog.Options);
-
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     private void OnValidSubmit(EditContext context)

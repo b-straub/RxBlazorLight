@@ -266,7 +266,7 @@ namespace RxBlazorLightCore
         /// updating the internal representation of the state with a new value.
         /// </summary>
         /// <param name="value">The new value to be assigned to the state.</param>
-        public void SetValue(T value);
+        public void SetValueSilent(T value);
 
         /// <summary>
         /// Determines whether the current state holds a non-null value. This method checks if

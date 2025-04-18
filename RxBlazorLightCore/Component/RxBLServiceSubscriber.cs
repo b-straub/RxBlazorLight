@@ -28,11 +28,11 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
             });
     }
 
-    protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
+    protected virtual void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList, CancellationToken ct)
+    protected virtual Task OnServiceStateHasChangedAsync(IList<ServiceChangeReason> crList, CancellationToken ct)
     {
         return Task.CompletedTask;
     }
@@ -79,11 +79,11 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
             });
     }
 
-    protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
+    protected virtual void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList, CancellationToken ct)
+    protected virtual Task OnServiceStateHasChangedAsync(IList<ServiceChangeReason> crList, CancellationToken ct)
     {
         return Task.CompletedTask;
     }
@@ -136,11 +136,11 @@ public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLS
             });
     }
 
-    protected virtual void OnServiceStateHasChanged(IEnumerable<ServiceChangeReason> crList)
+    protected virtual void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
     {
     }
 
-    protected virtual Task OnServiceStateHasChangedAsync(IEnumerable<ServiceChangeReason> crList, CancellationToken ct)
+    protected virtual Task OnServiceStateHasChangedAsync(IList<ServiceChangeReason> crList, CancellationToken ct)
     {
         return Task.CompletedTask;
     }

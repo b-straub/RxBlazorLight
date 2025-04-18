@@ -40,11 +40,8 @@ namespace RxMudBlazorLightTests.Extensions
 
         public static IElement? FindMudRadioButton(this IRenderedFragment fragment, string radioId, string buttonText)
         {
-            var buttons = fragment.FindID(radioId).Children
-                .SelectMany(c => c.Children)
-                .Where(c => c.ClassName is not null && c.ClassName.Contains("mud-button-root"));
-
-            return buttons.Where(c => c.ParentElement is not null && c.ParentElement.TextContent.Contains(buttonText, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            var buttons = fragment.FindID(radioId).QuerySelectorAll(".mud-button-root");
+            return buttons.FirstOrDefault(c => c.ParentElement is not null && c.ParentElement.TextContent.Contains(buttonText, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }

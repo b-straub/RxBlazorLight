@@ -3,15 +3,23 @@
 <PageTitle>StateScopeTest</PageTitle>
 
 <DisplayRenderCycle Owner=@Service>
-<MudStack>
-    <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope>
-        <StateScope />
-    </RxBLStateScope>
-    <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope>
-        <StateScope />
-    </RxBLStateScope>
-    <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope>
-        <StateScope />
-    </RxBLStateScope>
-</MudStack>
+    <MudStack>
+        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope LogStateChange=@true>
+            <StateScope />
+        </RxBLStateScope>
+        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope LogStateChange=@true>
+            <StateScope />
+        </RxBLStateScope>
+        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope LogStateChange=@true>
+            <StateScope />
+        </RxBLStateScope>
+    </MudStack>
 </DisplayRenderCycle>
+
+@code {
+    protected override void OnInitialized()
+    {
+        LogStateChange = true;
+        base.OnInitialized();
+    }
+}

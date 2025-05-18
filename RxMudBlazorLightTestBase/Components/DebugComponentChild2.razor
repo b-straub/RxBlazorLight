@@ -1,0 +1,21 @@
+@inherits RxBLStateSubscriber<TestService>
+
+<DisplayRenderCycle Owner=@Owner>
+    <MudStack Row=@true>
+        <MudText Typo="Typo.h3" GutterBottom="true">@Owner.ServiceState.State</MudText>
+        <MudText Typo="Typo.caption">@($"ServiceStateCMDAsync: {Owner.ServiceStateCMDAsync.StateID}")</MudText>
+    </MudStack>
+</DisplayRenderCycle>
+
+<DisplayRenderCycle Owner=@Owner>
+    <MudButtonAsyncRx Color="Color.Warning" Variant="Variant.Filled" StateCommand=@Owner.ServiceStateCMDAsync ExecuteAsyncCallback=@(Owner.ChangeServiceStateAsync("Test"))>Change State to Test</MudButtonAsyncRx>
+</DisplayRenderCycle>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        LogStateChange = true;
+        base.OnInitialized();
+    }
+}

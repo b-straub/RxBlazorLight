@@ -7,22 +7,30 @@ namespace RxBlazorLightCore;
 public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : IRxBLService
 {
     [Parameter]
-    public double SampleRateMS { get; set; } = 100;
+    public required double SampleRateMS { get; init; } = 100;
+
+#if DEBUG
+    [Parameter]
+    public bool LogStateChange { get; set; }
+#endif
 
     private IDisposable? _subscription;
-    
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        
-         _subscription = Service.AsObservable
+
+        _subscription = Service.AsObservable
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
             .SubscribeAwait(async (crList, ct) =>
             {
 #if DEBUG
-                foreach (var cr in crList)
+                if (LogStateChange)
                 {
-                    Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.OwnerID}");
+                    foreach (var cr in crList)
+                    {
+                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.OwnerID}");
+                    }
                 }
 #endif
                 await OnServiceStateHasChangedAsync(crList, ct);
@@ -39,7 +47,7 @@ public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : I
             _subscription?.Dispose();
             _subscription = null;
         }
-        
+
         base.Dispose(disposing);
     }
 

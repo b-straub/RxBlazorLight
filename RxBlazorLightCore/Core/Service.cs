@@ -32,10 +32,9 @@ namespace RxBlazorLightCore
         public abstract IStateCommandAsync CommandAsync { get; }
         public abstract IStateCommandAsync CancellableCommandAsync { get; }
         public abstract Observable<ServiceChangeReason> AsObservable { get; }
-        
         public Guid OwnerID { get; } = Guid.NewGuid();
         public bool Disabled => _ownedStates.Any(s => s.Phase == StatePhase.CHANGING);
-
+        
         private readonly HashSet<IStateInformation> _ownedStates = new(new StateInformationComparer());
 
         public bool OwnsState(Guid stateID)

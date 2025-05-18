@@ -1,27 +1,13 @@
 ﻿@inherits OwningComponentBase<TestService>
 
-<PageTitle>Debug</PageTitle>
+<DisplayRenderCycle Owner=@Service>
+    <PageTitle>Debug</PageTitle>
 
-<MudStack AlignItems=@AlignItems.Start>
-    <RxBLStateSubscriber Owner=@Service>
-        <DisplayRenderCycle>
-            <MudText Typo="Typo.h3" GutterBottom="true">@Service.Counter</MudText>
-        </DisplayRenderCycle>
-        <DisplayRenderCycle>
-            <MudButtonRx Color="Color.Primary" Variant="Variant.Filled" StateCommand=@Service.Command ExecuteCallback=@Service.IncrementCounter CanChangeCallback=@Service.IncrementStateCanChange>Increment</MudButtonRx>
-        </DisplayRenderCycle>
-    </RxBLStateSubscriber>
-
-    <RxBLStateSubscriber Owner=@Service Filter=@([Service.ServiceStateCMD])>
-        <DisplayRenderCycle>
-            <MudText Typo="Typo.h3" GutterBottom="true">@Service.ServiceState.State</MudText>
-        </DisplayRenderCycle>
-
-        <DisplayRenderCycle>
-            <MudButtonRx Color="Color.Warning" Variant="Variant.Filled" StateCommand=@Service.ServiceStateCMD ExecuteCallback=@(Service.ChangeServiceState("Test"))>Change State to Test</MudButtonRx>
-        </DisplayRenderCycle>
-    </RxBLStateSubscriber>
-</MudStack>
+    <MudStack AlignItems=@AlignItems.Start>
+        <DebugComponentChild1 Owner=@Service Filter=@( [Service.OwnerID, Service.ServiceStateCMD.StateID])/>
+        <DebugComponentChild2 Owner=@Service Filter=@( [Service.ServiceStateCMDAsync.StateID])/>
+    </MudStack>
+</DisplayRenderCycle>
 
 @code
 {

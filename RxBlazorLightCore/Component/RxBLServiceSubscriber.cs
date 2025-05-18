@@ -10,7 +10,12 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
     public required T Service { get; init; }
 
     [Parameter]
-    public double SampleRateMS { get; set; } = 100;
+    public required double SampleRateMS { get; init; } = 100;
+
+#if DEBUG
+    [Parameter]
+    public required bool LogStateChange { get; init; }
+#endif
 
     protected override void OnInitialized()
     {
@@ -21,9 +26,12 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
             .SubscribeAwait(async (crList, ct) =>
             {
 #if DEBUG
-                foreach (var cr in crList)
+                if (LogStateChange)
                 {
-                    Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.OwnerID}");
+                    foreach (var cr in crList)
+                    {
+                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.OwnerID}");
+                    }
                 }
 #endif
                 await OnServiceStateHasChangedAsync(crList, ct);
@@ -71,7 +79,7 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        
+
         Observable.Merge(Service1.AsObservable, Service2.AsObservable)
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
             .SubscribeAwait(async (crList, ct) =>
@@ -100,6 +108,7 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
             {
                 await Service1.OnContextReadyAsync();
             }
+
             if (!Service2.Initialized)
             {
                 await Service2.OnContextReadyAsync();
@@ -111,7 +120,8 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
 }
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global -> Library
-public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLService where T2 : IRxBLService where T3 : IRxBLService
+public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase
+    where T1 : IRxBLService where T2 : IRxBLService where T3 : IRxBLService
 {
     [Inject]
     public required T1 Service1 { get; init; }
@@ -156,10 +166,12 @@ public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLS
             {
                 await Service1.OnContextReadyAsync();
             }
+
             if (!Service2.Initialized)
             {
                 await Service2.OnContextReadyAsync();
             }
+
             if (!Service3.Initialized)
             {
                 await Service2.OnContextReadyAsync();

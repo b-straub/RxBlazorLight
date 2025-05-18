@@ -8,15 +8,17 @@ public class RxBLStateSubscriber<T> : ComponentBase, IDisposable where T : IRxBL
 {
     [Parameter, EditorRequired]
     public required T Owner { get; init; }
-    
-    [Parameter]
-    public required IStateInformation[] Filter { get; init; } = [];
 
     [Parameter]
-    public required RenderFragment ChildContent { get; init; }
+    public required Guid[] Filter { get; init; } = [];
 
     [Parameter]
-    public double SampleRateMS { get; set; } = 100;
+    public required double SampleRateMS { get; init; } = 100;
+
+#if DEBUG
+    [Parameter]
+    public bool LogStateChange { get; set; }
+#endif
 
     private IDisposable? _subscription;
 
@@ -26,18 +28,21 @@ public class RxBLStateSubscriber<T> : ComponentBase, IDisposable where T : IRxBL
 
         _subscription = Owner.AsObservable
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Select(crList =>
+            .Where(crList =>
             {
-                return Filter.Length == 0
-                    ? crList.ToList()
-                    : crList.Where(cr => Filter.Select(s => s.StateID).Contains(cr.StateID)).ToList();
+                return Filter.Length == 0 || crList
+                    .Select(cr => cr.StateID)
+                    .Any(id => Filter.Any(filter => filter == id));
             })
             .SubscribeAwait(async (crList, ct) =>
             {
 #if DEBUG
-                foreach (var cr in crList)
+                if (LogStateChange)
                 {
-                    Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Owner.OwnerID}");
+                    foreach (var cr in crList)
+                    {
+                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Owner.OwnerID}");
+                    }
                 }
 #endif
                 await OnServiceStateHasChangedAsync(crList, ct);

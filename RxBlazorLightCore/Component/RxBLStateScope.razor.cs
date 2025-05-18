@@ -17,7 +17,12 @@ public sealed partial class RxBLStateScope<TService, TScope> : ComponentBase, ID
     private TScope? Scope { get; set; }
 
     [Parameter]
-    public double SampleRateMS { get; set; } = 100;
+    public required double SampleRateMS { get; init; } = 100;
+
+#if DEBUG
+    [Parameter]
+    public required bool LogStateChange { get; init; }
+#endif
 
     private IDisposable? _subscription;
 
@@ -33,9 +38,12 @@ public sealed partial class RxBLStateScope<TService, TScope> : ComponentBase, ID
             .SubscribeAwait(async (crList, _) =>
             {
 #if DEBUG
-                foreach (var cr in crList)
+                if (LogStateChange)
                 {
-                    Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Scope.OwnerID}");
+                    foreach (var cr in crList)
+                    {
+                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Scope.OwnerID}");
+                    }
                 }
 #endif
                 await InvokeAsync(StateHasChanged);

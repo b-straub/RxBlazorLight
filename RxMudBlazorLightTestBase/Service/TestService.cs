@@ -46,13 +46,15 @@ namespace RxMudBlazorLightTestBase.Service
     {
         public StateInfo ServiceState { get; protected set; }
         public IStateCommand ServiceStateCMD { get; }
-
+        public IStateCommandAsync ServiceStateCMDAsync { get; }
+        
         protected TestServiceBase()
         {
             Console.WriteLine("TestService Create");
 
             ServiceState = new StateInfo(string.Empty);
             ServiceStateCMD = this.CreateStateCommand();
+            ServiceStateCMDAsync = this.CreateStateCommandAsync();
         }
     }
 
@@ -192,6 +194,12 @@ namespace RxMudBlazorLightTestBase.Service
 
         public Action ChangeServiceState(string state) => () =>
         {
+            ServiceState = new StateInfo(State: state);
+        };
+        
+        public Func<IStateCommandAsync, Task> ChangeServiceStateAsync(string state) => async c =>
+        {
+            await Task.Delay(1000, c.CancellationToken);
             ServiceState = new StateInfo(State: state);
         };
 

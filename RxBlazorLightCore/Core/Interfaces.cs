@@ -178,7 +178,7 @@ namespace RxBlazorLightCore
     /// and provide tracking through a unique identifier. It is fundamental in scenarios where state
     /// ownership and control need to be maintained across different components.
     /// </remarks>
-    public interface IRxBLStateOwner: IDisposable
+    public interface IRxBLStateOwner : IDisposable
     {
         /// <summary>
         /// Gets the unique identifier associated with the owner of the state. This identifier
@@ -266,7 +266,7 @@ namespace RxBlazorLightCore
         /// </value>
         public IStateCommandAsync CancellableCommandAsync { get; }
     }
-    
+
 
     /// <summary>
     /// Represents the contract for state information within the RxBlazorLightCore system.
@@ -443,7 +443,8 @@ namespace RxBlazorLightCore
         /// It can be used to track or correlate changes.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous execution operation.</returns>
-        public Task ExecuteAsync(Func<IStateCommandAsync, Task> executeCallbackAsync, bool deferredNotification = false, Guid? changeCallerID = null);
+        public Task ExecuteAsync(Func<IStateCommandAsync, Task> executeCallbackAsync, bool deferredNotification = false,
+            Guid? changeCallerID = null);
     }
 
     /// <summary>

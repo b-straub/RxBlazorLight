@@ -4,8 +4,8 @@
     <PageTitle>Debug</PageTitle>
 
     <MudStack AlignItems=@AlignItems.Start>
-        <DebugComponentChild1 Owner=@Service Filter=@( [Service.OwnerID, Service.ServiceStateCMD.StateID])/>
-        <DebugComponentChild2 Owner=@Service Filter=@( [Service.ServiceStateCMDAsync.StateID])/>
+        <DebugComponentChild1 Owner=@Service Filter=@( [Service.ServiceStateCMD])/>
+        <DebugComponentChild2 Owner=@Service Filter=@( [Service.ServiceStateCMDAsync])/>
     </MudStack>
 </DisplayRenderCycle>
 

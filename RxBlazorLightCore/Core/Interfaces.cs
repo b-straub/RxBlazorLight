@@ -178,32 +178,8 @@ namespace RxBlazorLightCore
     /// and provide tracking through a unique identifier. It is fundamental in scenarios where state
     /// ownership and control need to be maintained across different components.
     /// </remarks>
-    public interface IRxBLStateOwner : IDisposable
+    public interface IRxBLStateOwner : IDisposable, IStateInformation
     {
-        /// <summary>
-        /// Gets the unique identifier associated with the owner of the state. This identifier
-        /// is used to distinguish and track the entity managing or owning the state within
-        /// the state management system.
-        /// </summary>
-        /// <remarks>
-        /// The OwnerID is essential for ensuring proper ownership and control of state data,
-        /// especially in scenarios involving multiple state owners or complex state workflows.
-        /// It ensures each owner is uniquely identified for effective state management.
-        /// </remarks>
-        /// <returns>
-        /// A <see cref="Guid"/> value that represents the unique identifier of the state owner.
-        /// </returns>
-        public Guid OwnerID { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the state associated with this owner is disabled.
-        /// This property determines if the current state is inactive or restricted,
-        /// preventing normal operations or interactions.
-        /// </summary>
-        /// <returns>A boolean value where <c>true</c> signifies that the state is disabled,
-        /// and <c>false</c> indicates that the state is active and operational.</returns>
-        public bool Disabled { get; }
-
         /// <summary>
         /// Determines whether the current state owner instance owns a specific state
         /// identified by its unique identifier.
@@ -292,7 +268,7 @@ namespace RxBlazorLightCore
         /// </summary>
         /// <remarks>
         /// The unique identifier is crucial for distinguishing between different state instances
-        /// and is utilized in various operations, such as equality comparison or filtering events
+        /// and is used in various operations, such as equality comparison or filtering events
         /// related to a specific state.
         /// </remarks>
         public Guid StateID { get; }

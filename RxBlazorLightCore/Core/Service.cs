@@ -32,14 +32,15 @@ namespace RxBlazorLightCore
         public abstract IStateCommandAsync CommandAsync { get; }
         public abstract IStateCommandAsync CancellableCommandAsync { get; }
         public abstract Observable<ServiceChangeReason> AsObservable { get; }
-        public Guid OwnerID { get; } = Guid.NewGuid();
+        public Guid StateID { get; } = Guid.NewGuid();
+        public StatePhase Phase => _ownedStates.Any(s => s.Phase == StatePhase.CHANGING) ? StatePhase.CHANGING : StatePhase.CHANGED;
         public bool Disabled => _ownedStates.Any(s => s.Phase == StatePhase.CHANGING);
         
         private readonly HashSet<IStateInformation> _ownedStates = new(new StateInformationComparer());
 
         public bool OwnsState(Guid stateID)
         {
-            return stateID == OwnerID || _ownedStates.Select(s => s.StateID).Contains(stateID);
+            return stateID == StateID || _ownedStates.Select(s => s.StateID).Contains(stateID);
         }
 
         internal void AddOwnedState(IStateInformation stateInformation)
@@ -119,7 +120,7 @@ namespace RxBlazorLightCore
         {
             lock (_gate)
             {
-                StateHasChanged(OwnerID, exception);
+                StateHasChanged(StateID, exception);
             }
         }
         
@@ -150,7 +151,7 @@ namespace RxBlazorLightCore
 
             await ContextReadyAsync();
             Initialized = true;
-            StateHasChanged(OwnerID);
+            StateHasChanged(StateID);
         }
 
         protected virtual ValueTask ContextReadyAsync()

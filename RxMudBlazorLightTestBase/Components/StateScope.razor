@@ -17,7 +17,7 @@
                               CanChangeCallback=@Scope.CounterAsyncCanChange CancelText="Cancel Add">Add
             </MudButtonAsyncRx>
         </MudStack>
-        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Scope.Service.CreateScope LogStateChange=@true>
+        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Scope.Service.CreateScope>
             <StateSubScope/>
         </RxBLStateScope>
     </MudStack>

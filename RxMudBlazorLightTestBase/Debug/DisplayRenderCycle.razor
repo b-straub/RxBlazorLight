@@ -2,7 +2,7 @@
     @if (Owner is not null)
     {
         <MudStack>
-            <MudText Typo="Typo.caption">@($"OwnerID: {Owner.OwnerID}")</MudText>
+            <MudText Typo="Typo.caption">@($"OwnerID: {Owner.StateID}")</MudText>
             <MudText Typo="Typo.caption">@($"CommandID: {Owner.Command.StateID}")</MudText>
             <MudText Typo="Typo.caption">@($"CommandAsyncID: {Owner.CommandAsync.StateID}")</MudText>
             <MudText

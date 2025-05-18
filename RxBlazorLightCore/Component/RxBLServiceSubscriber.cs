@@ -30,7 +30,7 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
                 {
                     foreach (var cr in crList)
                     {
-                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.OwnerID}");
+                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.StateID}");
                     }
                 }
 #endif

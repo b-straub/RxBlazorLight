@@ -21,7 +21,7 @@ public sealed partial class RxBLStateScope<TService, TScope> : ComponentBase, ID
 
 #if DEBUG
     [Parameter]
-    public required bool LogStateChange { get; init; }
+    public required bool LogStateChange { get; init; } = true;
 #endif
 
     private IDisposable? _subscription;
@@ -42,7 +42,7 @@ public sealed partial class RxBLStateScope<TService, TScope> : ComponentBase, ID
                 {
                     foreach (var cr in crList)
                     {
-                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Scope.OwnerID}");
+                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Scope.StateID}");
                     }
                 }
 #endif

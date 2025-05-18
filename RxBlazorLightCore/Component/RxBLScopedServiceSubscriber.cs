@@ -29,7 +29,7 @@ public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : I
                 {
                     foreach (var cr in crList)
                     {
-                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.OwnerID}");
+                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.StateID}");
                     }
                 }
 #endif

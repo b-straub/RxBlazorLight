@@ -10,7 +10,7 @@ public class RxBLStateSubscriber<T> : ComponentBase, IDisposable where T : IRxBL
     public required T Owner { get; init; }
 
     [Parameter]
-    public required Guid[] Filter { get; init; } = [];
+    public required IStateInformation[] Filter { get; init; } = [];
 
     [Parameter]
     public required double SampleRateMS { get; init; } = 100;
@@ -30,9 +30,9 @@ public class RxBLStateSubscriber<T> : ComponentBase, IDisposable where T : IRxBL
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
             .Where(crList =>
             {
-                return Filter.Length == 0 || crList
+                return Filter.Length == 0 || crList.Any(cr => cr.StateID == Owner.StateID) || crList
                     .Select(cr => cr.StateID)
-                    .Any(id => Filter.Any(filter => filter == id));
+                    .Any(sID => Filter.Any(filter => filter.StateID == sID));
             })
             .SubscribeAwait(async (crList, ct) =>
             {
@@ -41,7 +41,7 @@ public class RxBLStateSubscriber<T> : ComponentBase, IDisposable where T : IRxBL
                 {
                     foreach (var cr in crList)
                     {
-                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Owner.OwnerID}");
+                        Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Owner.StateID}");
                     }
                 }
 #endif

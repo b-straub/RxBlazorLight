@@ -8,10 +8,7 @@ namespace RxBlazorLightCoreTest
         public IState<int> Counter { get; }
 
         public int CounterCommandResult { get; private set; }
-        public IStateCommand CounterCommand { get; }
-        public IStateCommandAsync CounterCommandAsync { get; }
-
-
+        
         public IList<string> StringList { get; }
         public IStateCommand StringListCommand { get; }
 
@@ -21,9 +18,6 @@ namespace RxBlazorLightCoreTest
         public TestService()
         {
             Counter = this.CreateState(0);
-            CounterCommand = this.CreateStateCommand();
-            CounterCommandAsync = this.CreateStateCommandAsync(true);
-
             StringListCommand = this.CreateStateCommand();
             StringCommand = this.CreateStateCommand();
 
@@ -32,7 +26,7 @@ namespace RxBlazorLightCoreTest
 
         public void IncrementState(IState<int> state)
         {
-            CounterCommand.Execute(() => state.Value++);
+            Command.Execute(() => state.Value++);
         }
 
         public bool CanChangeNv => CounterCommandResult < 20;
@@ -56,15 +50,15 @@ namespace RxBlazorLightCoreTest
             CounterCommandResult += value;
         };
 
-        public async Task IncrementAsync(IStateCommandAsync _)
+        public async Task IncrementAsync(IStateCommandAsync c)
         {
-            await Task.Delay(1000);
+            await Task.Delay(1000, c.CancellationToken);
             CounterCommandResult++;
         }
 
-        public Func<IStateCommandAsync, Task> AddAsync(int value) => async _ => 
+        public Func<IStateCommandAsync, Task> AddAsync(int value) => async c => 
         {
-            await Task.Delay(1000);
+            await Task.Delay(1000, c.CancellationToken);
             CounterCommandResult += value;
         };
 

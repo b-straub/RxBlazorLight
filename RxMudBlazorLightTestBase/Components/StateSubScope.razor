@@ -1,10 +1,28 @@
-﻿@inherits RxBLStateSubscriber<StateService>
-
-<MudStack>
-    <MudText Typo="Typo.h4">SubScope</MudText>
-    <MudSlider @bind-Value=@Service.Counter.Value />
-    <MudStack Row=@true AlignItems=@AlignItems.Center>
-        <MudButtonRx StateCommand=@Service.Command ExecuteCallback=@Service.Increment CanChangeCallback=@Service.CounterCanChange>Increment</MudButtonRx>
-        <MudButtonAsyncRx StateCommand=@Service.CounterAsyncCMDCancel ExecuteAsyncCallback=Service.AddAsync(10) CanChangeCallback=@Service.CounterAsyncCanChange CancelText="Cancel Add">Add</MudButtonAsyncRx>
+﻿<DisplayRenderCycle Owner=@Scope>
+    <MudStack Class="pa-4 ml-16">
+        <MudText Typo="Typo.h4">SubScope</MudText>
+        <MudStack Row=@true>
+            <MudText Class="mb-4">Current count: @Scope.Service.Counter.Value</MudText>
+            <MudText Typo="Typo.caption">@($"StateID: {Scope.Service.Counter.StateID}")</MudText>
+        </MudStack>
+        <MudStack Row=@true>
+            <MudSlider @bind-Value=@Scope.Counter.Value/>
+            <MudText Typo="Typo.caption">@($"StateID: {Scope.Counter.StateID}")</MudText>
+        </MudStack>
+        <MudStack Row=@true AlignItems=@AlignItems.Center>
+            <MudButtonRx StateCommand=@Scope.Service.Command ExecuteCallback=@Scope.Service.Increment
+                         CanChangeCallback=@Scope.Service.CounterCanChange>Increment
+            </MudButtonRx>
+            <MudButtonAsyncRx StateCommand=@Scope.CancellableCommandAsync ExecuteAsyncCallback=Scope.AddAsync(10)
+                              CanChangeCallback=@Scope.CounterAsyncCanChange CancelText="Cancel Add">Add
+            </MudButtonAsyncRx>
+        </MudStack>
     </MudStack>
-</MudStack>
+</DisplayRenderCycle>
+
+@code {
+
+    [CascadingParameter]
+    public required StateService.Scope Scope { get; init; }
+
+}

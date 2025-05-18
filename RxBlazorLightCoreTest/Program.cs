@@ -9,18 +9,18 @@ var done = false;
 
 testService.AsObservable.Subscribe(cr =>
 {
-    Console.WriteLine(cr.ID);
+    Console.WriteLine(cr.StateID);
     Console.WriteLine(testService.Counter.Value);
     Console.WriteLine(testService.CounterCommandResult);
     Console.WriteLine(testService.StringList.FirstOrDefault());
     Console.WriteLine(testService.NullString);
 
-    if (testService.CounterCommandAsync.Phase is StatePhase.CHANGING)
+    if (testService.CommandAsync.Phase is StatePhase.CHANGING)
     {
-        testService.CounterCommandAsync.Cancel();
+        testService.CommandAsync.Cancel();
     }
 
-    if (testService.CounterCommandAsync.Phase is StatePhase.CANCELED)
+    if (testService.CommandAsync.Phase is StatePhase.CANCELED)
     {
         done = true;
     }
@@ -31,18 +31,18 @@ testService.IncrementState(testService.Counter);
 testService.Counter.Value = 1;
 testService.Counter.Value = 2;
 
-testService.CounterCommand.Execute(testService.Increment);
-testService.CounterCommand.Execute(testService.Increment);
+testService.Command.Execute(testService.Increment);
+testService.Command.Execute(testService.Increment);
 
-testService.CounterCommand.Execute(testService.Add(10));
+testService.Command.Execute(testService.Add(10));
 testService.StringListCommand.Execute(testService.AddString("Test"));
 testService.StringCommand.Execute(testService.SetString("TestNotNull"));
 
-await testService.CounterCommandAsync.ExecuteAsync(testService.AddAsync(10));
+await testService.CommandAsync.ExecuteAsync(testService.AddAsync(10));
 
-await testService.CounterCommandAsync.ExecuteAsync(testService.IncrementAsync);
+await testService.CommandAsync.ExecuteAsync(testService.IncrementAsync);
 
-await testService.CounterCommandAsync.ExecuteAsync(testService.AddAsyncCancel(10));
+await testService.CommandAsync.ExecuteAsync(testService.AddAsyncCancel(10));
 
 testService.CanChangeT(1);
 testService.CanChangeT(100);

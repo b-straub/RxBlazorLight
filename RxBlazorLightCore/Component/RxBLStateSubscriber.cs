@@ -1,28 +1,43 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using R3;
 
 // ReSharper disable once CheckNamespace -> use same namespace for all components
 namespace RxBlazorLightCore;
 
-public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : IRxBLService
+public class RxBLStateSubscriber<T> : ComponentBase, IDisposable where T : IRxBLStateOwner
 {
+    [Parameter, EditorRequired]
+    public required T Owner { get; init; }
+    
+    [Parameter]
+    public required IStateInformation[] Filter { get; init; } = [];
+
+    [Parameter]
+    public required RenderFragment ChildContent { get; init; }
+
     [Parameter]
     public double SampleRateMS { get; set; } = 100;
 
     private IDisposable? _subscription;
-    
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        
-         _subscription = Service.AsObservable
+
+        _subscription = Owner.AsObservable
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
+            .Select(crList =>
+            {
+                return Filter.Length == 0
+                    ? crList.ToList()
+                    : crList.Where(cr => Filter.Select(s => s.StateID).Contains(cr.StateID)).ToList();
+            })
             .SubscribeAwait(async (crList, ct) =>
             {
 #if DEBUG
                 foreach (var cr in crList)
                 {
-                    Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.OwnerID}");
+                    Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Owner.OwnerID}");
                 }
 #endif
                 await OnServiceStateHasChangedAsync(crList, ct);
@@ -30,17 +45,6 @@ public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : I
                 OnServiceStateHasChanged(crList);
                 await InvokeAsync(StateHasChanged);
             });
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _subscription?.Dispose();
-            _subscription = null;
-        }
-        
-        base.Dispose(disposing);
     }
 
     protected virtual void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
@@ -52,16 +56,18 @@ public class RxBLScopedServiceSubscriber<T> : OwningComponentBase<T> where T : I
         return Task.CompletedTask;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    public void Dispose()
     {
-        if (firstRender)
-        {
-            if (!Service.Initialized)
-            {
-                await Service.OnContextReadyAsync();
-            }
-        }
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 
-        await base.OnAfterRenderAsync(firstRender);
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _subscription?.Dispose();
+            _subscription = null;
+        }
     }
 }

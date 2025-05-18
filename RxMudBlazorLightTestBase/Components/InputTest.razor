@@ -1,4 +1,4 @@
-﻿@inherits RxBLServiceSubscriber<TestService>
+﻿@inherits RxBLScopedServiceSubscriber<TestService>
 
 <PageTitle>InputTest</PageTitle>
 
@@ -52,10 +52,10 @@
     <MudAutocompleteRx State=@Service.TextValue SearchFunc=@Search Label="Autocomplete" Immediate=@true />
 
     <RxBLStateScope TScope=@TestService.ColorsStateScope TService=@TestService ScopeFactory=@Service.CreateColorsScope>
-        <ColorsScopedGroup Context=1 />
+        <ColorsScopedGroup Context=0 />
     </RxBLStateScope>
 
-    <RxBLStateScope TScope=@TestService.ColorsStateScope TService=@TestService ScopeFactory=@Service.CreateColorsScope>
+    <RxBLStateScope TScope=@TestService.ColorsStateScope TService=@TestService ScopeFactory=@Service.CreateColorsScopeIndependent>
         <ColorsScopedGroup Context=0 />
         <ColorsScopedGroup Context=1 />
     </RxBLStateScope>

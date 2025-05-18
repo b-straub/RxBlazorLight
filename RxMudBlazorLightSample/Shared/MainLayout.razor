@@ -1,4 +1,4 @@
-﻿@inherits RxBLLayoutSubscriber<TestService>
+﻿@inherits RxBLLayoutSubscriber<LayoutService>
 @using RxMudBlazorLight.ToggleIconButtons
 
 <MudThemeProvider @bind-IsDarkMode=@(Service.DarkMode.Value) Theme="_theme" />
@@ -34,7 +34,7 @@
     public required TimerService TimerService { get; init; }
 
     private bool _drawerOpen = true;
-    private MudTheme _theme = new();
+    private readonly MudTheme _theme = new();
 
     void DrawerToggle()
     {

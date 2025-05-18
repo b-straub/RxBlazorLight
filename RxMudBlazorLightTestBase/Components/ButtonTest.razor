@@ -1,4 +1,4 @@
-﻿@inherits RxBLServiceSubscriber<TestService>
+﻿@inherits RxBLScopedServiceSubscriber<TestService>
 
 <PageTitle>ButtonTest</PageTitle>
 
@@ -99,8 +99,6 @@
     [Inject]
     public required ISnackbar Snackbar { get; init; }
 
-    private readonly Guid _menuCommandID = Guid.NewGuid();
-
     private async Task<bool> ConfirmExecution(bool add = false)
     {
         ArgumentNullException.ThrowIfNull(DialogService);
@@ -144,11 +142,11 @@
     {
         if (parameter is null)
         {
-            return await DialogRx<TestService>.Show(DialogService, Service.Command, Service.IncrementCounter,
+            return await DialogRx<TestService>.Show(Service, DialogService, Service.Command, Service.IncrementCounter,
                 "Increment", "Increment counter?", "Increment", "Cancel", false);
         }
 
-        return await DialogAsyncRx<TestService>.Show(DialogService, Service.CancellableCommandAsync, Service.AddToCounterAsync((int)parameter),
+        return await DialogAsyncRx<TestService>.Show(Service, DialogService, Service.CancellableCommandAsync, Service.AddToCounterAsync((int)parameter),
             $"Add {parameter}", $"Add {parameter} to counter?", $"Add {parameter}", "Cancel", true, "Cancel adding!", Color.Error);
     }
     
@@ -156,7 +154,7 @@
     {
         var name = increment ? "Increment" : "Add";
         
-        return await DialogAsyncORx<TestService>.Show(DialogService, Service.IncrementDialogObserver, executeAsyncCallback,
+        return await DialogAsyncORx<TestService>.Show(Service, DialogService, Service.IncrementDialogObserver, executeAsyncCallback,
             $"{name}", $"{name} counter?", $"{name}", "Cancel", true, $"Cancel {name}!", Color.Error);
     }
 
@@ -197,5 +195,4 @@
     {
         return Service.Exceptions.Aggregate("", (p, n) => p + $"{n.Exception.Message} - {n.ID}, ").TrimEnd([' ', ',']);
     }
-
 }

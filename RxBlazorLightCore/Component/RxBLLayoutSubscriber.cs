@@ -17,7 +17,6 @@ public class RxBLLayoutSubscriber<T> : LayoutComponentBase where T : IRxBLServic
         base.OnInitialized();
         Service.AsObservable
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Length > 0)
             .SubscribeAwait(async (crList, ct) =>
             {
                 await OnServiceStateHasChangedAsync(crList, ct);

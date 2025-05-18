@@ -37,13 +37,14 @@ namespace RxMudBlazorLight.Dialogs
         private MudButton? _buttonRef;
         private bool _closing;
 
-        public static async Task<bool> Show(IDialogService dialogService,
+        public static async Task<bool> Show(T owner, IDialogService dialogService,
             IStateProgressObserverAsync progressStateObserver, Func<IStateProgressObserverAsync, IDisposable> executeAsyncCallback, string title,
             string message, string confirmButton, string cancelButton, bool successOnConfirm, string? cancelText = null,
             Color? cancelColor = null)
         {
             var parameters = new DialogParameters
             {
+                ["Owner"] = owner,
                 ["ProgressStateObserver"] = progressStateObserver,
                 ["ExecuteAsyncCallback"] = executeAsyncCallback,
                 ["CancelColor"] = cancelColor,

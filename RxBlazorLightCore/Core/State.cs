@@ -4,20 +4,21 @@ using R3;
 // ReSharper disable once CheckNamespace -> use same namespace for implementation
 namespace RxBlazorLightCore
 {
-    public class StateBase : IStateInformation
+    internal class StateBase : IStateInformation
     {
         public StatePhase Phase { get; private set; } = StatePhase.CHANGED;
-        public Guid ID { get; } = Guid.NewGuid();
-        public bool Disabled => Independent ? Phase is StatePhase.CHANGING : _service.Changing();
-        public bool Independent { get; set; }
+        public Guid StateID { get; } = Guid.NewGuid();
+        public bool Disabled => _owner.OwnsState(this) ? _owner.Disabled : this.Changing();
 
-        private readonly RxBLService _service;
+        private readonly RxBLService _rxBLService;
+        private readonly RxBLStateOwner _owner;
         private bool _notifyChanging = true;
 
-        protected StateBase(RxBLService service)
+        protected StateBase(RxBLService rxBLService, RxBLStateOwner owner)
         {
-            _service = service;
-            Independent = false;
+            _rxBLService = rxBLService;
+            _owner = owner;
+            _owner.AddOwnedState(this);
         }
 
         public void NotifyChanging()
@@ -44,7 +45,7 @@ namespace RxBlazorLightCore
 
             if (exception is not null)
             {
-                if (exception.GetType() == typeof(TaskCanceledException))
+                if (exception.GetType() == typeof(TaskCanceledException) || exception.GetType() == typeof(OperationCanceledException))
                 {
                     changePhase = StatePhase.CANCELED;
                     exception = null;
@@ -63,13 +64,13 @@ namespace RxBlazorLightCore
 
             if (notify || _notifyChanging || exception is not null)
             {
-                _service.StateHasChanged(this, exception);
+                _rxBLService.StateHasChanged(StateID, exception);
                 _notifyChanging = notify;
             }
         }
     }
 
-    public class State<T> : StateBase, IState<T>
+    internal class State<T> : StateBase, IState<T>
     {
         public T Value
         {
@@ -83,7 +84,7 @@ namespace RxBlazorLightCore
 
         private T _value;
 
-        protected State(RxBLService service, T value) : base(service)
+        protected State(RxBLService rxBLService, T value, RxBLStateOwner owner) : base(rxBLService, owner)
         {
             _value = value;
         }
@@ -99,15 +100,15 @@ namespace RxBlazorLightCore
             return Value is not null;
         }
 
-        public static IState<T> Create(RxBLService service, T value)
+        public static IState<T> Create(RxBLService rxBLService, T value, RxBLStateOwner owner)
         {
-            return new State<T>(service, value);
+            return new State<T>(rxBLService, value, owner);
         }
     }
 
-    public class StateCommand : StateBase, IStateCommand
+    internal class StateCommand : StateBase, IStateCommand
     {
-        protected StateCommand(RxBLService service) : base(service)
+        protected StateCommand(RxBLService rxBLService, RxBLStateOwner owner) : base(rxBLService, owner)
         {
         }
 
@@ -124,20 +125,20 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateCommand Create(RxBLService service)
+        public static IStateCommand Create(RxBLService rxBLService, RxBLStateOwner owner)
         {
-            return new StateCommand(service);
+            return new StateCommand(rxBLService, owner);
         }
     }
 
-    public class StateCommandAsync : StateCommand, IStateCommandAsync
+    internal class StateCommandAsync : StateCommand, IStateCommandAsync
     {
         private CancellationTokenSource? _cancellationTokenSource;
         public bool CanCancel { get; }
         public CancellationToken CancellationToken { get; private set; }
         public Guid? ChangeCallerID { get; private set; }
 
-        private StateCommandAsync(RxBLService service, bool canCancel) : base(service)
+        private StateCommandAsync(RxBLService rxBLService, bool canCancel, RxBLStateOwner owner) : base(rxBLService, owner)
         {
             CanCancel = canCancel;
             if (CanCancel)
@@ -193,9 +194,9 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateCommandAsync Create(RxBLService service, bool canCancel)
+        public static IStateCommandAsync Create(RxBLService rxBLService, bool canCancel, RxBLStateOwner owner)
         {
-            return new StateCommandAsync(service, canCancel);
+            return new StateCommandAsync(rxBLService, canCancel, owner);
         }
     }
 
@@ -230,7 +231,7 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class StateProgressObserverAsync : State<double>, IStateProgressObserverAsync
+    internal class StateProgressObserverAsync : State<double>, IStateProgressObserverAsync
     {
         public Exception? Exception { get; internal set; }
         public Observer<double> AsObserver => _stateObserverCore;
@@ -239,8 +240,8 @@ namespace RxBlazorLightCore
         private readonly bool _handleError;
         private IDisposable? _disposable;
 
-        private StateProgressObserverAsync(RxBLService service, bool handleError) : base(service,
-            IStateProgressObserverAsync.InterminateValue)
+        private StateProgressObserverAsync(RxBLService rxBLService, bool handleError, RxBLStateOwner owner) : base(rxBLService,
+            IStateProgressObserverAsync.InterminateValue, owner)
         {
             _handleError = handleError;
             _stateObserverCore = new(this, _handleError);
@@ -274,19 +275,19 @@ namespace RxBlazorLightCore
             SetValueSilent(IStateProgressObserverAsync.MaxValue);
         }
 
-        public static IStateProgressObserverAsync Create(RxBLService service, bool handleError)
+        public static IStateProgressObserverAsync Create(RxBLService rxBLService, bool handleError, RxBLStateOwner owner)
         {
-            return new StateProgressObserverAsync(service, handleError);
+            return new StateProgressObserverAsync(rxBLService, handleError, owner);
         }
     }
 
-    public class StateGroupBase<T> : StateBase, IStateGroupBase<T>
+    internal class StateGroupBase<T> : StateBase, IStateGroupBase<T>
     {
         public T? Value { get; protected set; }
         public T[] Items { get; }
 
-        protected StateGroupBase(RxBLService service, T? value, T[] items) :
-            base(service)
+        protected StateGroupBase(RxBLService rxBLService, T? value, T[] items, RxBLStateOwner owner) :
+            base(rxBLService, owner)
         {
             Value = value;
             Items = items;
@@ -304,10 +305,10 @@ namespace RxBlazorLightCore
         }
     }
 
-    public class StateGroup<T> : StateGroupBase<T>, IStateGroup<T>
+    internal class StateGroup<T> : StateGroupBase<T>, IStateGroup<T>
     {
-        private StateGroup(RxBLService service, T? value, T[] items) :
-            base(service, value, items)
+        private StateGroup(RxBLService rxBLService, T? value, T[] items, RxBLStateOwner owner) :
+            base(rxBLService, value, items, owner)
         {
         }
 
@@ -331,16 +332,16 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateGroup<T> Create(RxBLService service, T[] items, T? value)
+        public static IStateGroup<T> Create(RxBLService rxBLService, T[] items, T? value, RxBLStateOwner owner)
         {
-            return new StateGroup<T>(service, value, items);
+            return new StateGroup<T>(rxBLService, value, items, owner);
         }
     }
 
-    public class StateGroupAsync<T> : StateGroupBase<T>, IStateGroupAsync<T>
+    internal class StateGroupAsync<T> : StateGroupBase<T>, IStateGroupAsync<T>
     {
-        private StateGroupAsync(RxBLService service, T? value, T[] items) :
-            base(service, value, items)
+        private StateGroupAsync(RxBLService rxBLService, T? value, T[] items, RxBLStateOwner owner) :
+            base(rxBLService, value, items, owner)
         {
         }
 
@@ -365,9 +366,9 @@ namespace RxBlazorLightCore
             }
         }
 
-        public static IStateGroupAsync<T> Create(RxBLService service, T[] items, T? value)
+        public static IStateGroupAsync<T> Create(RxBLService rxBLService, T[] items, T? value, RxBLStateOwner owner)
         {
-            return new StateGroupAsync<T>(service, value, items);
+            return new StateGroupAsync<T>(rxBLService, value, items, owner);
         }
     }
 }

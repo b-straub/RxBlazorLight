@@ -11,20 +11,25 @@ namespace RxMudBlazorLightTestBase.Service
             OVER20
         }
 
-        public IRxBLStateScope CreateScope()
+        public IRxBLStateScope<TimerService> CreateScope()
         {
             return new TimerStateScope(this);
         }
 
-        public sealed class TimerStateScope(TimerService service) : RxBLStateScope<TimerService>(service)
+        public sealed class TimerStateScope : RxBLStateScope<TimerService>
         {
-            public IState<long> ComponentTimer { get; } = service.CreateState(0L);
-
-            public IState<bool> Suspended { get; } = service.CreateState(false);
-
-            public IState<State> TimerState { get; } = service.CreateState(State.STARTED);
-
+            public IState<long> ComponentTimer { get; }
+            public IState<State> TimerState { get; }
+            public IState<bool> Suspended { get; }
+            
             private IDisposable? _timerDisposable;
+
+            public TimerStateScope(TimerService service) : base(service)
+            {
+                ComponentTimer = this.CreateState(0L);
+                TimerState = this.CreateState(State.STARTED);
+                Suspended = this.CreateState(false);
+            }
 
             public override ValueTask OnContextReadyAsync()
             {
@@ -42,8 +47,7 @@ namespace RxMudBlazorLightTestBase.Service
                         }
                     });
 
-                Console.WriteLine("TimerScope ContextReady");
-
+                Console.WriteLine("TimerStateScope ContextReady");
                 return base.OnContextReadyAsync();
             }
 
@@ -52,7 +56,7 @@ namespace RxMudBlazorLightTestBase.Service
                 if (disposing)
                 {
                     _timerDisposable?.Dispose();
-                    Console.WriteLine("TimerScope Disposed");
+                    Console.WriteLine("TimerStateScope Disposed");
                 }
             }
         }

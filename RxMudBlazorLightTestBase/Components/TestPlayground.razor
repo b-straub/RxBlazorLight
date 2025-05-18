@@ -1,4 +1,4 @@
-﻿@inherits RxBLServiceSubscriber<TestService>
+﻿@inherits RxBLScopedServiceSubscriber<TestService>
 
 <PageTitle>TestPlayground</PageTitle>
 
@@ -37,7 +37,7 @@
     [Inject]
     public required TimerService TimerService { get; init; }
 
-    private long _countStateChanges = 0;
+    private long _countStateChanges;
 
     protected override void OnServiceStateHasChanged(IList<ServiceChangeReason> crList)
     {

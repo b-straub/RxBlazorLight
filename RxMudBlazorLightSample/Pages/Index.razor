@@ -1,5 +1,5 @@
 ﻿@page "/"
-@inherits RxBLServiceSubscriber<TestService>
+@inherits RxBLScopedServiceSubscriber<LayoutService>
 
 <PageTitle>Index</PageTitle>
 
@@ -10,5 +10,5 @@
 
 @if (!Service.Initialized)
 {
-    <MudAlert Severity="Severity.Warning">Waiting for TestService!</MudAlert>
+    <MudAlert Severity="Severity.Warning">Waiting for LayoutService!</MudAlert>
 }

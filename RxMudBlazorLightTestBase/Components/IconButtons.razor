@@ -1,10 +1,8 @@
-﻿@inherits RxBLServiceSubscriber<TestService>
-
-<MudStack Row=@true AlignItems=@AlignItems.Center>
-    <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" StateCommand=@Service.Command ExecuteCallback=@Service.IncrementCounter/>
-    <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" StateCommand=@Service.Command ExecuteCallback=@(Service.AddToCounter(5))/>
-    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.IncrementCounterAsync CanChangeCallback=@(Service.CounterCanChangeLowerBound(4))/>
-    <MudIconButtonAsyncRx Color="Color.Secondary" Icon=@GetAddModeIcon() StateCommand=@Service.CommandAsync ExecuteAsyncCallback=@Service.ToggleAddModeDelayedAsync />
+﻿<MudStack Row=@true AlignItems=@AlignItems.Center>
+    <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.PlusOne" StateCommand=@Scope.Service.Command ExecuteCallback=@Scope.Service.IncrementCounter/>
+    <MudIconButtonRx Color="Color.Primary" Icon="@Icons.Material.Filled.Add" StateCommand=@Scope.Service.Command ExecuteCallback=@(Scope.Service.AddToCounter(5))/>
+    <MudIconButtonAsyncRx Color="Color.Secondary" Icon="@Icons.Material.Filled.PlusOne" StateCommand=@Scope.Service.CommandAsync ExecuteAsyncCallback=@Scope.Service.IncrementCounterAsync CanChangeCallback=@(Scope.Service.CounterCanChangeLowerBound(4))/>
+    <MudIconButtonAsyncRx Color="Color.Secondary" Icon=@GetAddModeIcon() StateCommand=@Scope.Service.CommandAsync ExecuteAsyncCallback=@Scope.Service.ToggleAddModeDelayedAsync />
 </MudStack>
 
 <MudStack>
@@ -23,9 +21,9 @@
 
     [CascadingParameter]
     public required TestService.Scope Scope { get; init; }
-
+    
     private string GetAddModeIcon()
     {
-        return Service.AddMode.Value ? Icons.Material.Filled.ExposurePlus1 : Icons.Material.Filled.ExposureNeg1;
+        return Scope.Service.AddMode.Value ? Icons.Material.Filled.ExposurePlus1 : Icons.Material.Filled.ExposureNeg1;
     }
 }

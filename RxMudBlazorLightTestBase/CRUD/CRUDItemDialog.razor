@@ -1,16 +1,16 @@
-﻿@inherits RxBLServiceSubscriber<CrudService>
+﻿@inherits RxBLStateSubscriber<CrudService.CrudItemInput>
 
 <MudDialog ContentStyle="width: 400px; height: 400px">
     <DialogContent>
-        <EditForm Model=@Scope OnValidSubmit="OnValidSubmit">
+        <EditForm Model=@Owner OnValidSubmit="OnValidSubmit">
             <MudCard>
                 <MudCardContent>
-                    <MudTextFieldRx State=@Scope.Text Validation=@CrudService.CrudItemInput.ValidateText CanChangeCallback=@Scope.CanUpdateText AutoFocus ="true" Immediate="true" Label="ToDo" />
-                    <MudDatePickerRx State=@Scope.DueDateDate Validation=@CrudService.CrudItemInput.ValidateDueDate CanChangeCallback=@Scope.CanUpdateDueDate Label="Due Date" Editable="true" />
-                    <MudTimePickerRx PickerVariant=@PickerVariant.Dialog State=@Scope.DueDateTime Validation=@Scope.ValidateDueDateTime CanChangeCallback=@Scope.CanUpdateTime />
+                    <MudTextFieldRx State=@Owner.Text Validation=@CrudService.CrudItemInput.ValidateText CanChangeCallback=@Owner.CanUpdateText AutoFocus ="true" Immediate="true" Label="ToDo" />
+                    <MudDatePickerRx State=@Owner.DueDateDate Validation=@CrudService.CrudItemInput.ValidateDueDate CanChangeCallback=@Owner.CanUpdateDueDate Label="Due Date" Editable="true" />
+                    <MudTimePickerRx PickerVariant=@PickerVariant.Dialog State=@Owner.DueDateTime Validation=@Owner.ValidateDueDateTime CanChangeCallback=@Owner.CanUpdateTime />
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Disabled=@(!Scope.CanSubmit()) ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color=@Color.Success Class="ml-auto">Save</MudButton>
+                    <MudButton Disabled=@(!Owner.CanSubmit()) ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color=@Color.Success Class="ml-auto">Save</MudButton>
                 </MudCardActions>
             </MudCard>
         </EditForm>
@@ -21,18 +21,12 @@
 
     [CascadingParameter]
     public required IMudDialogInstance MudDialog { get; init; }
-
+    
     [Parameter]
     public required CRUDToDoItem? Item { get; init; }
-
-    [NotNull]
-    private CrudService.CrudItemInput? Scope { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
-        Scope = Service.CreateItemInput(Item);
-        ArgumentNullException.ThrowIfNull(Scope);
-        
         var options = MudDialog.Options with
         {
             CloseButton = false
@@ -44,6 +38,6 @@
 
     private void OnValidSubmit(EditContext context)
     {
-        MudDialog.Close(Scope);
+        MudDialog.Close(Owner);
     }
 }

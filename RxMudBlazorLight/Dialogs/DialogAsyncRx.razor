@@ -1,5 +1,5 @@
-﻿@typeparam T where T : IRxBLService
-@inherits RxBLServiceSubscriber<T>
+﻿@typeparam T where T : IRxBLStateOwner
+@inherits RxBLStateSubscriber<T>
 
 <MudElement>
     <MudDialog>

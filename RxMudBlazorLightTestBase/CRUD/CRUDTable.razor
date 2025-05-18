@@ -1,10 +1,10 @@
-﻿@inherits RxBLServiceSubscriber<CrudService>
+﻿@inherits RxBLScopedServiceSubscriber<CrudService>
 
 <MudCard Class="ma-8" Elevation="0" Outlined="true">
     <MudCardHeader>
         <CardHeaderAvatar>
             <MudAvatar Color="Color.Primary">
-                <MudIcon Icon="@Icons.Material.Filled.MoreTime" />
+                <MudIcon Icon="@Icons.Material.Filled.MoreTime"/>
             </MudAvatar>
         </CardHeaderAvatar>
         <CardHeaderContent>
@@ -16,54 +16,70 @@
         </CardHeaderContent>
         <CardHeaderActions>
             <MudStack Row=@true>
-                <MudSelectRx StateGroup=@Service.CruddbRoleGroup CanChangeCallback=@CrudService.CanChangeRole FullWidth=@false />
-                <CRUDItemAddOrUpdate AddMode=@true Item=@null />
-                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.AutoDelete" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.COMPLETED))
-                               StateCommand=@Service.CommandAsync CanChangeCallback=@Service.CanRemoveCompletedCRUDItems ExecuteAsyncCallback=@(Service.RemoveCompletedCRUDItems()) />
-                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.ALL))
-                               StateCommand=@Service.CommandAsync CanChangeCallback=@Service.CanRemoveAllCRUDItems ExecuteAsyncCallback=@(Service.RemoveAllCRUDItems()) />
+                <MudSelectRx StateGroup=@Service.CruddbRoleGroup CanChangeCallback=@CrudService.CanChangeRole
+                             FullWidth=@false/>
+                <CRUDItemAddOrUpdate AddMode=@true Item=@null Owner=@Service/>
+                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.AutoDelete" Size="Size.Small"
+                               ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.COMPLETED))
+                               StateCommand=@Service.CommandAsync CanChangeCallback=@Service.CanRemoveCompletedCRUDItems
+                               ExecuteAsyncCallback=@(Service.RemoveCompletedCRUDItems())/>
+                <MudFabAsyncRx Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" Size="Size.Small"
+                               ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.ALL))
+                               StateCommand=@Service.CommandAsync CanChangeCallback=@Service.CanRemoveAllCRUDItems
+                               ExecuteAsyncCallback=@(Service.RemoveAllCRUDItems())/>
             </MudStack>
         </CardHeaderActions>
     </MudCardHeader>
     <MudCardContent>
         <MudTable T="CRUDToDoItem" Items=@Service.CRUDItems Dense="true">
             <ColGroup>
-                <col style="width:55%;" />
-                <col style="width:30%;" />
-                <col style="width:5%;" />
-                <col style="width:5%;" />
-                <col style="width:5%;" />
+                <col style="width:55%;"/>
+                <col style="width:30%;"/>
+                <col style="width:5%;"/>
+                <col style="width:5%;"/>
+                <col style="width:5%;"/>
             </ColGroup>
             <HeaderContent>
                 <MudTh>ToDo</MudTh>
                 <MudTh>
-                    <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy=@Sort() SortDirectionChanged=@(d => _sortDirection = d)>
+                    <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy=@Sort()
+                                       SortDirectionChanged=@(d => _sortDirection = d)>
                         DueDate
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh Style="text-align:center">
-                    <MudIcon Icon="@Icons.Material.Filled.Check" />
+                    <MudIcon Icon="@Icons.Material.Filled.Check"/>
                 </MudTh>
                 <MudTh Style="text-align:center">
-                    <MudIcon Icon="@Icons.Material.Filled.Edit" />
+                    <MudIcon Icon="@Icons.Material.Filled.Edit"/>
                 </MudTh>
                 <MudTh Style="text-align:center">
-                    <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Delete" />
+                    <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Delete"/>
                 </MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="ToDo"><MudText Style=@ColorForItem(context)>@context.Text</MudText></MudTd>
-                <MudTd DataLabel="DueDate"><MudText Style=@ColorForItem(context)>@DateTimeForItem(context)</MudText></MudTd>
+                <MudTd DataLabel="ToDo">
+                    <MudText Style=@ColorForItem(context)>@context.Text</MudText>
+                </MudTd>
+                <MudTd DataLabel="DueDate">
+                    <MudText Style=@ColorForItem(context)>@DateTimeForItem(context)</MudText>
+                </MudTd>
                 <MudTd DataLabel="Completed" Style="text-align:center">
-                    <MudIconButtonAsyncRx Icon=@(context.Completed ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank) StateCommand=@Service.CancellableCommandAsync
-                                                HasProgress=@false CanChangeCallback=@Service.CanToggleCRUDItemCompleted ExecuteAsyncCallback=@(Service.ToggleCRUDItemCompletedAsync(context)) />
+                    <MudIconButtonAsyncRx
+                        Icon=@(context.Completed ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank)
+                        StateCommand=@Service.CancellableCommandAsync
+                        HasProgress=@false CanChangeCallback=@Service.CanToggleCRUDItemCompleted
+                        ExecuteAsyncCallback=@(Service.ToggleCRUDItemCompletedAsync(context))/>
                 </MudTd>
                 <MudTd DataLabel="Edit" Style="text-align:center">
-                    <CRUDItemAddOrUpdate AddMode=@false Item=@context />
+                    <CRUDItemAddOrUpdate AddMode=@false Item=@context Owner=@Service/>
                 </MudTd>
                 <MudTd DataLabel="DeleteItem" Style="text-align:center">
-                    <MudIconButtonAsyncRx Color="Color.Error" Icon=@Icons.Material.Filled.Delete StateCommand=@Service.CommandAsync CanChangeCallback=@Service.CanRemoveCRUDItem
-                                          ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.ONE)) ExecuteAsyncCallback=@(Service.RemoveCRUDItem(context)) />
+                    <MudIconButtonAsyncRx Color="Color.Error" Icon=@Icons.Material.Filled.Delete
+                                          StateCommand=@Service.CommandAsync
+                                          CanChangeCallback=@Service.CanRemoveCRUDItem
+                                          ConfirmExecutionAsync=@(() => ConfirmDelete(DeleteType.ONE))
+                                          ExecuteAsyncCallback=@(Service.RemoveCRUDItem(context))/>
                 </MudTd>
             </RowTemplate>
         </MudTable>
@@ -71,10 +87,10 @@
 </MudCard>
 
 @code {
+
     [Inject]
     public required IDialogService DialogService { get; init; }
-
-    private List<CRUDToDoItem> _items = [];
+    
     private SortDirection _sortDirection = SortDirection.Ascending;
 
     private enum DeleteType
@@ -91,8 +107,7 @@
 
     private static string DateTimeForItem(CRUDToDoItem item)
     {
-        return item.DueDate == new DateTime(item.DueDate.Year, item.DueDate.Month, item.DueDate.Day) ?
-            item.DueDate.ToShortDateString() : item.DueDate.ToShortDateString() + " - " + item.DueDate.ToShortTimeString();
+        return item.DueDate == new DateTime(item.DueDate.Year, item.DueDate.Month, item.DueDate.Day) ? item.DueDate.ToShortDateString() : item.DueDate.ToShortDateString() + " - " + item.DueDate.ToShortTimeString();
     }
 
     private Func<CRUDToDoItem, object> Sort()
@@ -126,4 +141,5 @@
         var res = await dialog.Result;
         return res.OK();
     }
+
 }

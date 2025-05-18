@@ -102,7 +102,7 @@ namespace RxMudBlazorLight.ButtonBase
 
                 OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, () =>
                         ExecuteStateCommandAsync(stateCommand, executeAsyncCallback, deferredNotification));
-               
+
                 Disabled = stateCommand.Disabled || (canChangeCallback is not null && !canChangeCallback());
             }
 

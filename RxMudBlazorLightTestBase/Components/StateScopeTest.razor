@@ -1,7 +1,17 @@
-﻿<PageTitle>StateScopeTest</PageTitle>
+﻿@inherits RxBLScopedServiceSubscriber<StateService>
 
+<PageTitle>StateScopeTest</PageTitle>
+
+<DisplayRenderCycle Owner=@Service>
 <MudStack>
-    <StateScope></StateScope>
-    <StateScope></StateScope>
-    <StateScope></StateScope>
+    <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope>
+        <StateScope />
+    </RxBLStateScope>
+    <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope>
+        <StateScope />
+    </RxBLStateScope>
+    <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope>
+        <StateScope />
+    </RxBLStateScope>
 </MudStack>
+</DisplayRenderCycle>

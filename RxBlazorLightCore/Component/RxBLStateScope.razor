@@ -1,6 +1,7 @@
-﻿@namespace RxBlazorLightCore
-@typeparam TScope where TScope : IRxBLStateScope
+﻿@* ReSharper disable once CheckNamespace *@
+@namespace RxBlazorLightCore
 @typeparam TService where TService : IRxBLService
+@typeparam TScope where TScope : IRxBLStateScope<TService>
 
 <CascadingValue Value=@Scope>
     @ChildContent

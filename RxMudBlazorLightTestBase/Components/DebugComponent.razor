@@ -1,7 +1,9 @@
-﻿<PageTitle>Debug</PageTitle>
+﻿@inherits OwningComponentBase<TestService>
+
+<PageTitle>Debug</PageTitle>
 
 <MudStack AlignItems=@AlignItems.Start>
-    <RxBLStateSubscriber Service=@Service>
+    <RxBLStateSubscriber Owner=@Service>
         <DisplayRenderCycle>
             <MudText Typo="Typo.h3" GutterBottom="true">@Service.Counter</MudText>
         </DisplayRenderCycle>
@@ -10,7 +12,7 @@
         </DisplayRenderCycle>
     </RxBLStateSubscriber>
 
-    <RxBLStateSubscriber Service=@Service Filter=@([Service.ServiceStateCMD])>
+    <RxBLStateSubscriber Owner=@Service Filter=@([Service.ServiceStateCMD])>
         <DisplayRenderCycle>
             <MudText Typo="Typo.h3" GutterBottom="true">@Service.ServiceState.State</MudText>
         </DisplayRenderCycle>
@@ -21,7 +23,18 @@
     </RxBLStateSubscriber>
 </MudStack>
 
-@code {
-    [Inject]
-    public required TestService Service { get; init; }
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!Service.Initialized)
+            {
+                await Service.OnContextReadyAsync();
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
 }

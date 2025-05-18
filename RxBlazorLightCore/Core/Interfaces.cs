@@ -32,14 +32,14 @@ namespace RxBlazorLightCore
     /// in the organization and tracking of state changes or exceptions as they relate to the
     /// specific services.
     /// </remarks>
-    /// <param name="ID">
+    /// <param name="StateID">
     /// A unique identifier associated with the specific instance of the service change.
     /// </param>
     /// <param name="Reason">
     /// The reason for the service change, which is based on the <see cref="ChangeReason"/> enumeration
     /// that includes various types like 'EXCEPTION' or 'STATE'.
     /// </param>
-    public readonly record struct ServiceChangeReason(Guid ID, ChangeReason Reason);
+    public readonly record struct ServiceChangeReason(Guid StateID, ChangeReason Reason);
 
     /// <summary>
     /// Represents an exception that occurs within a service, capturing the ID of the service context and the exception instance.
@@ -69,7 +69,7 @@ namespace RxBlazorLightCore
     /// Implementing classes will leverage these capabilities to perform actions once the context
     /// is ready and to ensure any necessary cleanup is performed.
     /// </remarks>
-    public interface IRxBLStateScope : IDisposable
+    public interface IRxBLStateScope<out T> : IRxBLStateOwner where T : IRxBLService
     {
         /// <summary>
         /// Method to perform actions when the context is ready for use. This method is intended
@@ -80,6 +80,16 @@ namespace RxBlazorLightCore
         /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation to signal that
         /// the context is ready and any necessary initialization tasks are complete.</returns>
         public ValueTask OnContextReadyAsync();
+
+        /// <summary>
+        /// Retrieves the associated service instance of the specified type. This method provides
+        /// access to the service instance managed within the current state scope. The service
+        /// is expected to implement the IRxBLService interface and is essential for performing
+        /// various operations defined by the scope's context.
+        /// </summary>
+        /// <returns>An instance of type <typeparamref name="T"/> that implements the IRxBLService interface,
+        /// representing the service managed within the current state scope.</returns>
+        public T Service { get; }
     }
 
     /// <summary>
@@ -91,24 +101,8 @@ namespace RxBlazorLightCore
     /// and providing commands for state manipulation. The interface enables reactive programming patterns through observables
     /// and observers, facilitating asynchronous and state-driven operations.
     /// </remarks>
-    public interface IRxBLService : IStateInformation, IDisposable
+    public interface IRxBLService : IRxBLStateOwner
     {
-        /// <summary>
-        /// Gets an observable stream of <see cref="ServiceChangeReason"/> objects that represent reasons for changes
-        /// occurring within the service. This observable can be used to subscribe to notifications of change events
-        /// which are emitted as instances of <see cref="ServiceChangeReason"/>.
-        /// </summary>
-        public Observable<ServiceChangeReason> AsObservable { get; }
-
-        /// <summary>
-        /// Gets the observer which enables the service to react to emitted events or notifications.
-        /// </summary>
-        /// <remarks>
-        /// This property provides access to the observer interface of the service, allowing it to observe and respond to events.
-        /// Typically used within reactive programming paradigms.
-        /// </remarks>
-        public Observer<Unit> AsObserver { get; }
-
         /// <summary>
         /// Initiates any necessary actions when the service context is ready. This asynchronous operation
         /// should ensure that any required initialization is complete before further processing. It is invoked
@@ -139,46 +133,13 @@ namespace RxBlazorLightCore
         public void ResetExceptions();
 
         /// <summary>
-        /// Signals that the state has been updated and any components or services depending
-        /// on the current state should be notified to refresh, recompute, or otherwise adjust
-        /// to the new state. This method is typically called after changes to the state
-        /// that require consumers to update their representation or behavior
-        /// based on the altered state.
+        /// Notifies that the state of the service has changed. This allows components or other subscribers
+        /// to react to updates or modifications in the service's state. Optionally, an exception can be
+        /// provided to indicate an error that occurred during the state change.
         /// </summary>
-        public void StateHasChanged();
-
-        /// <summary>
-        /// Property that provides a synchronous command execution mechanism.
-        /// </summary>
-        /// <remarks>
-        /// This property is part of the <see cref="IRxBLService"/> interface and allows the execution of commands
-        /// encapsulated within an <see cref="IStateCommand"/>. It is typically used for responding to user actions
-        /// or other state change triggers within the application. Implementations can define specific actions to be
-        /// executed when the command is invoked.
-        /// </remarks>
-        /// <seealso cref="IRxBLService.CommandAsync"/>
-        /// <seealso cref="IRxBLService.CancellableCommandAsync"/>
-        public IStateCommand Command { get; }
-
-        /// <summary>
-        /// Represents an asynchronous command within the service, providing mechanisms for
-        /// executing tasks asynchronously with support for state change notifications.
-        /// </summary>
-        /// <remarks>
-        /// This property returns an instance of <see cref="IStateCommandAsync"/> that can be used to
-        /// execute asynchronous operations in the context of the service. It is designed to support
-        /// deferred state notifications and to identify the caller of state changes using a
-        /// unique identifier.
-        /// </remarks>
-        public IStateCommandAsync CommandAsync { get; }
-
-        /// <summary>
-        /// Represents an asynchronous command that can be cancelled. This property provides
-        /// functionality to execute asynchronous operations that support cancellation through
-        /// a CancellationToken. It is part of the <see cref="IRxBLService"/> interface, allowing
-        /// services to manage asynchronous state commands with the ability to respond to cancellation requests.
-        /// </summary>
-        public IStateCommandAsync CancellableCommandAsync { get; }
+        /// <param name="exception">An optional <see cref="Exception"/> parameter representing
+        /// any error associated with the state change. If no error occurred, this parameter can be null.</param>
+        public void StateHasChanged(Exception? exception = null);
     }
 
     /// <summary>
@@ -209,6 +170,105 @@ namespace RxBlazorLightCore
     }
 
     /// <summary>
+    /// Represents an owner of a state in the state management system.
+    /// </summary>
+    /// <remarks>
+    /// This interface is used to define entities that can own and manage state information.
+    /// Implementers of this interface are capable of identifying whether they own a specific state
+    /// and provide tracking through a unique identifier. It is fundamental in scenarios where state
+    /// ownership and control need to be maintained across different components.
+    /// </remarks>
+    public interface IRxBLStateOwner: IDisposable
+    {
+        /// <summary>
+        /// Gets the unique identifier associated with the owner of the state. This identifier
+        /// is used to distinguish and track the entity managing or owning the state within
+        /// the state management system.
+        /// </summary>
+        /// <remarks>
+        /// The OwnerID is essential for ensuring proper ownership and control of state data,
+        /// especially in scenarios involving multiple state owners or complex state workflows.
+        /// It ensures each owner is uniquely identified for effective state management.
+        /// </remarks>
+        /// <returns>
+        /// A <see cref="Guid"/> value that represents the unique identifier of the state owner.
+        /// </returns>
+        public Guid OwnerID { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the state associated with this owner is disabled.
+        /// This property determines if the current state is inactive or restricted,
+        /// preventing normal operations or interactions.
+        /// </summary>
+        /// <returns>A boolean value where <c>true</c> signifies that the state is disabled,
+        /// and <c>false</c> indicates that the state is active and operational.</returns>
+        public bool Disabled { get; }
+
+        /// <summary>
+        /// Determines whether the current state owner instance owns a specific state
+        /// identified by its unique identifier.
+        /// </summary>
+        /// <param name="stateID">The unique identifier of the state to check ownership for.</param>
+        /// <returns><c>true</c> if the state is owned by the state owner; otherwise, <c>false</c>.</returns>
+        internal bool OwnsState(Guid stateID);
+
+        /// <summary>
+        /// Provides an observable sequence that tracks changes in the service state.
+        /// This sequence emits updates triggered by state changes represented by the
+        /// <see cref="ServiceChangeReason"/> which includes information about the state
+        /// identifier and the reason for the change.
+        /// </summary>
+        /// <returns>An instance of <see cref="Observable{ServiceChangeReason}"/> that enables
+        /// subscribing to state change notifications within the context of an RxBL service.
+        /// Consumers can use this observable to monitor and respond to changes in the
+        /// service state in a reactive manner.</returns>
+        public Observable<ServiceChangeReason> AsObservable { get; }
+
+        /// <summary>
+        /// Represents a state-related command within the state management system.
+        /// </summary>
+        /// <remarks>
+        /// This property provides access to an implementation of the <see cref="IStateCommand"/> interface,
+        /// allowing the execution of state commands through predefined state-related actions. It is integral
+        /// for managing and executing operations associated with state transitions or modifications.
+        /// </remarks>
+        /// <returns>An <see cref="IStateCommand"/> instance that defines the execution behavior of the associated command.</returns>
+        public IStateCommand Command { get; }
+
+        /// <summary>
+        /// Represents an asynchronous command that can be executed within the state management system.
+        /// This property provides access to functionality that enables the execution of tasks asynchronously
+        /// while maintaining state ownership context.
+        /// </summary>
+        /// <remarks>
+        /// The asynchronous command supports features such as cancellation and caller identification
+        /// to manage complex state transitions effectively. Implementers of
+        /// <see cref="IStateCommandAsync"/> can utilize these capabilities to handle asynchronous
+        /// state changes and notifications.
+        /// </remarks>
+        /// <returns>An instance of <see cref="IStateCommandAsync"/> capable of executing state-related tasks asynchronously.</returns>
+        public IStateCommandAsync CommandAsync { get; }
+
+        /// <summary>
+        /// Represents a cancellable asynchronous command used in the state management system.
+        /// This property provides access to an instance of <see cref="IStateCommandAsync"/>
+        /// that supports cancellation and enables operations to be performed asynchronously
+        /// with the ability to respond to cancellation requests.
+        /// </summary>
+        /// <remarks>
+        /// The command is crucial for executing state-related asynchronous operations where
+        /// cancellation is a potential necessity, such as long-running tasks or those requiring
+        /// external triggers to terminate. It ensures command execution can respect
+        /// cancellation tokens, offering greater control and responsiveness within the system.
+        /// </remarks>
+        /// <value>
+        /// An instance of <see cref="IStateCommandAsync"/> capable of handling cancellable asynchronous operations.
+        /// </value>
+        public IStateCommandAsync CancellableCommandAsync { get; }
+    }
+    
+
+    /// <summary>
     /// Represents the contract for state information within the RxBlazorLightCore system.
     /// </summary>
     /// <remarks>
@@ -226,11 +286,16 @@ namespace RxBlazorLightCore
         public StatePhase Phase { get; }
 
         /// <summary>
-        /// Gets the unique identifier (ID) for a particular instance of a state or service, represented as a <see cref="Guid"/>.
-        /// This identifier is used to track and manage changes or exceptions within the system, providing a consistent reference
-        /// across different components that implement the <see cref="IStateInformation"/> interface or belong to the <see cref="RxBLService"/>.
+        /// Represents a unique identifier for a specific state instance within the context of
+        /// the RxBlazorLightCore framework. This property ensures that each state can be uniquely
+        /// identified, enabling functionality such as state comparison, tracking, and manipulation.
         /// </summary>
-        public Guid ID { get; }
+        /// <remarks>
+        /// The unique identifier is crucial for distinguishing between different state instances
+        /// and is utilized in various operations, such as equality comparison or filtering events
+        /// related to a specific state.
+        /// </remarks>
+        public Guid StateID { get; }
 
         /// <summary>
         /// Indicates whether the current entity is disabled, typically due to being in a state of change

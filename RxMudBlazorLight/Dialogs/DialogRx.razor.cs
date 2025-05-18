@@ -35,13 +35,14 @@ namespace RxMudBlazorLight.Dialogs
         private MudButtonRx? _buttonRef;
         private bool _closing;
 
-        public static async Task<bool> Show(IDialogService dialogService,
+        public static async Task<bool> Show(T owner, IDialogService dialogService,
             IStateCommand stateCommand, Action executeCallback, string title,
             string message, string confirmButton, string cancelButton, bool successOnConfirm,
             Func<bool>? canChange = null)
         {
             var parameters = new DialogParameters
             {
+                ["Owner"] = owner,
                 ["StateCommand"] = stateCommand,
                 ["ExecuteCallback"] = executeCallback,
                 ["CanChangeCallback"] = canChange,

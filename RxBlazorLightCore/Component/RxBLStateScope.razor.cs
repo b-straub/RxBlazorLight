@@ -1,43 +1,61 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System.Diagnostics.CodeAnalysis;
+using R3;
 
 // ReSharper disable once CheckNamespace -> use same namespace for all components
-namespace RxBlazorLightCore
+namespace RxBlazorLightCore;
+
+public sealed partial class RxBLStateScope<TService, TScope> : ComponentBase, IDisposable
 {
-    public sealed partial class RxBLStateScope<TScope, TService> : ComponentBase, IDisposable
+    [Parameter, EditorRequired]
+    public required Func<IRxBLStateScope<TService>> ScopeFactory { get; init; }
+
+    [Parameter]
+    public required RenderFragment ChildContent { get; init; }
+
+    [NotNull]
+    private TScope? Scope { get; set; }
+
+    [Parameter]
+    public double SampleRateMS { get; set; } = 100;
+
+    private IDisposable? _subscription;
+
+    protected override void OnInitialized()
     {
-        [Inject]
-        public required TService Service { get; init; }
+        base.OnInitialized();
 
-        [Parameter, EditorRequired]
-        public required Func<IRxBLStateScope> ScopeFactory { get; init; }
+        Scope = (TScope)ScopeFactory();
+        ArgumentNullException.ThrowIfNull(Scope);
 
-        [Parameter]
-        public required RenderFragment ChildContent { get; init; }
-
-        [NotNull]
-        private TScope? Scope { get; set; }
-
-        protected override void OnInitialized()
-        {
-            ArgumentNullException.ThrowIfNull(Service);
-            Scope = (TScope)ScopeFactory();
-            ArgumentNullException.ThrowIfNull(Scope);
-            base.OnInitialized();
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
+        _subscription = Scope.AsObservable
+            .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
+            .SubscribeAwait(async (crList, _) =>
             {
-                await Scope.OnContextReadyAsync();
-            }
-            await base.OnAfterRenderAsync(firstRender);
+#if DEBUG
+                foreach (var cr in crList)
+                {
+                    Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Scope.OwnerID}");
+                }
+#endif
+                await InvokeAsync(StateHasChanged);
+            });
+    }
+
+    public void Dispose()
+    {
+        _subscription?.Dispose();
+        _subscription = null;
+        Scope.Dispose();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Scope.OnContextReadyAsync();
         }
 
-        public void Dispose()
-        {
-            Scope.Dispose();
-        }
+        await base.OnAfterRenderAsync(firstRender);
     }
 }

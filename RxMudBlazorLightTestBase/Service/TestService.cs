@@ -5,17 +5,17 @@ namespace RxMudBlazorLightTestBase.Service
 {
     public class Pizza(string name)
     {
-        public readonly string Name = name;
+        private readonly string _name = name;
 
         public override bool Equals(object? o)
         {
             var other = o as Pizza;
-            return other?.Name == Name;
+            return other?._name == _name;
         }
 
-        public override int GetHashCode() => Name.GetHashCode();
+        public override int GetHashCode() => _name.GetHashCode();
 
-        public override string ToString() => Name;
+        public override string ToString() => _name;
     }
 
     public class TestColor(ColorEnum color)
@@ -47,7 +47,7 @@ namespace RxMudBlazorLightTestBase.Service
         public StateInfo ServiceState { get; protected set; }
         public IStateCommand ServiceStateCMD { get; }
 
-        public TestServiceBase()
+        protected TestServiceBase()
         {
             Console.WriteLine("TestService Create");
 
@@ -62,27 +62,15 @@ namespace RxMudBlazorLightTestBase.Service
         {
             public int Counter { get; set; }
 
-            public IStateCommand Command = service.CreateStateCommand();
-
-            public IStateCommandAsync CommandAsync = service.CreateStateCommandAsync();
-            public IStateCommandAsync CancellableCommandAsync = service.CreateStateCommandAsync(true);
-
-            public override ValueTask OnContextReadyAsync()
-            {
-                Console.WriteLine("Scope ContextReady");
-                return ValueTask.CompletedTask;
-            }
-
             protected override void Dispose(bool disposing)
             {
                 if (disposing)
                 {
                     Console.WriteLine("Scope Disposed");
                 }
+                base.Dispose(disposing);
             }
-
-            public Action IncrementCounter => () => Counter++;
-
+            
             public Func<IStateCommandAsync, Task> IncrementCounterAsync => async _ =>
             {
                 await Task.Delay(1000);
@@ -99,9 +87,14 @@ namespace RxMudBlazorLightTestBase.Service
             }
         }
 
-        public class ColorsStateScope(TestService service) : RxBLStateScope<TestService>(service)
+        public class ColorsStateScope : RxBLStateScope<TestService>
         {
-            public readonly IStateGroupAsync<TestColor> TestColors = service.CreateStateGroupAsync(Colors, Colors[0]);
+            public readonly IStateGroupAsync<TestColor> TestColors;
+
+            public ColorsStateScope(TestService service, bool independentState) : base(service)
+            {
+                TestColors = independentState ? this.CreateStateGroupAsync(Colors, Colors[0]) : service.CreateStateGroupAsync(Colors, Colors[0]);
+            }
 
             public Func<TestColor, TestColor, Task> ChangeTestColorAsync(int context)
             {
@@ -124,8 +117,6 @@ namespace RxMudBlazorLightTestBase.Service
         public IState<bool> CanIncrementCheck { get; }
         public IState<string> TextValue { get; }
         public IState<int> RatingValue { get; }
-        public IState<bool> DarkMode { get; }
-        
         
         public IStateProgressObserverAsync IncrementObserver { get; }
         public IStateProgressObserverAsync IncrementDialogObserver { get; }
@@ -136,7 +127,8 @@ namespace RxMudBlazorLightTestBase.Service
         private readonly IStateGroupAsync<Pizza> _pizzaStateIndependent;
         private readonly IStateGroup<TestColor> _radioTestExtended;
         private bool _canIncrement;
-
+        private IDisposable? _serviceDisposable;
+        
         public TestService()
         {
             Console.WriteLine("TestService Create");
@@ -146,7 +138,6 @@ namespace RxMudBlazorLightTestBase.Service
 
             TextValue = this.CreateState("No Text");
             RatingValue = this.CreateState(0);
-            DarkMode = this.CreateState(false);
 
             IncrementObserver = this.CreateStateObserverAsync();
             AddObserver = this.CreateStateObserverAsync();
@@ -157,20 +148,25 @@ namespace RxMudBlazorLightTestBase.Service
             _pizzaStateIndependent = this.CreateStateGroupAsync(Pizzas, Pizzas[2]);
             _radioTestExtended = this.CreateStateGroup(Colors, Colors[0]);
             
-            this.AsChangedObservable(TextValue)
+            _serviceDisposable = this.AsChangedObservable(TextValue)
                 .Take(1)
                 .Select(async _ => await _pizzaState2.ChangeValueAsync(Pizzas[1]))
                 .Subscribe();
         }
 
-        public IRxBLStateScope CreateScope()
+        public IRxBLStateScope<TestService> CreateScope()
         {
             return new Scope(this);
         }
 
-        public IRxBLStateScope CreateColorsScope()
+        public IRxBLStateScope<TestService> CreateColorsScope()
         {
-            return new ColorsStateScope(this);
+            return new ColorsStateScope(this, false);
+        }
+        
+        public IRxBLStateScope<TestService> CreateColorsScopeIndependent()
+        {
+            return new ColorsStateScope(this, true);
         }
 
         protected override async ValueTask ContextReadyAsync()
@@ -180,6 +176,18 @@ namespace RxMudBlazorLightTestBase.Service
             _canIncrement = true;
             TextValue.Value = "Context Ready";
             ServiceState = new StateInfo("Initialized");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Console.WriteLine("TestService Disposed");
+                _serviceDisposable?.Dispose();
+                _serviceDisposable = null;
+            }
+            
+            base.Dispose(disposing);
         }
 
         public Action ChangeServiceState(string state) => () =>

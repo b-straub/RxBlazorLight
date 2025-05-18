@@ -1,18 +1,34 @@
-﻿
-<MudStack AlignItems=@AlignItems.Start Row=@true>
-    <MudText Typo="Typo.h3" GutterBottom="true">@_renderCycles</MudText>
-    @ChildContent
-</MudStack>
+﻿<MudPaper Class="border-solid border-2 mud-border-primary pa-4" Elevation="0">
+    @if (Owner is not null)
+    {
+        <MudStack>
+            <MudText Typo="Typo.caption">@($"OwnerID: {Owner.OwnerID}")</MudText>
+            <MudText Typo="Typo.caption">@($"CommandID: {Owner.Command.StateID}")</MudText>
+            <MudText Typo="Typo.caption">@($"CommandAsyncID: {Owner.CommandAsync.StateID}")</MudText>
+            <MudText
+                Typo="Typo.caption">@($"CancellableCommandAsyncID: {Owner.CancellableCommandAsync.StateID}")</MudText>
+        </MudStack>
+    }
+    <MudStack AlignItems=@AlignItems.Start Row=@true>
+        <MudText Typo="Typo.h3" GutterBottom="true">@_renderCycles</MudText>
+        @ChildContent
+    </MudStack>
+</MudPaper>
 
 @code {
+
     [Parameter]
     public required RenderFragment ChildContent { get; init; }
 
-    private int _renderCycles = 0;
+    [Parameter]
+    public IRxBLStateOwner? Owner { get; init; }
+
+    private int _renderCycles;
 
     protected override void OnAfterRender(bool firstRender)
     {
         _renderCycles++;
         base.OnAfterRender(firstRender);
     }
+
 }

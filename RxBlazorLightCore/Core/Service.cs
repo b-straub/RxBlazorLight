@@ -3,83 +3,155 @@
 // ReSharper disable once CheckNamespace -> use same namespace for implementation
 namespace RxBlazorLightCore
 {
-    public class RxBLStateScope<T>(T service) : IRxBLStateScope where T : IRxBLService
+    internal class StateInformationComparer : IEqualityComparer<IStateInformation>
     {
-        protected T Service => service;
-
-        public virtual ValueTask OnContextReadyAsync()
+        public bool Equals(IStateInformation? s1, IStateInformation? s2)
         {
-            return ValueTask.CompletedTask;
+            if (s1 is null && s2 is null)
+            {
+                return true;
+            }
+
+            if (s1 is null | s2 is null)
+            {
+                return false;
+            }
+
+            return s1!.StateID.Equals(s2!.StateID);
         }
 
+        public int GetHashCode(IStateInformation s)
+        {
+            return s.StateID.GetHashCode();
+        }
+    }
+
+    public abstract class RxBLStateOwner : IRxBLStateOwner
+    {
+        public abstract IStateCommand Command { get; }
+        public abstract IStateCommandAsync CommandAsync { get; }
+        public abstract IStateCommandAsync CancellableCommandAsync { get; }
+        public abstract Observable<ServiceChangeReason> AsObservable { get; }
+        
+        public Guid OwnerID { get; } = Guid.NewGuid();
+        public bool Disabled => _ownedStates.Any(s => s.Phase == StatePhase.CHANGING);
+
+        private readonly HashSet<IStateInformation> _ownedStates = new(new StateInformationComparer());
+
+        public bool OwnsState(Guid stateID)
+        {
+            return stateID == OwnerID || _ownedStates.Select(s => s.StateID).Contains(stateID);
+        }
+
+        internal void AddOwnedState(IStateInformation stateInformation)
+        {
+            _ownedStates.Add(stateInformation);
+        }
+        
         public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
 
-
         protected virtual void Dispose(bool disposing)
         {
         }
     }
-
-    public class RxBLService : Observer<Unit>, IRxBLService
-    {
-        public Observable<ServiceChangeReason> AsObservable { get; }
-        public Observer<Unit> AsObserver => this;
-        public bool Initialized { get; private set; }
-        public Guid ID { get; }
-        public IEnumerable<ServiceException> Exceptions => _serviceExceptions;
-        public IStateCommand Command { get; }
-        public IStateCommandAsync CommandAsync { get; }
-        public IStateCommandAsync CancellableCommandAsync { get; }
-        public StatePhase Phase { get; private set; } = StatePhase.CHANGED;
-        public bool Disabled => Phase is not StatePhase.CHANGING;
     
+
+    public class RxBLStateScope<T> : RxBLStateOwner, IRxBLStateScope<T> where T : RxBLService
+    {
+        public T Service { get; }
+        public override IStateCommand Command { get; }
+        public override IStateCommandAsync CommandAsync { get; }
+        public override IStateCommandAsync CancellableCommandAsync { get; }
+        public override Observable<ServiceChangeReason> AsObservable { get; }
+        
+        protected RxBLStateScope(T service)
+        {
+            Service = service;
+            Command = this.CreateStateCommand();
+            CommandAsync = this.CreateStateCommandAsync();
+            CancellableCommandAsync = this.CreateStateCommandAsync(true);
+            
+            AsObservable = service.AsRawObservable
+                .Where(cr => OwnsState(cr.StateID));
+        }
+
+        public virtual ValueTask OnContextReadyAsync()
+        {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    public class RxBLService : RxBLStateOwner, IRxBLService
+    {
+        public bool Initialized { get; private set; }
+        public IEnumerable<ServiceException> Exceptions => _serviceExceptions;
+        public override IStateCommand Command { get; }
+        public override IStateCommandAsync CommandAsync { get; }
+        public override IStateCommandAsync CancellableCommandAsync { get; }
+        public override Observable<ServiceChangeReason> AsObservable { get; }
+        
+        internal Observable<ServiceChangeReason> AsRawObservable { get; }
+        // ReSharper disable once BuiltInTypeReferenceStyle
+        private readonly Object _gate = new();
         private readonly Subject<ServiceChangeReason> _changedSubject = new();
         private readonly HashSet<ServiceException> _serviceExceptions;
-
+     
         protected RxBLService()
         {
             Command = this.CreateStateCommand();
             CommandAsync = this.CreateStateCommandAsync();
             CancellableCommandAsync = this.CreateStateCommandAsync(true);
-            AsObservable = _changedSubject.Publish().RefCount();
+            AsRawObservable = _changedSubject
+                .Synchronize(_gate)
+                .Share();
+
+            AsObservable = AsRawObservable
+                .Where(cr => OwnsState(cr.StateID));
+            
             _serviceExceptions = [];
             Initialized = false;
-            ID = Guid.NewGuid();
         }
 
-        public void StateHasChanged()
+        public void StateHasChanged(Exception? exception = null)
         {
-            StateHasChanged(this);
+            lock (_gate)
+            {
+                StateHasChanged(OwnerID, exception);
+            }
         }
-
-        internal void StateHasChanged(IStateInformation stateInfo, Exception? exception = null)
+        
+        internal void StateHasChanged(Guid stateID, Exception? exception = null)
         {
+            if (_changedSubject.IsDisposed)
+            {
+                return;
+            }
+
             if (exception is not null)
             {
-                _serviceExceptions.Add(new(stateInfo.ID, exception));
-                _changedSubject.OnNext(new(stateInfo.ID, ChangeReason.EXCEPTION));
+                _serviceExceptions.Add(new(stateID, exception));
+                _changedSubject.OnNext(new(stateID, ChangeReason.EXCEPTION));
             }
             else
             {
-                _changedSubject.OnNext(new(stateInfo.ID, ChangeReason.STATE));
+                _changedSubject.OnNext(new(stateID, ChangeReason.STATE));
             }
-
-            Phase = stateInfo.Changing() ? StatePhase.CHANGING : StatePhase.CHANGED;
         }
-     
+
         public async ValueTask OnContextReadyAsync()
         {
             if (Initialized)
             {
                 throw new InvalidOperationException("Nested RxBLService context not allowed!");
             }
+
             await ContextReadyAsync();
             Initialized = true;
-            StateHasChanged(this);
+            StateHasChanged(OwnerID);
         }
 
         protected virtual ValueTask ContextReadyAsync()
@@ -92,25 +164,12 @@ namespace RxBlazorLightCore
             _serviceExceptions.Clear();
         }
         
-        protected override void OnErrorResumeCore(Exception error)
+        protected override void Dispose(bool disposing)
         {
-            if (_serviceExceptions.Add(new(ID, error)))
+            if (disposing)
             {
-                _changedSubject.OnNext(new(ID, ChangeReason.EXCEPTION));
+                _changedSubject.Dispose();
             }
-        }
-
-        protected override void OnCompletedCore(Result result)
-        {
-            if (result.Exception is not null && _serviceExceptions.Add(new(ID, result.Exception)))
-            {
-                _changedSubject.OnNext(new(ID, ChangeReason.EXCEPTION));
-            }
-        }
-
-        protected override void OnNextCore(Unit value)
-        {
-            _changedSubject.OnNext(new(ID, ChangeReason.STATE));
         }
     }
 }

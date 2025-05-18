@@ -15,12 +15,17 @@ public class RxBLServiceSubscriber<T> : ComponentBase where T : IRxBLService
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        
+
         Service.AsObservable
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Length > 0)
             .SubscribeAwait(async (crList, ct) =>
             {
+#if DEBUG
+                foreach (var cr in crList)
+                {
+                    Console.WriteLine($"StateHasChanged from StateID: {cr.StateID}, OwnerID: {Service.OwnerID}");
+                }
+#endif
                 await OnServiceStateHasChangedAsync(crList, ct);
                 // ReSharper disable once MethodHasAsyncOverloadWithCancellation -> call both sync and async version
                 OnServiceStateHasChanged(crList);
@@ -69,7 +74,6 @@ public class RxBLServiceSubscriber<T1, T2> : ComponentBase where T1 : IRxBLServi
         
         Observable.Merge(Service1.AsObservable, Service2.AsObservable)
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Length > 0)
             .SubscribeAwait(async (crList, ct) =>
             {
                 await OnServiceStateHasChangedAsync(crList, ct);
@@ -126,7 +130,6 @@ public class RxBLServiceSubscriber<T1, T2, T3> : ComponentBase where T1 : IRxBLS
         base.OnInitialized();
         Observable.Merge(Service1.AsObservable, Service2.AsObservable, Service3.AsObservable)
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
-            .Where(crList => crList.Length > 0)
             .SubscribeAwait(async (crList, ct) =>
             {
                 await OnServiceStateHasChangedAsync(crList, ct);

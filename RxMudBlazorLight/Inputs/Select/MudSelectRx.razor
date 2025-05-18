@@ -20,7 +20,7 @@
     public Func<int, bool> ItemDisabledCallback { get; set; } = _ => false;
 
     [Parameter]
-    public bool HideDisabled { get; set; } = false;
+    public bool HideDisabled { get; set; }
 
     private RenderFragment RenderBase() => builder => base.BuildRenderTree(builder);
 

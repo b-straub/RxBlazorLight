@@ -35,7 +35,7 @@ namespace RxMudBlazorLightTestBase.Service
                 {
                     await Task.Delay(2000, ct);
                     Counter++;
-                    return Observable.Timer(TimeSpan.FromSeconds(1));
+                    return Observable.Timer(TimeSpan.FromSeconds(1), ct);
                 });
 
             return Observable
@@ -52,7 +52,7 @@ namespace RxMudBlazorLightTestBase.Service
                 {
                     await Task.Delay(2000, ct);
                     Counter++;
-                    return Observable.Timer(TimeSpan.FromSeconds(1));
+                    return Observable.Timer(TimeSpan.FromSeconds(1), ct);
                 });
 
             return Observable

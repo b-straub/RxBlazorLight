@@ -4,22 +4,29 @@
 
 <DisplayRenderCycle Owner=@Service>
     <MudStack>
-        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope LogStateChange=@true>
-            <StateScope />
+        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope
+                        LogStateChange=@true>
+            <StateScope/>
         </RxBLStateScope>
-        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope LogStateChange=@true>
-            <StateScope />
+        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope
+                        LogStateChange=@true>
+            <StateScope/>
         </RxBLStateScope>
-        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope LogStateChange=@true>
-            <StateScope />
+        <RxBLStateScope TScope=@StateService.Scope TService=@StateService ScopeFactory=@Service.CreateScope
+                        LogStateChange=@true>
+            <StateScope/>
         </RxBLStateScope>
     </MudStack>
 </DisplayRenderCycle>
 
 @code {
+
     protected override void OnInitialized()
     {
+#if DEBUG
         LogStateChange = true;
+#endif
         base.OnInitialized();
     }
+
 }

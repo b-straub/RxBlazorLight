@@ -15,7 +15,9 @@
 {
     protected override void OnInitialized()
     {
+#if DEBUG
         LogStateChange = true;
+#endif
         base.OnInitialized();
     }
 }

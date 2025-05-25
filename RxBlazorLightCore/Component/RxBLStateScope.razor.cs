@@ -35,7 +35,11 @@ public sealed partial class RxBLStateScope<TService, TScope> : ComponentBase, ID
 
         _subscription = Scope.AsObservable
             .Chunk(TimeSpan.FromMilliseconds(SampleRateMS))
+#if DEBUG
             .SubscribeAwait(async (crList, _) =>
+#else
+            .SubscribeAwait(async (_, _) =>
+#endif
             {
 #if DEBUG
                 if (LogStateChange)

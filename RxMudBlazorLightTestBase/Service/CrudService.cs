@@ -60,12 +60,10 @@ namespace RxMudBlazorLightTestBase.Service
     {
         public sealed class CrudItemInput : RxBLStateScope<CrudService>
         {
-            private readonly CrudService _service;
             private readonly CRUDToDoItem? _item;
 
             public CrudItemInput(CrudService service, CRUDToDoItem? item) : base(service)
             {
-                _service = service;
                 _item = item;
                 Text = this.CreateState(item is null ? string.Empty : item.Text);
                 DueDateDate = this.CreateState(item is null ? DateTime.Now.Date : item.DueDate.Date);
@@ -79,7 +77,7 @@ namespace RxMudBlazorLightTestBase.Service
             public async Task SubmitAsync()
             {
                 var newItem = new CRUDToDoItem(Text.Value, DueDateDate.Value + DueDateTime.Value, false, _item?.Id ?? Guid.NewGuid());
-                await _service.CommandAsync.ExecuteAsync(_service.AddCRUDItem(newItem));
+                await Service.CommandAsync.ExecuteAsync(Service.AddCRUDItem(newItem));
             }
             public bool CanSubmit()
             {
@@ -92,12 +90,12 @@ namespace RxMudBlazorLightTestBase.Service
 
             public Func<bool> CanUpdateText => () =>
             {
-                return _service.CanUpdateText;
+                return Service.CanUpdateText;
             };
 
             public Func<bool> CanUpdateDueDate => () =>
             {
-                return _service.CanUpdateDueDate;
+                return Service.CanUpdateDueDate;
             };
 
             public static Func<string, StateValidation> ValidateText => v =>
@@ -120,7 +118,7 @@ namespace RxMudBlazorLightTestBase.Service
 
             public Func<bool> CanUpdateTime => () =>
             {
-                return _service.CanUpdateDueDate;
+                return Service.CanUpdateDueDate;
             };
 
             private static DateTime? NoSeconds(DateTime? dateTime)

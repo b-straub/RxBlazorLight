@@ -22,10 +22,11 @@
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <PackageTags>Blazor,MudBlazor,Rx,Reactive</PackageTags>
+        <PackageTags>Blazor,MudBlazor,Rx,Reactive, R3</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageOutputPath>..\Nuget</PackageOutputPath>
-        <PackageVersion>1.0.1</PackageVersion>
+        <PackageId>RxMudBlazorLight</PackageId>
+        <PackageVersion>1.1.0</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>

@@ -7,5 +7,14 @@
     <MudNavLink Href="playground" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DynamicForm">Playground</MudNavLink>
     <MudNavLink Href="state" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DynamicForm">State</MudNavLink>
     <MudNavLink Href="crud" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DynamicForm">CRUD</MudNavLink>
-    <MudNavLink Href="trackerGUI" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DynamicForm">Tracker GUI</MudNavLink>
+    <MudNavLink Class=@TrackerClass Href="trackerGUI" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DynamicForm">Tracker GUI</MudNavLink>
 </MudNavMenu>
+
+@code
+{
+#if DEBUG
+    private const string TrackerClass = "";
+#else
+    private const string TrackerClass = "invisible";
+#endif
+}

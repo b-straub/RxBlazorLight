@@ -26,7 +26,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageOutputPath>..\Nuget</PackageOutputPath>
         <PackageId>RxMudBlazorLight</PackageId>
-        <PackageVersion>1.1.0</PackageVersion>
+        <PackageVersion>1.1.1</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,7 +39,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.5" />
-        <PackageReference Include="MudBlazor" Version="8.6.0" />
+        <PackageReference Include="MudBlazor" Version="8.7.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,5 +1,7 @@
 # RxBlazorLight
 
+> **Note:** This project has been superseded by [RxBlazorV2](https://github.com/b-straub/RxBlazorV2), which provides a more powerful reactive programming framework with Roslyn source generators, automatic component generation, and improved DI integration.
+
 *RxBlazorLight* is a simple reactive wrapper around Blazor components.
 
 For now only [MudBlazor](https://mudblazor.com/) components are supported.
